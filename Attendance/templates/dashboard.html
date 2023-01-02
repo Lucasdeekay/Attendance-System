@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}
+Dashboard
+{% endblock title %}
+
+{% block page_title %}
+My Profile
+{% endblock page_title %}
+
+{% block date %}
+{{ date }}
+{% endblock date %}
+
+{% block content %}
+<div class="row">
+    <div class="col-sm-8">
+        <div class="user-profile compact">
+            <div class="up-head-w" style="background-image:url({% static 'images/logo.png' %})">
+                <div class="up-main-info">
+                    <h2 class="up-header">{{ user.person.last_name }} {{ user.person.first_name }}</h2>
+                    <h6 class="up-sub-header">
+                        {% if user.person.is_staff %}
+                        {{ user.post }}
+                        {% else %}
+                        {{ user.level }} Level
+                        {% endif %}
+                        at Dominion University
+                    </h6>
+                </div>
+                <!--<svg class="decor" width="842px" height="219px" viewBox="0 0 842 219"
+                     preserveAspectRatio="xMaxYMax meet" version="1.1"
+                     xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                    <g transform="translate(-381.000000, -362.000000)" fill="#FFFFFF">
+                        <path class="decor-path"
+                              d="M1223,362 L1223,581 L381,581 C868.912802,575.666667 1149.57947,502.666667 1223,362 Z"></path>
+                    </g>
+                </svg>-->
+            </div>
+            <div class="up-controls">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="value-pair">
+                            <div class="value badge badge-pill badge-success">Online</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="up-contents">
+                <div class="m-b">
+                    <div class="padded">
+                        <div class="os-progress-bar primary">
+                            <div class="bar-labels">
+                                <div class="bar-label-left">
+                                    <span>Full Name</span>
+                                </div>
+                                <div class="bar-label-right">
+                                    <h6 class="info">{{ user.person.last_name }} {{ user.person.first_name }}</h6>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="os-progress-bar primary">
+                            <div class="bar-labels">
+                                <div class="bar-label-left">
+                                    <span>
+                                        {% if user.person.is_staff %}
+                                        Staff ID
+                                        {% else %}
+                                        Matric No
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <div class="bar-label-right">
+                                    <h6 class="info">
+                                        {% if user.person.is_staff %}
+                                        {{ user.staff_id }}
+                                        {% else %}
+                                        {{ user.matric_no }}
+                                        {% endif %}
+                                    </h6>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="os-progress-bar primary">
+                            <div class="bar-labels">
+                                <div class="bar-label-left">
+                                    <span>Faculty</span>
+                                </div>
+                                <div class="bar-label-right">
+                                    <h6 class="info">
+                                        {% if user.person.is_staff %}
+                                        {{ user.department.faculty.faculty_name }}
+                                        {% else %}
+                                        {{ user.programme.department.faculty.faculty_name }}
+                                        {% endif %}
+                                    </h6>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="os-progress-bar primary">
+                            <div class="bar-labels">
+                                <div class="bar-label-left">
+                                    <span>Department</span>
+                                </div>
+                                <div class="bar-label-right">
+                                    <h6 class="info">
+                                        {% if user.person.is_staff %}
+                                        {{ user.department.department_name }}
+                                        {% else %}
+                                        {{ user.programme.department.department_name }}
+                                        {% endif %}
+                                    </h6>
+                                </div>
+                            </div>
+                        </div>
+                        {% if not user.person.is_staff %}
+                        <div class="os-progress-bar primary">
+                            <div class="bar-labels">
+                                <div class="bar-label-left">
+                                    <span>Programme</span>
+                                </div>
+                                <div class="bar-label-right">
+                                    <h6 class="info">
+                                        {{ user.programme.programme_name }}
+                                    </h6>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="element-wrapper">
+            <div class="element-box"><h6 class="element-header">Courses</h6>
+                {% if user.person.is_staff %}
+                <div class="timed-activities compact">
+                    {% if courses_100 %}
+                    <div class="timed-activity">
+                        <div class="ta-date">
+                            <span>100 LEVEL</span>
+                        </div>
+                        {% for course in courses_100 %}
+                        <div class="ta-record-w">
+                            <div class="ta-record">
+                                <div class="ta-timestamp"><strong>{{ course.course_code }}</strong></div>
+                                <div class="ta-activity">{{ course.course_name }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    {% if courses_200 %}
+                    <div class="timed-activity">
+                        <div class="ta-date">
+                            <span>200 LEVEL</span>
+                        </div>
+                        {% for course in courses_200 %}
+                        <div class="ta-record-w">
+                            <div class="ta-record">
+                                <div class="ta-timestamp"><strong>{{ course.course_code }}</strong></div>
+                                <div class="ta-activity">{{ course.course_name }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    {% if courses_300 %}
+                    <div class="timed-activity">
+                        <div class="ta-date">
+                            <span>300 LEVEL</span>
+                        </div>
+                        {% for course in courses_300 %}
+                        <div class="ta-record-w">
+                            <div class="ta-record">
+                                <div class="ta-timestamp"><strong>{{ course.course_code }}</strong></div>
+                                <div class="ta-activity">{{ course.course_name }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    {% if courses_400 %}
+                    <div class="timed-activity">
+                        <div class="ta-date">
+                            <span>400 LEVEL</span>
+                        </div>
+                        {% for course in courses_400 %}
+                        <div class="ta-record-w">
+                            <div class="ta-record">
+                                <div class="ta-timestamp"><strong>{{ course.course_code }}</strong></div>
+                                <div class="ta-activity">{{ course.course_name }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="timed-activities compact">
+                    <div class="timed-activity">
+                        <div class="ta-date">
+                            <span>{{ user.level }} LEVEL</span>
+                        </div>
+                        {% for course in courses %}
+                        <div class="ta-record-w">
+                            <div class="ta-record">
+                                <div class="ta-timestamp"><strong>{{ course.course_code }}</strong></div>
+                                <div class="ta-activity">{{ course.course_name }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}
+Print Attendance Slip
+{% endblock title %}
+
+{% block page_title %}
+Print Attendance Slip
+{% endblock page_title %}
+
+{% block date %}
+{{ date }}
+{% endblock date %}
+
+{% block content %}
+<div class="row" style="{% if not student_record %}height:450px{% endif %}">
+    <div class="col-sm-7">
+        <div class="element-wrapper">
+            <div id="toast">
+                {% for message in messages %}
+                <div class="alert alert-danger" role="alert"><strong>Error! </strong>{{ message }}</div>
+                {% endfor %}
+            </div>
+            <div class="element-box mb-3">
+                <form id="attendanceSheetForm" method="post">
+                    {% csrf_token %}
+                    <h6 class="text-primary">Fill in the required details to print out attendance slip</h6>
+                    <div class="form-group col-8">
+                        <label for="course">Courses</label>
+                        <select class="form-control form-control-sm rounded bright" required name="course" id="course">
+                            <option value="">Select Course</option>
+                            {% for course in courses %}
+                            <option value="{{ course }}">{{ course }}</option>
+                            {% endfor %}
+                        </select>
+                        <label for="date">Date:</label>
+                        <input type="date" class="form-control form-control-sm rounded bright" id="date" name="date" required>
+                    </div>
+                    <div class="form-buttons-w py-3" style="text-align:right" id="subBtn">
+                        <button class="btn btn-primary" type="submit">Download Attendance Sheet</button>
+                    </div>
+                </form>
+                <div class="form-buttons-w py-3" style="text-align:right" id="downloadBtn">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+
+{% block ajax %}
+$("#toast").fadeIn(3000);
+$("#toast").fadeOut(3000);
+{% endblock ajax %}

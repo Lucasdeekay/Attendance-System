@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}
+Dashboard
+{% endblock title %}
+
+{% block page_title %}
+Dashboard
+{% endblock page_title %}
+
+{% block date %}
+{{ date }}
+{% endblock date %}
+
+{% block content %}
+<div class="row">
+    <div class="col-sm-12">
+        <div class="element-wrapper">
+            <div class="element-content">
+                <div class="row">
+                    <div class="col-sm-3 col-xxxl-3">
+                        <a class="element-box el-tablo box-shadow text-center" href="" style="padding:5px">
+                            <div class="label">Number Of Courses Taken</div>
+                            <!-- DONUT CHART -->
+                            <svg onload="calculate(76, 24, 'donut1')" id="donut1" width="100" height="100%"
+                                 viewBox="0 0 60 50">
+                            </svg>
+                        </a>
+                    </div>
+                    <div class="col-sm-3 col-xxxl-3">
+                        <a class="element-box el-tablo box-shadow text-center" href="" style="padding:5px">
+                            <div class="label">Number Of Courses Taken</div>
+                            <!-- DONUT CHART -->
+                            <svg onload="calculate(7, 4, 'donut2')" id="donut2" width="100" height="100%"
+                                 viewBox="0 0 60 50">
+                            </svg>
+                        </a>
+                    </div>
+                    <div class="col-sm-3 col-xxxl-3">
+                        <a class="element-box el-tablo box-shadow text-center" href="" style="padding:5px">
+                            <div class="label">Number Of Courses Taken</div>
+                            <!-- DONUT CHART -->
+                            <svg onload="calculate(4, 19, 'donut3')" id="donut3" width="100" height="100%"
+                                 viewBox="0 0 60 50">
+                            </svg>
+                        </a>
+                    </div>
+                    <div class="col-sm-3 col-xxxl-3">
+                        <a class="element-box el-tablo box-shadow text-center" href="" style="padding:5px">
+                            <div class="label">Number Of Courses Taken</div>
+                            <!-- DONUT CHART -->
+                            <svg onload="calculate(7, 4, 'donut4')" id="donut4" width="100" height="100%"
+                                 viewBox="0 0 60 50">
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-8 col-xxxl-6">
+        <div class="element-wrapper"><h6 class="element-header">Courses Info</h6>
+            <div class="element-box">
+                <div class="table-responsive">
+                    <table class="table table-lightborder">
+                        <thead>
+                        <tr>
+                            <th>Course</th>
+                            <th>No Of Students</th>
+                            <th class="text-center">No of Programs</th>
+                            <th class="text-right">Eligible Students</th>
+                            <th class="text-right">Non-Eligible Students</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% if user.person.is_staff %}
+                        {% for code, students, programs, eligible, ineligible in zipped %}
+                        <tr>
+                            <td><h6>{{ code }}</h6></td>
+                            <td class="text-center text-info">{{ students }}</td>
+                            <td class="text-center text-primary">{{ programs }}</td>
+                            <td class="text-center text-success">{{ eligible }}</td>
+                            <td class="text-center text-danger">{{ ineligible }}</td>
+                        </tr>
+                        {% endfor %}
+                        {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-4 d-xxxl-none">
+        <div class="element-wrapper">
+            <h6 class="element-header">Courses</h6>
+            <div class="element-box-tp">
+                <div class="activity-boxes-w">
+                    {% for course in courses %}
+                    <div class="activity-box-w">
+                        <div class="activity-time">{{ course.course_code }}</div>
+                        <div class="activity-box">
+                            <div class="activity-info">
+                                <div class="activity-role">{{ course.course_name }}</div>
+                                <strong class="activity-title">{{ course.department }}</strong></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="d-none d-xxxl-block col-xxxl-6">
+        <div class="element-wrapper">
+            <div class="element-actions">
+                <form class="form-inline justify-content-sm-end"><select class="form-control form-control-sm rounded">
+                    <option value="Pending">Today</option>
+                    <option value="Active">Last Week</option>
+                    <option value="Cancelled">Last 30 Days</option>
+                </select></form>
+            </div>
+            <h6 class="element-header">Inventory Stats</h6>
+            <div class="element-box">
+                <div class="os-progress-bar primary">
+                    <div class="bar-labels">
+                        <div class="bar-label-left"><span class="bigger">Eyeglasses</span></div>
+                        <div class="bar-label-right"><span class="info">25 items / 10 remaining</span></div>
+                    </div>
+                    <div class="bar-level-1" style="width: 100%">
+                        <div class="bar-level-2" style="width: 70%">
+                            <div class="bar-level-3" style="width: 40%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="os-progress-bar primary">
+                    <div class="bar-labels">
+                        <div class="bar-label-left"><span class="bigger">Outwear</span></div>
+                        <div class="bar-label-right"><span class="info">18 items / 7 remaining</span></div>
+                    </div>
+                    <div class="bar-level-1" style="width: 100%">
+                        <div class="bar-level-2" style="width: 40%">
+                            <div class="bar-level-3" style="width: 20%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="os-progress-bar primary">
+                    <div class="bar-labels">
+                        <div class="bar-label-left"><span class="bigger">Shoes</span></div>
+                        <div class="bar-label-right"><span class="info">15 items / 12 remaining</span></div>
+                    </div>
+                    <div class="bar-level-1" style="width: 100%">
+                        <div class="bar-level-2" style="width: 60%">
+                            <div class="bar-level-3" style="width: 30%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="os-progress-bar primary">
+                    <div class="bar-labels">
+                        <div class="bar-label-left"><span class="bigger">Jeans</span></div>
+                        <div class="bar-label-right"><span class="info">12 items / 4 remaining</span></div>
+                    </div>
+                    <div class="bar-level-1" style="width: 100%">
+                        <div class="bar-level-2" style="width: 30%">
+                            <div class="bar-level-3" style="width: 10%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 border-top pt-3">
+                    <div class="element-actions d-none d-sm-block">
+                        <form class="form-inline justify-content-sm-end"><select
+                                class="form-control form-control-sm form-control-faded">
+                            <option selected="true">Last 30 days</option>
+                            <option>This Week</option>
+                            <option>This Month</option>
+                            <option>Today</option>
+                        </select></form>
+                    </div>
+                    <h6 class="element-box-header">Inventory History</h6>
+                    <div class="el-chart-w">
+                        <canvas data-chart-data="13,28,19,24,43,49,40,35,42,46,38,32,45" height="0" id="liteLineChartV3"
+                                width="0" class="chartjs-render-monitor"
+                                style="display: block; width: 0px; height: 0px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

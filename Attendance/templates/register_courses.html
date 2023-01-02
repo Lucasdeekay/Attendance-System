@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}
+Print Attendance Slip
+{% endblock title %}
+
+{% block page_title %}
+Course Registration
+{% endblock page_title %}
+
+{% block date %}
+{{ date }}
+{% endblock date %}
+
+{% block content %}
+<div class="row mb-3" style="{% if not student_record %}height:450px{% endif %}">
+    <div class="col-sm-12">
+        <div class="element-wrapper">
+            <div id="toast">
+                {% for message in messages %}
+                <div class="alert alert-danger" role="alert"><strong>Error! </strong>{{ message }}</div>
+                {% endfor %}
+            </div>
+                <div class="controls-above-table">
+                    <div class="row">
+                        <div class="col-sm-6"></div>
+                        <div class="col-sm-6">
+                            <form class="form-inline justify-content-sm-end" method="post" id="semesterForm">
+                                {% csrf_token %}
+                               <select class="form-control form-control-sm rounded bright" name="semester" id="semester" required>
+                                    <option value="">Select Semester</option>
+                                    <option value="1st">1st Semester</option>
+                                    <option value="2nd">2nd Semester</option>
+                                </select>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-lightborder">
+                        <thead>
+                            <tr>
+                                <th>Course Code</th>
+                                <th>Course Title</th>
+                                <th>Course Unit</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody">
+                            <tr>
+                                <td colspan="4"><h6>No record currently available</h6></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+
+{% block ajax %}
+$("#tbody").addClass("animation");
+
+$('#semester').change(function(e) {
+    $("#tbody").removeClass("animation");
+    $.ajax({
+        type: 'POST',
+        url: "{% url 'Attendance:submit_semester' %}",
+        data:{
+            semester: $("#semester").val(),
+            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+        },
+        success: function(data){
+            $("#tbody").empty();
+            if (data.courses.length == 0) {
+                temp = `<tr>
+                            <td colspan="4"><h6>No record currently available</h6></td>
+                        </tr>`;
+                $("#tbody").append(temp);
+                $("#tbody").addClass("animation");
+            }
+            else{
+                for (var key in data.courses){
+                    var temp = `<tr>
+                                <td><h6>${ data.courses[key].course_code }</h6></td>
+                                <td><h6>${ data.courses[key].course_name}</h6></td>
+                                <td><h6>${ data.courses[key].course_unit}</h6></td>
+                                <td>
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        <input class="form-control" type="checkbox"
+                                           id="${ data.courses[key].id }"
+                                           value="${ data.courses[key].id }"
+                                            onclick="validateCheckbox(this)">
+                                    </form>
+                                </td>
+                            </tr>`;
+                    $("#tbody").append(temp);
+                    if (data.reg_courses.length !== 0){
+                        if (data.reg_courses[key].includes(data.courses[key].id)){
+                            $('#'+data.courses[key].id).attr('checked', 'checked');
+                        }
+                    }
+                }
+            }
+            $("#tbody").addClass("animation");
+        },
+        error: function(data){
+            $("#tbody").empty();
+            temp = `<tr>
+                        <td colspan="4"><h6>No record currently available</h6></td>
+                    </tr>`;
+            $("#tbody").append(temp);
+            $("#tbody").addClass("animation");
+        },
+    });
+});
+{% endblock ajax %}
+
+
+{% block javascript %}
+function validateCheckbox(e){
+    $(function(){
+        $.ajax({
+            type: 'POST',
+            url: "{% url 'Attendance:add_course' %}",
+            data:{
+                value: e.value,
+                csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+            },
+            success: function(data){
+                var toast = `<div class="${ data.color }" role="alert"><strong>${ data.msg }</strong></div>`
+                $("#toast").html(toast);
+                $("#toast").fadeIn(3000);
+                $("#toast").fadeOut(3000);
+            },
+        });
+    });
+}
+{% endblock javascript %}

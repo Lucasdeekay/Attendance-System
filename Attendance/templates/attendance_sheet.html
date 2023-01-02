@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block title %}
+Attendance Sheet
+{% endblock title %}
+
+{% block page_title %}
+View Attendance
+{% endblock page_title %}
+
+{% block date %}
+{{ date }}
+{% endblock date %}
+
+{% block content %}
+<div class="row" style="{% if not student_record %}height:450px{% endif %}">
+    <div class="col-sm-12">
+        <div class="element-wrapper">
+            <div class="element-box-tp">
+                <div class="controls-above-table">
+                    <div class="row">
+                        <div class="col-sm-12" id="formDiv">
+                            <form class="form-inline justify-content-sm-end" method="post" id="dateCourseForm">
+                                {% csrf_token %}
+                                <select class="form-control form-control-sm rounded bright" name="course" id="course" required>
+                                    <option value="">Select Course</option>
+                                    {% for course in courses %}
+                                    <option value="{{ course.course_code }}">{{ course.course_code }}</option>
+                                    {% endfor %}
+                                </select>
+                                <input class="form-control form-control-sm rounded bright"
+                                       type="date" name="date" id="date" required>
+                                <div class="form-group my-2">
+                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Matric No</th>
+                            <th>Status</th>
+                        </tr>
+                        </thead>
+                        <tbody id="tbody">
+                        <tr>
+                            <td colspan="3"><h6>No record currently available</h6></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!--TODO:ADD PAGINATION-->
+                <!--<div class="controls-below-table">
+                    <div class="table-records-info">Showing records 1 - 5</div>
+                    <div class="table-records-pages">
+                        <ul>
+                            <li><a href="#">Previous</a></li>
+                            <li><a class="current" href="#">1</a></li>
+                            <li><a href="#">2</a></li>
+                            <li><a href="#">3</a></li>
+                            <li><a href="#">4</a></li>
+                            <li><a href="#">Next</a></li>
+                        </ul>
+                    </div>
+                </div>-->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block ajax %}
+$("#tbody").addClass("animation");
+
+$('#dateCourseForm').submit(function(e) {
+    e.preventDefault();
+    $("#tbody").removeClass("animation");
+    $.ajax({
+        type: 'POST',
+        url: "{% url 'Attendance:get_attendance_records' %}",
+        data:{
+            course: $("#course").val(),
+            date: $("#date").val(),
+            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+        },
+        success: function(data){
+            $("#tbody").empty();
+            if (data.student_attendance_info.length == 0) {
+                temp = `<tr>
+                            <td colspan="4"><h6>No record currently available</h6></td>
+                        </tr>`;
+                $("#tbody").append(temp);
+                $("#tbody").addClass("animation");
+            }
+            else{
+                for (var key in data.student_attendance_info){
+                    var temp = '';
+                    if (data.student_attendance_status[key][0]){
+                        temp = `<tr>
+                                <td><h6>${ data.student_attendance_info[key][0] }</h6></td>
+                                <td><h6>${ data.student_attendance_info[key][1] }</h6></td>
+                                <td><i class="bi bi-check-circle-fill text-success"></i></td>
+                            </tr>`;
+                    }
+                    else {
+                        temp = `<tr>
+                                <td><h6>${ data.student_attendance_info[key][0] }</h6></td>
+                                <td><h6>${ data.student_attendance_info[key][1] }</h6></td>
+                                <td><i class="bi bi-x-circle-fill text-danger"></i></td>
+                            </tr>`;
+                    }
+                    $("#tbody").append(temp);
+
+                    var form = `<form class="form-inline justify-content-sm-end" method="post" id="searchForm">
+                                {% csrf_token %}
+                                <input type="hidden" id="courseReturn" value="${ data.course }">
+                                <input type="hidden" id="dateReturn"  value="${ data.date }">
+                                <select class="form-control form-control-sm rounded bright" name="searchMethod" id="searchMethod" required>
+                                    <option value="">Search By..</option>
+                                    <option value="matric_no">Matric No</option>
+                                    <option value="name">Name</option>
+                                </select>
+                                <input class="form-control form-control-sm rounded bright"
+                                       type="text" name="text" id="text" required>
+                                <div class="form-group my-2">
+                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                </div>
+                            </form>`;
+                    $("#formDiv").empty();
+                    $("#formDiv").append(form);
+                }
+            }
+            $("#tbody").addClass("animation");
+        },
+        error: function(data){
+            $("#tbody").empty();
+            temp = `<tr>
+                        <td colspan="3"><h6>No record currently available</h6></td>
+                    </tr>`;
+            $("#tbody").append(temp);
+            $("#tbody").addClass("animation");
+        },
+    });
+});
+
+$('#searchForm').submit(function(e) {
+    e.preventDefault();
+    $("#tbody").removeClass("animation");
+    $.ajax({
+        type: 'POST',
+        url: "{% url 'Attendance:search_attendance_sheet' %}",
+        data:{
+            course: $("#courseReturn").val(),
+            date: $("#dateReturn").val(),
+            text: $("#text").val(),
+            searchMethod: $("#searchMethod").val(),
+            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+        },
+        success: function(data){
+            $("#tbody").empty();
+            if (data.student_attendance_info.length == 0) {
+                temp = `<tr>
+                            <td colspan="4"><h6>No record currently available</h6></td>
+                        </tr>`;
+                $("#tbody").append(temp);
+                $("#tbody").addClass("animation");
+            }
+            else{
+                for (var key in data.student_attendance_info){
+                    var temp = '';
+                    if (data.student_attendance_status[key][0]){
+                        temp = `<tr>
+                                <td><h6>${ data.student_attendance_info[key][0] }</h6></td>
+                                <td><h6>${ data.student_attendance_info[key][1] }</h6></td>
+                                <td><i class="bi bi-check-circle-fill text-success"></i></td>
+                            </tr>`;
+                    }
+                    else {
+                        temp = `<tr>
+                                <td><h6>${ data.student_attendance_info[key][0] }</h6></td>
+                                <td><h6>${ data.student_attendance_info[key][1] }</h6></td>
+                                <td><i class="bi bi-x-circle-fill text-danger"></i></td>
+                            </tr>`;
+                    }
+                    $("#tbody").append(temp);
+                }
+            }
+            $("#tbody").addClass("animation");
+        },
+        error: function(data){
+            $("#tbody").empty();
+            temp = `<tr>
+                        <td colspan="3"><h6>No record currently available</h6></td>
+                    </tr>`;
+            $("#tbody").append(temp);
+            $("#tbody").addClass("animation");
+        },
+    });
+});
+{% endblock ajax %}

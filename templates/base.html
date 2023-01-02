@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+
+{% load static %}
+
+<html>
+<head>
+    <title>{% block title %} {% endblock title %}</title>
+    <meta charset="utf-8"/>
+    <meta content="ie=edge" http-equiv="x-ua-compatible"/>
+    <meta content="attendance system" name="keywords"/>
+    <meta content="Kolawole Dennis Olukayode" name="author"/>
+    <meta content="Student Attendance Management System" name="description"/>
+    <meta content="width=device-width,initial-scale=1" name="viewport"/>
+    <!-- Bootstrap icon cdn -->
+    <!--    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">-->
+    <link rel="stylesheet" href="{% static 'node_modules/bootstrap-icons/font/bootstrap-icons.css' %}">
+    <!-- Favicons -->
+    <link rel="icon"
+          href="https://dominionuniversity.edu.ng/wp-content/uploads/2020/07/cropped-DOMINIONLOGO_WHITE-192x192.jpg"
+          sizes="192x192">
+    <link rel="apple-touch-icon"
+          href="https://dominionuniversity.edu.ng/wp-content/uploads/2020/07/cropped-DOMINIONLOGO_WHITE-192x192.jpg"
+          sizes="192x192">
+    <link href="{% static 'css/main5739.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/chart.css' %}" rel="stylesheet"/>
+
+    <script src="{% static 'js/jquery/jquery-3.4.1.js' %}"></script>
+    <!--  jQuer cdn  -->
+    <!--    <script src="https://code.jquery.com/jquery-3.6.3.min.js" integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>-->
+</head>
+<body class="menu-position-side menu-side-left full-screen"
+      style="height: 100%">
+<div class="all-wrapper solid-bg-all">
+    <div class="search-with-suggestions-w">
+        <div class="search-with-suggestions-modal">
+            <div class="element-search">
+                <input class="search-suggest-input"
+                       placeholder="Start typing to search..."/>
+                <div class="close-search-suggestions">
+                    <i class="os-icon os-icon-x"></i>
+                </div>
+            </div>
+            <div class="search-suggestions-group">
+                <div class="ssg-header">
+                    <div class="ssg-icon">
+                        <div class="os-icon os-icon-box"></div>
+                    </div>
+                    <div class="ssg-name">Projects</div>
+                    <div class="ssg-info">24 Total</div>
+                </div>
+                <div class="ssg-content">
+                    <div class="ssg-items ssg-items-boxed">
+                        <a class="ssg-item" href="users_profile_big.html">
+                            <div
+                                    class="item-media"
+                                    style="background-image: url(img/company6.png)"
+                            ></div>
+                            <div class="item-name">
+                                Integ<span>ration</span> with API
+                            </div>
+                        </a
+                        ><a class="ssg-item" href="users_profile_big.html">
+                        <div
+                                class="item-media"
+                                style="background-image: url(img/company7.png)"
+                        ></div>
+                        <div class="item-name">Deve<span>lopm</span>ent Project</div>
+                    </a>
+                    </div>
+                </div>
+            </div>
+            <div class="search-suggestions-group">
+                <div class="ssg-header">
+                    <div class="ssg-icon">
+                        <div class="os-icon os-icon-users"></div>
+                    </div>
+                    <div class="ssg-name">Customers</div>
+                    <div class="ssg-info">12 Total</div>
+                </div>
+                <div class="ssg-content">
+                    <div class="ssg-items ssg-items-list">
+                        <a class="ssg-item" href="users_profile_big.html">
+                            <div
+                                    class="item-media"
+                                    style="background-image: url(img/avatar1.jpg)"
+                            ></div>
+                            <div class="item-name">John Ma<span>yer</span>s</div>
+                        </a
+                        ><a class="ssg-item" href="users_profile_big.html">
+                        <div
+                                class="item-media"
+                                style="background-image: url(img/avatar2.jpg)"
+                        ></div>
+                        <div class="item-name">Th<span>omas</span> Mullier</div>
+                    </a
+                    ><a class="ssg-item" href="users_profile_big.html">
+                        <div
+                                class="item-media"
+                                style="background-image: url(img/avatar3.jpg)"
+                        ></div>
+                        <div class="item-name">Kim C<span>olli</span>ns</div>
+                    </a>
+                    </div>
+                </div>
+            </div>
+            <div class="search-suggestions-group">
+                <div class="ssg-header">
+                    <div class="ssg-icon">
+                        <div class="os-icon os-icon-folder"></div>
+                    </div>
+                    <div class="ssg-name">Files</div>
+                    <div class="ssg-info">17 Total</div>
+                </div>
+                <div class="ssg-content">
+                    <div class="ssg-items ssg-items-blocks">
+                        <a class="ssg-item" href="#">
+                            <div class="item-icon">
+                                <i class="os-icon os-icon-file-text"></i>
+                            </div>
+                            <div class="item-name">Work<span>Not</span>e.txt</div>
+                        </a
+                        ><a class="ssg-item" href="#">
+                        <div class="item-icon">
+                            <i class="os-icon os-icon-film"></i>
+                        </div>
+                        <div class="item-name">V<span>ideo</span>.avi</div>
+                    </a
+                    ><a class="ssg-item" href="#">
+                        <div class="item-icon">
+                            <i class="os-icon os-icon-database"></i>
+                        </div>
+                        <div class="item-name">User<span>Tabl</span>e.sql</div>
+                    </a
+                    ><a class="ssg-item" href="#">
+                        <div class="item-icon">
+                            <i class="os-icon os-icon-image"></i>
+                        </div>
+                        <div class="item-name">wed<span>din</span>g.jpg</div>
+                    </a>
+                    </div>
+                    <div class="ssg-nothing-found">
+                        <div class="icon-w">
+                            <i class="os-icon os-icon-eye-off"></i>
+                        </div>
+                        <span>No files were found. Try changing your query...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="layout-w">
+        <div class="menu-mobile menu-activated-on-click color-scheme-dark">
+            <div class="mm-logo-buttons-w">
+                <a class="mm-logo" href="{% url 'Attendance:dashboard' %}">
+                    <img src="{% static 'images/logo.png' %}"/>
+                    <span style="margin:0px">DOMINION UNIVERSITY</span>
+                </a>
+                <div class="mm-buttons">
+                    <div class="content-panel-open">
+                        <div class="os-icon os-icon-grid-circles"></div>
+                    </div>
+                    <div class="mobile-menu-trigger">
+                        <div class="os-icon os-icon-hamburger-menu-1" id="drop"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="menu-and-user" id="dropdown">
+                <div class="logged-user-w">
+                    <div class="avatar-w"><img alt="" src="img/avatar1.jpg"></div>
+                    <div class="logged-user-info-w">
+                        <div class="logged-user-name">{{ user.person.last_name }} {{ user.person.first_name }}</div>
+                        <div class="logged-user-role">
+                            {% if user.person.is_staff %}
+                            {{ user.post }}
+                            {% else %}
+                            {{ user.level }} Level
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <ul class="main-menu">
+                    <li>
+                        <a href="{% url 'Attendance:dashboard' %}">
+                            <div class="icon-w">
+                                <div class="os-icon os-icon-users"></div>
+                            </div>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="has-sub-menu" id="att-mobile">
+                        <a>
+                            <div class="icon-w">
+                                <div class="os-icon os-icon-file-text"></div>
+                            </div>
+                            <span>
+                                {% if user.person.is_staff %}
+                                Attendance Sheet
+                                {% else %}
+                                Course Registration
+                                {% endif %}
+                            </span>
+                        </a>
+                        <ul class="sub-menu" id="att-mobile-slide">
+                            {% if user.person.is_staff %}
+                            <li><a href="{% url 'Attendance:attendance_register' %}">Take Attendance</a></li>
+                            <li><a href="{% url 'Attendance:attendance_sheet' %}">View Attendance</a></li>
+                            {% else %}
+                            <li><a href="{% url 'Attendance:register_courses' %}">Register Courses</a></li>
+                            <li><a href="{% url 'Attendance:registered_courses' %}">Registered Courses</a></li>
+                            {% endif %}
+                        </ul>
+                    </li>
+                    <li class="has-sub-menu" id="admin-mobile">
+                        <a>
+                            <div class="icon-w">
+                                <div class="os-icon os-icon-users"></div>
+                            </div>
+                            <span>Admin</span>
+                        </a>
+                        <ul class="sub-menu" id="admin-mobile-slide">
+                            <li><a href="{% url 'Attendance:print_attendance_sheet' %}">Print Attendance</a></li>
+                            <li><a href="{% url 'Attendance:settings' %}">Profile Settings</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="menu-w color-scheme-dark color-style-bright menu-position-side menu-side-left menu-layout-full sub-menu-style-over sub-menu-color-bright selected-menu-color-light menu-activated-on-hover menu-has-selected-link">
+            <div class="logo-w">
+                <a class="logo" href="{% url 'Attendance:dashboard' %}">
+                    <img alt="logo" src="{% static 'images/logo.png' %}">
+                    <div class="logo-label">DOMINION UNIVERSITY</div>
+                </a>
+            </div>
+            <div class="logged-user-w avatar-inline">
+                <div class="logged-user-i">
+                    <div class="avatar-w"><img alt="" src="img/avatar1.jpg"></div>
+                    <div class="logged-user-info-w">
+                        <div class="logged-user-name">{{ user.person.last_name }} {{ user.person.first_name }}</div>
+                        <div class="logged-user-role">
+                            {% if user.person.is_staff %}
+                            {{ user.post }}
+                            {% else %}
+                            {{ user.level }} Level
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <ul class="main-menu">
+                <li>
+                    <a href="{% url 'Attendance:dashboard' %}">
+                        <div class="icon-w">
+                            <div class="os-icon os-icon-users"></div>
+                        </div>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="has-sub-menu" id="att-main">
+                    <a>
+                        <div class="icon-w">
+                            <div class="os-icon os-icon-file-text"></div>
+                        </div>
+                        <span>
+                            {% if user.person.is_staff %}
+                            Attendance Sheet
+                            {% else %}
+                            Course Registration
+                            {% endif %}
+                        </span>
+                    </a>
+                    <div class="sub-menu-w">
+                        <div class="sub-menu-header">
+                            {% if user.person.is_staff %}
+                            Attendance Sheet
+                            {% else %}
+                            Course Registration
+                            {% endif %}
+                        </div>
+                        <div class="sub-menu-icon"><i class="os-icon os-icon-file-text"></i></div>
+                        <div class="sub-menu-i">
+                            <ul class="sub-menu">
+                                {% if user.person.is_staff %}
+                                <li><a href="{% url 'Attendance:attendance_register' %}">Take Attendance</a></li>
+                                <li><a href="{% url 'Attendance:attendance_sheet' %}">View Attendance</a></li>
+                                {% else %}
+                                <li><a href="{% url 'Attendance:register_courses' %}">Register Courses</a></li>
+                                <li><a href="{% url 'Attendance:registered_courses' %}">Registered Courses</a></li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                </li>
+                <li class="has-sub-menu" id="admin-main">
+                    <a>
+                        <div class="icon-w">
+                            <div class="os-icon os-icon-users"></div>
+                        </div>
+                        <span>Admin</span>
+                    </a>
+                    <div class="sub-menu-w">
+                        <div class="sub-menu-header">Settings</div>
+                        <div class="sub-menu-icon"><i class="os-icon os-icon-zap"></i></div>
+                        <div class="sub-menu-i">
+                            <ul class="sub-menu">
+                                <li><a href="{% url 'Attendance:print_attendance_sheet' %}">Print Attendance</a></li>
+                                <li><a href="{% url 'Attendance:settings' %}">Profile Settings</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <div class="content-w">
+            <div class="top-bar color-scheme-bright">
+                <div class="top-menu-controls">
+                    <div class="floated-colors-btn second-floated-btn">
+                        <div class="os-toggler-w" id="toggler">
+                            <div class="os-toggler-i" id="toggler-box">
+                                <div class="os-toggler-pill"></div>
+                            </div>
+                        </div>
+                        <span>Dark </span>
+                        <span>Colors</span>
+                    </div>
+                    <div class="top-icon top-settings os-dropdown-trigger os-dropdown-position-left">
+                        <a href="{% url 'Attendance:logout' %}">
+                            <i class="os-icon os-icon-signs-11 text-white"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="content-i">
+                <div class="content-box">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="order-box">
+                                <div class="order-details-box">
+                                    <div class="order-main-info">
+                                        <span>Student Attendance Management System</span>
+                                        <strong>
+                                            {% block page_title %}
+                                            {% endblock page_title %}
+                                        </strong>
+                                    </div>
+                                    <div class="order-sub-info">
+                                        <span>Date</span>
+                                        <strong>
+                                            {% block date %}
+                                            {% endblock date %}
+                                        </strong>
+                                    </div>
+                                </div>
+                                {% block content %}
+                                {% endblock content %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="display-type"></div>
+</div>
+
+<script src="{% static 'js/main5739.js' %}"></script>
+<script src="{% static 'js/index.js' %}"></script>
+<script src="{% static 'js/chart.js' %}"></script>
+
+<script>
+$(function(){
+    {% block ajax %}
+    {% endblock ajax %}
+})
+
+</script>
+
+<script>
+{% block javascript %}
+{% endblock javascript %}
+
+</script>
+</body>
+</html>
