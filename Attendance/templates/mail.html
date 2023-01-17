@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}
+Mail
+{% endblock title %}
+
+{% block page_title %}
+Send Mail
+{% endblock page_title %}
+
+{% block date %}
+{{ date }}
+{% endblock date %}
+
+{% block content %}
+<div class="row" style="{% if not student_record %}height:450px{% endif %}">
+    <div class="col-sm-7">
+        <div class="element-wrapper">
+            <div id="toast">
+                {% for message in messages %}
+                <div class="alert alert-danger" role="alert"><strong>Error! </strong>{{ message }}</div>
+                {% endfor %}
+            </div>
+            <div class="mb-3">
+                <form id="mailForm" method="post">
+                    {% csrf_token %}
+                    <div class="form-group col-8">
+                        <div class="form-group">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text"><i class="os-icon os-icon-mail"></i></div>
+                                </div>
+                                <input type="email" class="form-control form-control-sm bright" id="email" name="email"
+                                       placeholder="Email Address" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="input-group">
+                                <input type="text" class="form-control form-control-sm bright" id="title" name="title"
+                                       placeholder="Enter Title..." required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                             <textarea cols="40" rows="10" class="form-control form-control-sm bright"
+                                  id="msg" name="msg" placeholder="Type message..." required></textarea>
+                        </div>
+                    </div>
+                    <div class="form-buttons col-8" style="text-align:right" id="subBtn">
+                        <button class="btn btn-primary" type="submit">Send <i class="os-icon os-icon-send"></i></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block ajax %}
+$('#mailForm').submit(function(e) {
+    e.preventDefault();
+    $.ajax({
+        type: 'POST',
+        url: "{% url 'Attendance:send_mail' %}",
+        data:{
+        email: $("#email").val(),
+        title: $("#title").val(),
+        msg: $("#msg").val(),
+        csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+    },
+    success: function(data){
+        var toast = `<div class="${ data.color }" role="alert"><strong>${ data.msg }</strong></div>`
+        $("#email").val("");
+        $("#msg").val("");
+        $("#toast").html(toast);
+        $("#toast").fadeIn(3000);
+        $("#toast").fadeOut(3000);
+    },
+    });
+});
+{% endblock ajax %}

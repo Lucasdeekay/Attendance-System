@@ -1,5 +1,5 @@
 
-function calculate(a, b, id) {
+function calculate(a, b, textSuccess, textDanger, id) {
   var val1 = parseInt(a);
   var val2 = parseInt(b);
 
@@ -27,11 +27,15 @@ function calculate(a, b, id) {
                                         stroke-dashoffset="${ 100-per1+offset }"></circle>
 
                                 <g class="chart-text">
-                                    <text x="90%" y="20%" fill="green" class="chart-number">
-                                        ${ per1 }%
+                                    <rect x="55%" y="11%" width="2" height="2"
+                                        style="fill:green" />
+                                    <text x="75%" y="20%" fill="green" class="chart-number">
+                                        ${ textSuccess } - ${ per1 }%
                                     </text>
-                                    <text x="90%" y="40%" fill="red" class="chart-number">
-                                        ${ per2 }%
+                                    <rect x="55%" y="32%" width="2" height="2"
+                                        style="fill:red" />
+                                    <text x="78%" y="40%" fill="red" class="chart-number">
+                                        ${ textDanger } - ${ per2 }%
                                     </text>
                                 </g>`;
 }

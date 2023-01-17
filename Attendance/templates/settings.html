@@ -15,6 +15,7 @@ Profile Settings
 {% endblock date %}
 
 {% block content %}
+
 <div class="row">
     <div class="col-sm-5">
         <div class="user-profile compact">
@@ -30,14 +31,6 @@ Profile Settings
                         at Dominion University
                     </h6>
                 </div>
-                <!--<svg class="decor" width="842px" height="219px" viewBox="0 0 842 219"
-                     preserveAspectRatio="xMaxYMax meet" version="1.1"
-                     xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-                    <g transform="translate(-381.000000, -362.000000)" fill="#FFFFFF">
-                        <path class="decor-path"
-                              d="M1223,362 L1223,581 L381,581 C868.912802,575.666667 1149.57947,502.666667 1223,362 Z"></path>
-                    </g>
-                </svg>-->
             </div>
             <div class="up-controls">
                 <div class="row">
@@ -152,12 +145,12 @@ Profile Settings
                     <div id="toast"></div>
                     {% include 'form2.html' with form=form %}
                     <div class="form-group col-8" style="text-align:right">
-                        <button class="btn btn-primary" type="submit"> Submit</button>
+                        <button class="btn btn-primary" type="submit">Submit <i class="os-icon os-icon-send"></i></button>
                     </div>
                 </form>
             </div>
             <div class="element-box">
-                <form id="imageForm" method="post" enctype="multipart/form-data">
+                <form action="{% url 'Attendance:update_image' %}" method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="element-info">
                         <div class="element-info-with-icon">
@@ -165,13 +158,26 @@ Profile Settings
                                 <div class="os-icon os-icon-ui-46"></div>
                             </div>
                             <div class="element-info-text">
-                                <h5 class="element-inner-header">Change Profile Image</h5>
+                                <h5 class="element-inner-header">Upload Profile Picture</h5>
                             </div>
                         </div>
                     </div>
-                    {% include 'form2.html' with form=image_form %}
-                    <div class="form-group col-8" style="text-align:right">
-                        <button class="btn btn-primary" type="submit">Update Picture</button>
+                    <div id="toast2">
+                        {% for message in messages %}
+                        <div class="alert alert-success" role="alert"><strong>Success!!! </strong>{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="input-group input-group-sm mb-3">
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input" name="image" id="image">
+                            <label class="custom-file-label" for="image">Choose Image</label>
+                        </div>
+                        <div class="input-group-append">
+                            <button class="btn btn-sm btn-primary" type="submit">Upload <i class="os-icon os-icon-upload"></i></button>
+                        </div>
+                    </div>
+                    <div>
+                        <small class="text-danger">Image file must not be more than 10mb</small>
                     </div>
                 </form>
             </div>
@@ -182,41 +188,28 @@ Profile Settings
 
 {% block ajax %}
 $("#toast").hide();
+
+$("#toast2").fadeIn(3000);
+$("#toast2").fadeOut(3000);
+
 $('#passwordForm').submit(function(e) {
     e.preventDefault();
     $.ajax({
         type: 'POST',
         url: "{% url 'Attendance:update_password' %}",
         data:{
-        password: $("#id_password").val(),
-        confirm_password: $("#id_confirm_password").val(),
-        csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
-    },
-    success: function(data){
+            password: $("#id_password").val(),
+            confirm_password: $("#id_confirm_password").val(),
+            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+        },
+        success: function(data){
 
-        var toast = `<div class="${ data.color }" role="alert"><strong>${ data.msg }</strong></div>`
-        $("#toast").html(toast);
-        $("#toast").fadeIn(3000);
-        $("#toast").fadeOut(3000);
-    },
-    });
-});
-
-$('#imageForm').submit(function(e) {
-    e.preventDefault();
-    $.ajax({
-        type: 'POST',
-        url: "{% url 'Attendance:update_image' %}",
-        data:{
-        image: $("#image").val(),
-        csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
-    },
-    success: function(data){
-        var toast = `<div class="${ data.color }" role="alert"><strong>${ data.msg }</strong></div>`
-        $("#toast").html(toast);
-        $("#toast").fadeIn(3000);
-        $("#toast").fadeOut(3000);
-    },
+            var toast = `
+            <div class="${ data.color }" role="alert"><strong>${ data.msg }</strong></div>`
+            $("#toast").html(toast);
+            $("#toast").fadeIn(3000);
+            $("#toast").fadeOut(3000);
+        },
     });
 });
 {% endblock ajax %}

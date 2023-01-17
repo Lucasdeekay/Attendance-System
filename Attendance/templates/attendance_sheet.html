@@ -31,7 +31,7 @@ View Attendance
                                 <input class="form-control form-control-sm rounded bright"
                                        type="date" name="date" id="date" required>
                                 <div class="form-group my-2">
-                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                    <button type="submit" class="btn btn-primary">Submit <i class="os-icon os-icon-send"></i></button>
                                 </div>
                             </form>
                         </div>
@@ -101,35 +101,35 @@ $('#dateCourseForm').submit(function(e) {
                     var temp = '';
                     if (data.student_attendance_status[key][0]){
                         temp = `<tr>
-                                <td><h6>${ data.student_attendance_info[key][0] }</h6></td>
-                                <td><h6>${ data.student_attendance_info[key][1] }</h6></td>
+                                <td><h6>${ data.student_attendance_info[key][0] } ${ data.student_attendance_info[key][1] }</h6></td>
+                                <td><h6>${ data.student_attendance_info[key][2] }</h6></td>
                                 <td><i class="bi bi-check-circle-fill text-success"></i></td>
                             </tr>`;
                     }
                     else {
                         temp = `<tr>
-                                <td><h6>${ data.student_attendance_info[key][0] }</h6></td>
-                                <td><h6>${ data.student_attendance_info[key][1] }</h6></td>
+                                <td><h6>${ data.student_attendance_info[key][0] } ${ data.student_attendance_info[key][1] }</h6></td>
+                                <td><h6>${ data.student_attendance_info[key][2] }</h6></td>
                                 <td><i class="bi bi-x-circle-fill text-danger"></i></td>
                             </tr>`;
                     }
                     $("#tbody").append(temp);
 
-                    var form = `<form class="form-inline justify-content-sm-end" method="post" id="searchForm">
-                                {% csrf_token %}
-                                <input type="hidden" id="courseReturn" value="${ data.course }">
-                                <input type="hidden" id="dateReturn"  value="${ data.date }">
-                                <select class="form-control form-control-sm rounded bright" name="searchMethod" id="searchMethod" required>
-                                    <option value="">Search By..</option>
-                                    <option value="matric_no">Matric No</option>
-                                    <option value="name">Name</option>
-                                </select>
-                                <input class="form-control form-control-sm rounded bright"
-                                       type="text" name="text" id="text" required>
-                                <div class="form-group my-2">
-                                    <button type="submit" class="btn btn-primary">Submit</button>
-                                </div>
-                            </form>`;
+                    var form = `<div class="form-inline justify-content-sm-end">
+                                    {% csrf_token %}
+                                    <input type="hidden" id="courseReturn" value="${ data.course }">
+                                    <input type="hidden" id="dateReturn"  value="${ data.date }">
+                                    <select class="form-control form-control-sm rounded bright" name="searchMethod" id="searchMethod" required>
+                                        <option value="">Search By..</option>
+                                        <option value="matric_no">Matric No</option>
+                                        <option value="name">Name</option>
+                                    </select>
+                                    <input class="form-control form-control-sm rounded bright"
+                                           type="text" name="text" id="text" required>
+                                    <div class="form-group my-2">
+                                        <button type="button" class="btn btn-primary" onclick="submitSearch(this)">Submit <i class="os-icon os-icon-send"></i></button>
+                                    </div>
+                                </div>`;
                     $("#formDiv").empty();
                     $("#formDiv").append(form);
                 }
@@ -146,9 +146,11 @@ $('#dateCourseForm').submit(function(e) {
         },
     });
 });
+{% endblock ajax %}
 
-$('#searchForm').submit(function(e) {
-    e.preventDefault();
+
+{% block javascript %}
+function submitSearch(e) {
     $("#tbody").removeClass("animation");
     $.ajax({
         type: 'POST',
@@ -158,7 +160,7 @@ $('#searchForm').submit(function(e) {
             date: $("#dateReturn").val(),
             text: $("#text").val(),
             searchMethod: $("#searchMethod").val(),
-            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
         },
         success: function(data){
             $("#tbody").empty();
@@ -171,18 +173,17 @@ $('#searchForm').submit(function(e) {
             }
             else{
                 for (var key in data.student_attendance_info){
-                    var temp = '';
                     if (data.student_attendance_status[key][0]){
                         temp = `<tr>
-                                <td><h6>${ data.student_attendance_info[key][0] }</h6></td>
-                                <td><h6>${ data.student_attendance_info[key][1] }</h6></td>
+                                <td><h6>${ data.student_attendance_info[key][0] } ${ data.student_attendance_info[key][1] }</h6></td>
+                                <td><h6>${ data.student_attendance_info[key][2] }</h6></td>
                                 <td><i class="bi bi-check-circle-fill text-success"></i></td>
                             </tr>`;
                     }
                     else {
                         temp = `<tr>
-                                <td><h6>${ data.student_attendance_info[key][0] }</h6></td>
-                                <td><h6>${ data.student_attendance_info[key][1] }</h6></td>
+                                <td><h6>${ data.student_attendance_info[key][0] } ${ data.student_attendance_info[key][1] }</h6></td>
+                                <td><h6>${ data.student_attendance_info[key][2] }</h6></td>
                                 <td><i class="bi bi-x-circle-fill text-danger"></i></td>
                             </tr>`;
                     }
@@ -200,5 +201,6 @@ $('#searchForm').submit(function(e) {
             $("#tbody").addClass("animation");
         },
     });
-});
-{% endblock ajax %}
+};
+
+{% endblock javascript %}

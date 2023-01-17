@@ -97,8 +97,8 @@ $('#semester').change(function(e) {
                                 </td>
                             </tr>`;
                     $("#tbody").append(temp);
-                    if (data.reg_courses.length !== 0){
-                        if (data.reg_courses[key].includes(data.courses[key].id)){
+                    for (var index in data.reg_courses){
+                        if (data.reg_courses[index].id == data.courses[key].id){
                             $('#'+data.courses[key].id).attr('checked', 'checked');
                         }
                     }

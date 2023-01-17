@@ -7,7 +7,7 @@ Dashboard
 {% endblock title %}
 
 {% block page_title %}
-My Profile
+Dashboard
 {% endblock page_title %}
 
 {% block date %}
@@ -16,210 +16,149 @@ My Profile
 
 {% block content %}
 <div class="row">
-    <div class="col-sm-8">
-        <div class="user-profile compact">
-            <div class="up-head-w" style="background-image:url({% static 'images/logo.png' %})">
-                <div class="up-main-info">
-                    <h2 class="up-header">{{ user.person.last_name }} {{ user.person.first_name }}</h2>
-                    <h6 class="up-sub-header">
-                        {% if user.person.is_staff %}
-                        {{ user.post }}
-                        {% else %}
-                        {{ user.level }} Level
-                        {% endif %}
-                        at Dominion University
-                    </h6>
-                </div>
-                <!--<svg class="decor" width="842px" height="219px" viewBox="0 0 842 219"
-                     preserveAspectRatio="xMaxYMax meet" version="1.1"
-                     xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-                    <g transform="translate(-381.000000, -362.000000)" fill="#FFFFFF">
-                        <path class="decor-path"
-                              d="M1223,362 L1223,581 L381,581 C868.912802,575.666667 1149.57947,502.666667 1223,362 Z"></path>
-                    </g>
-                </svg>-->
-            </div>
-            <div class="up-controls">
+    <div class="col-sm-12">
+        <div class="element-wrapper">
+            <div class="element-content">
                 <div class="row">
-                    <div class="col-sm-6">
-                        <div class="value-pair">
-                            <div class="value badge badge-pill badge-success">Online</div>
+                    <div class="col-sm-7 col-xxxl-7">
+                        <div class="user-profile compact">
+                            <div class="up-head-w" style="background-image:url({% static 'images/logo.png' %})">
+                                <div class="up-main-info">
+                                    <h2 class="up-header">{{ user.person.last_name }} {{ user.person.first_name }}</h2>
+                                    <h6 class="up-sub-header">
+                                        {% if user.person.is_staff %}
+                                        {{ user.post }}
+                                        {% else %}
+                                        {{ user.level }} Level
+                                        {% endif %}
+                                        at Dominion University
+                                    </h6>
+                                </div>
+                                <!--<svg class="decor" width="842px" height="219px" viewBox="0 0 842 219"
+                                     preserveAspectRatio="xMaxYMax meet" version="1.1"
+                                     xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                                    <g transform="translate(-381.000000, -362.000000)" fill="#FFFFFF">
+                                        <path class="decor-path"
+                                              d="M1223,362 L1223,581 L381,581 C868.912802,575.666667 1149.57947,502.666667 1223,362 Z"></path>
+                                    </g>
+                                </svg>-->
+                            </div>
+                            <div class="up-controls">
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <div class="value-pair">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-            <div class="up-contents">
-                <div class="m-b">
-                    <div class="padded">
-                        <div class="os-progress-bar primary">
-                            <div class="bar-labels">
-                                <div class="bar-label-left">
-                                    <span>Full Name</span>
-                                </div>
-                                <div class="bar-label-right">
-                                    <h6 class="info">{{ user.person.last_name }} {{ user.person.first_name }}</h6>
-                                </div>
+                    <div class="col-sm-auto col-xxxl-auto">
+                        <a class="element-box el-tablo box-shadow text-center" style="padding:5px 0px">
+                            <div class="label">
+                                {% if user.person.is_staff %}
+                                Students' Eligibility Ratio
+                                {% else %}
+                                Course Eligibility Ratio
+                                {% endif %}
                             </div>
-                        </div>
-                        <div class="os-progress-bar primary">
-                            <div class="bar-labels">
-                                <div class="bar-label-left">
-                                    <span>
-                                        {% if user.person.is_staff %}
-                                        Staff ID
-                                        {% else %}
-                                        Matric No
-                                        {% endif %}
-                                    </span>
-                                </div>
-                                <div class="bar-label-right">
-                                    <h6 class="info">
-                                        {% if user.person.is_staff %}
-                                        {{ user.staff_id }}
-                                        {% else %}
-                                        {{ user.matric_no }}
-                                        {% endif %}
-                                    </h6>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="os-progress-bar primary">
-                            <div class="bar-labels">
-                                <div class="bar-label-left">
-                                    <span>Faculty</span>
-                                </div>
-                                <div class="bar-label-right">
-                                    <h6 class="info">
-                                        {% if user.person.is_staff %}
-                                        {{ user.department.faculty.faculty_name }}
-                                        {% else %}
-                                        {{ user.programme.department.faculty.faculty_name }}
-                                        {% endif %}
-                                    </h6>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="os-progress-bar primary">
-                            <div class="bar-labels">
-                                <div class="bar-label-left">
-                                    <span>Department</span>
-                                </div>
-                                <div class="bar-label-right">
-                                    <h6 class="info">
-                                        {% if user.person.is_staff %}
-                                        {{ user.department.department_name }}
-                                        {% else %}
-                                        {{ user.programme.department.department_name }}
-                                        {% endif %}
-                                    </h6>
-                                </div>
-                            </div>
-                        </div>
-                        {% if not user.person.is_staff %}
-                        <div class="os-progress-bar primary">
-                            <div class="bar-labels">
-                                <div class="bar-label-left">
-                                    <span>Programme</span>
-                                </div>
-                                <div class="bar-label-right">
-                                    <h6 class="info">
-                                        {{ user.programme.programme_name }}
-                                    </h6>
-                                </div>
-                            </div>
-                        </div>
-                        {% endif %}
+                            <!-- DONUT CHART -->
+                            <svg onload="calculate({{ eligible }}, {{ ineligible }}, 'Eligible', 'Ineligible', 'donut1')"
+                                 id="donut1" width="80%" height="100%"
+                                 viewBox="0 0 80 40">
+                            </svg>
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-sm-4">
+</div>
+<div class="row">
+    {% if user.person.is_staff %}
+    <div class="col-sm-8 col-xxxl-6">
+        <div class="element-wrapper"><h6 class="element-header">Courses Info</h6>
+            <div class="element-box">
+                <div class="table-responsive">
+                    <table class="table table-lightborder">
+                        <thead>
+                        <tr>
+                            <th>Course</th>
+                            <th>No Of Students</th>
+                            <th class="text-center">No of Programs</th>
+                            <th class="text-right">Eligible Students</th>
+                            <th class="text-right">Non-Eligible Students</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for code, students, programs, eligible, ineligible in zipped %}
+                        <tr>
+                            <td><h6>{{ code }}</h6></td>
+                            <td class="text-center text-info">{{ students }}</td>
+                            <td class="text-center text-primary">{{ programs }}</td>
+                            <td class="text-center text-success">{{ eligible }}</td>
+                            <td class="text-center text-danger">{{ ineligible }}</td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-sm-8 col-xxxl-6">
+        <div class="element-wrapper"><h6 class="element-header">Courses Info</h6>
+            <div class="element-box">
+                <div class="table-responsive">
+                    <table class="table table-lightborder">
+                        <thead>
+                        <tr>
+                            <th>Course</th>
+                            <th>No Of Times Present</th>
+                            <th class="text-center">No Of Times Absent</th>
+                            <th class="text-right">Attendance(%)</th>
+                            <th class="text-right">Eligible</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for code, present, absent, percent in zipped %}
+                        <tr>
+                            <td><h6>{{ code }}</h6></td>
+                            <td class="text-center text-success">{{ present }}</td>
+                            <td class="text-center text-danger">{{ absent }}</td>
+                            {% if percent >= 75 %}
+                            <td class="text-center text-success">{{ percent }}%</td>
+                            <td class="text-center text-success">Yes</td>
+                            {% else %}
+                            <td class="text-center text-danger">{{ percent }}%</td>
+                            <td class="text-center text-danger">No</td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    <div class="col-sm-4 d-xxxl-none">
         <div class="element-wrapper">
-            <div class="element-box"><h6 class="element-header">Courses</h6>
-                {% if user.person.is_staff %}
-                <div class="timed-activities compact">
-                    {% if courses_100 %}
-                    <div class="timed-activity">
-                        <div class="ta-date">
-                            <span>100 LEVEL</span>
+            <h6 class="element-header">Courses</h6>
+            <div class="element-box-tp">
+                <div class="activity-boxes-w">
+                    {% for course in courses %}
+                    <div class="activity-box-w">
+                        <div class="activity-time">{{ course.course_code }}</div>
+                        <div class="activity-box">
+                            <div class="activity-info">
+                                <div class="activity-role">{{ course.course_name }}</div>
+                                <strong class="activity-title">{{ course.department }}</strong></div>
                         </div>
-                        {% for course in courses_100 %}
-                        <div class="ta-record-w">
-                            <div class="ta-record">
-                                <div class="ta-timestamp"><strong>{{ course.course_code }}</strong></div>
-                                <div class="ta-activity">{{ course.course_name }}</div>
-                            </div>
-                        </div>
-                        {% endfor %}
                     </div>
-                    {% endif %}
-
-                    {% if courses_200 %}
-                    <div class="timed-activity">
-                        <div class="ta-date">
-                            <span>200 LEVEL</span>
-                        </div>
-                        {% for course in courses_200 %}
-                        <div class="ta-record-w">
-                            <div class="ta-record">
-                                <div class="ta-timestamp"><strong>{{ course.course_code }}</strong></div>
-                                <div class="ta-activity">{{ course.course_name }}</div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-
-                    {% if courses_300 %}
-                    <div class="timed-activity">
-                        <div class="ta-date">
-                            <span>300 LEVEL</span>
-                        </div>
-                        {% for course in courses_300 %}
-                        <div class="ta-record-w">
-                            <div class="ta-record">
-                                <div class="ta-timestamp"><strong>{{ course.course_code }}</strong></div>
-                                <div class="ta-activity">{{ course.course_name }}</div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-
-                    {% if courses_400 %}
-                    <div class="timed-activity">
-                        <div class="ta-date">
-                            <span>400 LEVEL</span>
-                        </div>
-                        {% for course in courses_400 %}
-                        <div class="ta-record-w">
-                            <div class="ta-record">
-                                <div class="ta-timestamp"><strong>{{ course.course_code }}</strong></div>
-                                <div class="ta-activity">{{ course.course_name }}</div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
+                    {% endfor %}
                 </div>
-                {% else %}
-                <div class="timed-activities compact">
-                    <div class="timed-activity">
-                        <div class="ta-date">
-                            <span>{{ user.level }} LEVEL</span>
-                        </div>
-                        {% for course in courses %}
-                        <div class="ta-record-w">
-                            <div class="ta-record">
-                                <div class="ta-timestamp"><strong>{{ course.course_code }}</strong></div>
-                                <div class="ta-activity">{{ course.course_name }}</div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
             </div>
         </div>
     </div>

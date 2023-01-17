@@ -30,7 +30,7 @@
 </head>
 <body class="menu-position-side menu-side-left full-screen"
       style="height: 100%">
-<div class="all-wrapper solid-bg-all">
+    <div class="all-wrapper solid-bg-all">
     <div class="search-with-suggestions-w">
         <div class="search-with-suggestions-modal">
             <div class="element-search">
@@ -166,7 +166,13 @@
             </div>
             <div class="menu-and-user" id="dropdown">
                 <div class="logged-user-w">
-                    <div class="avatar-w"><img alt="" src="img/avatar1.jpg"></div>
+                    <div class="avatar-w">
+                        {% if user.person.image == "" %}
+                        <img alt="" src="{% static 'images/icons8-user-64.png' %}">
+                        {% else %}
+                        <img alt="" src="/media/{{ user.person.image }}">
+                        {% endif %}
+                    </div>
                     <div class="logged-user-info-w">
                         <div class="logged-user-name">{{ user.person.last_name }} {{ user.person.first_name }}</div>
                         <div class="logged-user-role">
@@ -182,7 +188,7 @@
                     <li>
                         <a href="{% url 'Attendance:dashboard' %}">
                             <div class="icon-w">
-                                <div class="os-icon os-icon-users"></div>
+                                <div class="os-icon os-icon-home"></div>
                             </div>
                             <span>Dashboard</span>
                         </a>
@@ -213,12 +219,15 @@
                     <li class="has-sub-menu" id="admin-mobile">
                         <a>
                             <div class="icon-w">
-                                <div class="os-icon os-icon-users"></div>
+                                <div class="os-icon os-icon-settings"></div>
                             </div>
-                            <span>Admin</span>
+                            <span>Settings</span>
                         </a>
                         <ul class="sub-menu" id="admin-mobile-slide">
                             <li><a href="{% url 'Attendance:print_attendance_sheet' %}">Print Attendance</a></li>
+                            {% if user.person.is_staff %}
+                            <li><a href="{% url 'Attendance:mail' %}">Send Mail</a></li>
+                            {% endif %}
                             <li><a href="{% url 'Attendance:settings' %}">Profile Settings</a></li>
                         </ul>
                     </li>
@@ -234,7 +243,13 @@
             </div>
             <div class="logged-user-w avatar-inline">
                 <div class="logged-user-i">
-                    <div class="avatar-w"><img alt="" src="img/avatar1.jpg"></div>
+                    <div class="avatar-w">
+                        {% if user.person.image == "" %}
+                        <img alt="" src="{% static 'images/icons8-user-64.png' %}">
+                        {% else %}
+                        <img alt="" src="/media/{{ user.person.image }}">
+                        {% endif %}
+                    </div>
                     <div class="logged-user-info-w">
                         <div class="logged-user-name">{{ user.person.last_name }} {{ user.person.first_name }}</div>
                         <div class="logged-user-role">
@@ -251,7 +266,7 @@
                 <li>
                     <a href="{% url 'Attendance:dashboard' %}">
                         <div class="icon-w">
-                            <div class="os-icon os-icon-users"></div>
+                            <div class="os-icon os-icon-home"></div>
                         </div>
                         <span>Dashboard</span>
                     </a>
@@ -294,16 +309,19 @@
                 <li class="has-sub-menu" id="admin-main">
                     <a>
                         <div class="icon-w">
-                            <div class="os-icon os-icon-users"></div>
+                            <div class="os-icon os-icon-settings"></div>
                         </div>
-                        <span>Admin</span>
+                        <span>Settings</span>
                     </a>
                     <div class="sub-menu-w">
-                        <div class="sub-menu-header">Settings</div>
-                        <div class="sub-menu-icon"><i class="os-icon os-icon-zap"></i></div>
+                        <div class="sub-menu-header">Admin</div>
+                        <div class="sub-menu-icon"><i class="os-icon os-icon-database"></i></div>
                         <div class="sub-menu-i">
                             <ul class="sub-menu">
                                 <li><a href="{% url 'Attendance:print_attendance_sheet' %}">Print Attendance</a></li>
+                                {% if user.person.is_staff %}
+                                <li><a href="{% url 'Attendance:mail' %}">Send Mail</a></li>
+                                {% endif %}
                                 <li><a href="{% url 'Attendance:settings' %}">Profile Settings</a></li>
                             </ul>
                         </div>
@@ -325,7 +343,7 @@
                     </div>
                     <div class="top-icon top-settings os-dropdown-trigger os-dropdown-position-left">
                         <a href="{% url 'Attendance:logout' %}">
-                            <i class="os-icon os-icon-signs-11 text-white"></i>
+                            <i class="os-icon os-icon-log-out text-white"></i>
                         </a>
                     </div>
                 </div>
@@ -363,22 +381,22 @@
     <div class="display-type"></div>
 </div>
 
-<script src="{% static 'js/main5739.js' %}"></script>
-<script src="{% static 'js/index.js' %}"></script>
-<script src="{% static 'js/chart.js' %}"></script>
+    <script src="{% static 'js/main5739.js' %}"></script>
+    <script src="{% static 'js/index.js' %}"></script>
+    <script src="{% static 'js/chart.js' %}"></script>
 
-<script>
-$(function(){
-    {% block ajax %}
-    {% endblock ajax %}
-})
+    <script>
+    $(function(){
+        {% block ajax %}
+        {% endblock ajax %}
+    })
 
-</script>
+    </script>
 
-<script>
-{% block javascript %}
-{% endblock javascript %}
+    <script>
+    {% block javascript %}
+    {% endblock javascript %}
 
-</script>
+    </script>
 </body>
 </html>

@@ -61,21 +61,3 @@ class UpdatePasswordForm(forms.Form):
             raise forms.ValidationError("Field cannot be empty")
 
 
-class ImageForm(forms.Form):
-    image = forms.FileField(
-        help_text="Image must not be mort than 10mb",
-        widget=forms.FileInput(
-            attrs={
-                'placeholder': 'Choose Image',
-                'required': '',
-                'class': 'form-control-sm',
-            }
-        )
-    )
-
-    def clean(self):
-        cleaned_data = super(ImageForm, self).clean()
-        image = cleaned_data.get('image')
-        if not image:
-            raise forms.ValidationError("Field cannot be empty")
-

@@ -3,7 +3,7 @@ from rest_framework import routers
 
 from Attendance import views
 from Attendance.views import DashboardView, AttendanceRegisterView, AttendanceSheetView, SettingsView, \
-    PrintAttendanceSheetView, LoginView, LogoutView, RegisterCoursesView, RegisteredCoursesView
+    PrintAttendanceSheetView, LoginView, LogoutView, RegisterCoursesView, RegisteredCoursesView, MailView
 from Attendance.api_views import FacultyViewSet, DepartmentViewSet, StaffViewSet, StudentViewSet, CourseViewSet, \
     StudentAttendanceViewSet, CourseAttendanceViewSet, ProgrammeViewSet, RegisteredStudentViewSet, PersonViewSet, \
     RegisteredCoursesViewSet
@@ -28,6 +28,8 @@ urlpatterns = [
     path('logout', LogoutView.as_view(), name="logout"),
     path('dashboard', DashboardView.as_view(), name="dashboard"),
     path('profile/settings', SettingsView.as_view(), name="settings"),
+    path('profile/settings/mail', MailView.as_view(), name="mail"),
+    path('profile/settings/mail/send', views.send_mail, name="send_mail"),
     path('profile/settings/update_password', views.update_password, name="update_password"),
     path('profile/settings/update_image', views.update_image, name="update_image"),
     path('course_registration', RegisterCoursesView.as_view(), name="register_courses"),
@@ -43,5 +45,6 @@ urlpatterns = [
     path('attendance/view', AttendanceSheetView.as_view(), name="attendance_sheet"),
     path('attendance/view/search', views.search_attendance_sheet, name="search_attendance_sheet"),
     path('attendance/print', PrintAttendanceSheetView.as_view(), name="print_attendance_sheet"),
+    path('attendance/upload', views.upload_attendance_sheet, name="upload_attendance_sheet"),
     path('api/', include(router.urls))
 ]
