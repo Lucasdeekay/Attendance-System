@@ -93,7 +93,7 @@ $('#courseForm').submit(function(e) {
         },
         success: function(data){
             $("#tbody").empty();
-            if (data.student_records.length == 0) {
+            if (data.student_attendance.length == 0) {
                 temp = `<tr>
                             <td colspan="4"><h6>No record currently available</h6></td>
                         </tr>`;
@@ -109,15 +109,15 @@ $('#courseForm').submit(function(e) {
                                     <form method="post">
                                         {% csrf_token %}
                                         <input class="form-control" type="checkbox"
-                                           id="${ data.student_attendance[key].id }"
-                                           value="${ data.student_attendance[key].is_present }"
+                                           id="${ data.student_attendance[key][0] }"
+                                           value="${ data.student_attendance[key][2] }"
                                             onclick="validateCheckbox(this)">
                                     </form>
                                 </td>
                             </tr>`;
                     $("#tbody").append(temp);
-                    if (data.student_attendance[key].is_present) {
-                        $('#'+data.student_attendance[key].id).attr('checked', 'checked');
+                    if (data.student_attendance[key][2]) {
+                        $('#'+data.student_attendance[key][0]).attr('checked', 'checked');
                     }
 
                     var form = `<div class="form-inline justify-content-sm-end">
@@ -169,7 +169,7 @@ function submitSearch(e) {
         },
         success: function(data){
             $("#tbody").empty();
-            if (data.student_records.length == 0) {
+            if (data.student_attendance.length == 0) {
                 temp = `<tr>
                             <td colspan="4"><h6>No record currently available</h6></td>
                         </tr>`;
@@ -192,8 +192,8 @@ function submitSearch(e) {
                                 </td>
                             </tr>`;
                     $("#tbody").append(temp);
-                    if (data.student_attendance[key].is_present) {
-                        $('#'+data.student_attendance[key].id).attr('checked', 'checked');
+                    if (data.student_attendance[key][1]) {
+                        $('#'+data.student_attendance[key][0]).attr('checked', 'checked');
                     }
                 }
             }
@@ -221,7 +221,8 @@ function validateCheckbox(e){
                 csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
             },
             success: function(data){
-                var toast = `<div class="${ data.color }" role="alert"><strong>${ data.msg }</strong></div>`
+                console.log(data.msg);
+                var toast = `<div class="${ data.color }" role="alert"><strong>${ data.msg }</strong></div>`;
                 $("#toast").html(toast);
                 $("#toast").fadeIn(3000);
                 $("#toast").fadeOut(3000);

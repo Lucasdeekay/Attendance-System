@@ -5,6 +5,7 @@ import xlsxwriter
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.template.loader import render_to_string
@@ -13,9 +14,10 @@ from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views import View
 
-from Attendance.forms import LoginForm, UpdatePasswordForm
+from Attendance.forms import LoginForm, UpdatePasswordForm, StaffRegisterForm, StudentRegisterForm
 from Attendance.functions import get_number_of_course_attendance_absent, get_number_of_ineligible_students, \
-    get_number_of_eligible_students, get_number_of_course_attendance_present, get_number_of_course_attendance_percentage
+    get_number_of_eligible_students, get_number_of_course_attendance_present, \
+    get_number_of_course_attendance_percentage, upload_attendance
 from Attendance.models import Staff, Course, RegisteredStudent, CourseAttendance, Student, \
     StudentAttendance, Person, RegisteredCourses
 
@@ -63,6 +65,69 @@ class LoginView(View):
                 messages.error(request, "Invalid login details")
                 # Redirect back to the login page
                 return HttpResponseRedirect(reverse('Attendance:login'))
+
+
+# Create a register view
+class RegisterView(View):
+    # Add template name
+    template_name = 'auth_register.html'
+
+    # Create get function
+    def get(self, request):
+        # Check if user is logged in
+        if request.user.is_authenticated:
+            # Redirect back to dashboard if true
+            return HttpResponseRedirect(reverse('Attendance:dashboard'))
+        # Otherwise
+        else:
+            #  Get login form
+            staff_form = StaffRegisterForm()
+            student_form = StudentRegisterForm()
+            # load the page with the form
+            return render(request, self.template_name, {'staff_form': staff_form, 'student_form': student_form})
+
+    # Create post function to process the form on submission
+    def post(self, request):
+        # Get the submitted form
+        staff_form = StaffRegisterForm(request.POST)
+        student_form = StudentRegisterForm(request.POST)
+        #  Check if the form is valid
+        if staff_form.is_valid():
+            # Process the input
+            last_name = staff_form.cleaned_data['last_name'].strip()
+            first_name = staff_form.cleaned_data['first_name'].strip()
+            middle_name = staff_form.cleaned_data['middle_name'].strip()
+            staff_id = staff_form.cleaned_data['staff_id'].strip()
+            post = staff_form.cleaned_data['post'].strip()
+            department = staff_form.cleaned_data['department'].strip()
+
+            user = User.objects.create_user(username=staff_id, password="password")
+            person = Person.objects.create(user=user, last_name=last_name, first_name=first_name,
+                                           middle_name=middle_name, is_staff=True)
+            staff = Staff.objects.create(person=person, staff_id=staff_id, post=post, department=department)
+            staff.save()
+
+            messages.success(request, "Staff successfully registered")
+
+        elif student_form.is_valid():
+            # Process the input
+            last_name = staff_form.cleaned_data['last_name'].strip()
+            first_name = staff_form.cleaned_data['first_name'].strip()
+            middle_name = staff_form.cleaned_data['middle_name'].strip()
+            matric_no = staff_form.cleaned_data['matric_no'].strip()
+            level = staff_form.cleaned_data['level'].strip()
+            programme = staff_form.cleaned_data['programme'].strip()
+
+            user = User.objects.create_user(username=matric_no, password="password")
+            person = Person.objects.create(user=user, last_name=last_name, first_name=first_name,
+                                           middle_name=middle_name, is_staff=False)
+            student = Student.objects.create(person=person, matric_no=matric_no, level=level, programme=programme)
+            student.save()
+
+            messages.success(request, "Student successfully registered")
+
+        # Redirect back to dashboard if true
+        return HttpResponseRedirect(reverse('Attendance:register'))
 
 
 # Create a dashboard view
@@ -857,7 +922,7 @@ def send_mail(request):
         msg = request.POST.get('msg')
 
         context = {'title': title, 'msg': msg}
-        html_message = render_to_string('library/msg.html', context=context)
+        html_message = render_to_string('email.html', context=context)
         send_mail(title, msg, EMAIL_HOST_USER, [email], html_message=html_message, fail_silently=False)
 
         # Create a dictionary of data to be returned to the page
@@ -1080,7 +1145,15 @@ def upload_attendance_sheet(request):
     if request.method == "POST":
         # Get user input
         file = request.FILES.get('file')
-        pass
+        upload_attendance(file)
+
+        # Create a dictionary of data to be returned to the page
+        context = {
+            'msg': "File upload successful",
+            'color': 'alert alert-success',
+        }
+        # return data back to page
+        return JsonResponse(context)
 
 
 # Create a logout view

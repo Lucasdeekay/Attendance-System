@@ -3,7 +3,7 @@ from rest_framework import routers
 
 from Attendance import views
 from Attendance.views import DashboardView, AttendanceRegisterView, AttendanceSheetView, SettingsView, \
-    PrintAttendanceSheetView, LoginView, LogoutView, RegisterCoursesView, RegisteredCoursesView, MailView
+    PrintAttendanceSheetView, LoginView, LogoutView, RegisterCoursesView, RegisteredCoursesView, MailView, RegisterView
 from Attendance.api_views import FacultyViewSet, DepartmentViewSet, StaffViewSet, StudentViewSet, CourseViewSet, \
     StudentAttendanceViewSet, CourseAttendanceViewSet, ProgrammeViewSet, RegisteredStudentViewSet, PersonViewSet, \
     RegisteredCoursesViewSet
@@ -25,6 +25,7 @@ router.register('course_attendance', CourseAttendanceViewSet)
 
 urlpatterns = [
     path('', LoginView.as_view(), name="login"),
+    path('register', RegisterView.as_view(), name="register"),
     path('logout', LogoutView.as_view(), name="logout"),
     path('dashboard', DashboardView.as_view(), name="dashboard"),
     path('profile/settings', SettingsView.as_view(), name="settings"),

@@ -10,6 +10,7 @@ class Person(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     last_name = models.CharField(max_length=100, null=False, blank=False)
     first_name = models.CharField(max_length=100, null=False, blank=False)
+    middle_name = models.CharField(max_length=100, null=True, blank=True)
     is_staff = models.BooleanField(default=False)
     image = ContentTypeRestrictedFileField(upload_to='AttendanceSystem/profile-image',
                                            max_upload_size=5242880,
@@ -19,7 +20,7 @@ class Person(models.Model):
                                            max_length=250)
 
     def __str__(self):
-        return f'{self.last_name} {self.first_name}'
+        return f'{self.last_name} {self.first_name} {self.middle_name}'
 
 
 class Faculty(models.Model):
