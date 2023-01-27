@@ -82,7 +82,7 @@ class Student(models.Model):
 
 class RegisteredStudent(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    students = models.ManyToManyField(Student, null=True, blank=True)
+    students = models.ManyToManyField(Student)
     session = models.CharField(max_length=10, default='2022/2023')
 
     def __str__(self):

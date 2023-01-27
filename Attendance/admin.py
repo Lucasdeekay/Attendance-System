@@ -28,7 +28,7 @@ class StudentAdmin(admin.ModelAdmin):
 
 
 class CourseAdmin(admin.ModelAdmin):
-    list_display = ('course_title', 'course_code', 'department', 'lecturer')
+    list_display = ('course_title', 'course_code', 'programme', 'lecturer')
 
 
 class RegisteredStudentsAdmin(admin.ModelAdmin):

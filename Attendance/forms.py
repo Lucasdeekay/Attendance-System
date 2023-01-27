@@ -1,7 +1,5 @@
 from django import forms
 
-from Attendance.models import Department, Course
-
 
 class LoginForm(forms.Form):
     username = forms.CharField(
