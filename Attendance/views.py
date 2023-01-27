@@ -97,33 +97,34 @@ class UploadView(View):
                     upload_student(file)
                 except Exception:
                     messages.error(request, "Error uploading file")
+                    return HttpResponseRedirect(reverse("Attendance:upload"))
             elif file_type == "staff":
                 try:
                     upload_staff(file)
                 except Exception:
                     messages.error(request, "Error uploading file")
-                    return HttpResponseRedirect(reverse("Attendance:print_attendance_sheet"))
+                    return HttpResponseRedirect(reverse("Attendance:upload"))
             elif file_type == "course":
                 try:
                     upload_course(file)
                 except Exception:
                     messages.error(request, "Error uploading file")
-                    return HttpResponseRedirect(reverse("Attendance:print_attendance_sheet"))
+                    return HttpResponseRedirect(reverse("Attendance:upload"))
             elif file_type == "department":
                 try:
                     upload_department(file)
                 except Exception:
                     messages.error(request, "Error uploading file")
-                    return HttpResponseRedirect(reverse("Attendance:print_attendance_sheet"))
+                    return HttpResponseRedirect(reverse("Attendance:upload"))
             elif file_type == "reg_student":
                 try:
                     upload_registered_students(file)
                 except Exception:
                     messages.error(request, "Error uploading file")
-                    return HttpResponseRedirect(reverse("Attendance:print_attendance_sheet"))
+                    return HttpResponseRedirect(reverse("Attendance:upload"))
 
             messages.error(request, "File upload successful")
-            return HttpResponseRedirect(reverse("Attendance:print_attendance_sheet"))
+            return HttpResponseRedirect(reverse("Attendance:upload"))
 
 
 # Create a forgot password view
@@ -1048,7 +1049,6 @@ def upload_attendance_sheet(request):
         file = request.FILES.get('file')
         upload_attendance(file)
 
-        # Create a dictionary of data to be returned to the page
         messages.success(request, "File upload successful")
         # return data back to page
         return HttpResponseRedirect(reverse("Attendance:print_attendance_sheet"))

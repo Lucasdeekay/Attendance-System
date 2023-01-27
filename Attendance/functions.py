@@ -5,7 +5,19 @@ from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 
 from Attendance.models import CourseAttendance, RegisteredStudent, Student, Course, StudentAttendance, Person, Staff, \
-    Faculty, Department
+    Faculty, Department, Programme
+
+
+def capitalize(text):
+    result = text.split(" ")
+    if len(result) > 1:
+        result_list = [
+            i.capitalize for i in result
+        ]
+        result = " ".join(result_list)
+        return result
+    else:
+        return text.capitalize
 
 
 # function returns the total amount of times a student is present for a course
@@ -114,10 +126,10 @@ def upload_attendance(file):
             for tup in zip(df.columns, value[0]):
                 data2.append(tup)
 
-            user = ''
+            matric_no = ''
             for val in data2:
                 if val[0] == 'Matric No':
-                    user = val[1]
+                    matric_no = val[1]
                 else:
                     date = val[0].split(' ')[0]
                     status = val[1]
@@ -125,12 +137,12 @@ def upload_attendance(file):
                     user_date = date.split('/')
                     user_date = datetime.date(int(user_date[2]), int(user_date[1]), int(user_date[0]))
 
-                    student = get_object_or_404(Student, matric_no=user)
+                    student = get_object_or_404(Student, matric_no=matric_no.upper())
                     attendance_status = False
                     if status == 'Y':
                         attendance_status = True
 
-                    course = get_object_or_404(Course, course_code=course_code)
+                    course = get_object_or_404(Course, course_code=course_code.upper())
 
                     student_attendance = StudentAttendance.objects.create(student=student, is_present=attendance_status, date=user_date)
 
@@ -151,6 +163,11 @@ def upload_staff(file):
             data2.append(j)
 
         last_name, first_name, middle_name, staff_id, post = data2
+        last_name = capitalize(last_name)
+        first_name = capitalize(first_name)
+        middle_name = capitalize(middle_name)
+        staff_id = staff_id.upper()
+        post = capitalize(post)
         user = User.objects.create_user(username=staff_id, password="password")
         person = Person.objects.create(user=user, last_name=last_name, first_name=first_name, middle_name=middle_name, is_staff=True)
         staff = Staff.objects.create(person=person, staff_id=staff_id, post=post)
@@ -165,8 +182,14 @@ def upload_student(file):
         for j in i[0]:
             data2.append(j)
 
-        last_name, first_name, middle_name, matric_no, level, programme = data2
+        last_name, first_name, middle_name, matric_no, level, prog = data2
+        last_name = capitalize(last_name)
+        first_name = capitalize(first_name)
+        middle_name = capitalize(middle_name)
+        matric_no = matric_no.upper()
+        prog = capitalize(prog)
         user = User.objects.create_user(username=matric_no, password="password")
+        programme = get_object_or_404(Programme, programme_name=prog)
         person = Person.objects.create(user=user, last_name=last_name, first_name=first_name, middle_name=middle_name)
         student = Student.objects.create(person=person, matric_no=matric_no, level=level, programme=programme)
         student.save()
@@ -181,6 +204,8 @@ def upload_department(file):
             data2.append(j)
 
         dep_name, fac = data2
+        dep_name = capitalize(dep_name)
+        fac = capitalize(fac)
         faculty = get_object_or_404(Faculty, faculty_name=fac)
         department = Department.objects.create(faculty=faculty, department_name=dep_name)
         department.save()
@@ -195,6 +220,10 @@ def upload_course(file):
             data2.append(j)
 
         course_title, course_code, dep_name, staff_id = data2
+        course_title = capitalize(course_title)
+        course_code = course_code.upper()
+        dep_name = capitalize(dep_name)
+        staff_id = staff_id.upper()
         department = get_object_or_404(Department, department_name=dep_name)
         lecturer = get_object_or_404(Staff, staff_id=staff_id)
         course = Course.objects.create(course_title=course_title, course_code=course_code, department_name=department, lecturer=lecturer)
@@ -213,6 +242,7 @@ def upload_registered_students(file):
                 data2.append(j)
 
             matric_no, session = data2
+            matric_no = matric_no.upper()
             try:
                 reg_students = get_object_or_404(RegisteredStudent, course=course, session=session)
             except Exception:

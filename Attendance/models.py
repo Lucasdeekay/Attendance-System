@@ -24,10 +24,7 @@ class Person(models.Model):
 
 
 class Faculty(models.Model):
-    faculty_name = models.CharField(max_length=100, null=False, blank=False, choices=[
-        ('Computing And Applied Sciences', 'Computing And Applied Sciences'),
-        ('Arts, Management And Social Sciences', 'Arts, Management And Social Sciences'),
-    ])
+    faculty_name = models.CharField(max_length=100, null=False, blank=False)
 
     def __str__(self):
         return self.faculty_name
@@ -35,15 +32,7 @@ class Faculty(models.Model):
 
 class Department(models.Model):
     faculty = models.ForeignKey(Faculty, on_delete=models.CASCADE)
-    department_name = models.CharField(max_length=50, null=False, blank=False, choices=[
-        ('Computer Science', 'Computer Science'),
-        ('Biological Science', 'Biological Science'),
-        ('Chemical Science', 'Chemical Science'),
-        ('Business Administration', 'Business Administration'),
-        ('Mass Communication', 'Mass Communication'),
-        ('Criminology', 'Criminology'),
-        ('Accounting', 'Accounting'),
-    ])
+    department_name = models.CharField(max_length=50, null=False, blank=False)
 
     def __str__(self):
         return self.department_name
@@ -51,19 +40,7 @@ class Department(models.Model):
 
 class Programme(models.Model):
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
-    programme_name = models.CharField(max_length=100, null=False, blank=False, choices=[
-        ('Computer Science', 'Computer Science'),
-        ('Software Engineering', 'Software Engineering'),
-        ('Cyber Security', 'Cyber Security'),
-        ('Biochemistry', 'Biochemistry'),
-        ('Industrial Chemistry', 'Industrial Chemistry'),
-        ('Business Administration', 'Business Administration'),
-        ('Mass Communication', 'Mass Communication'),
-        ('Criminology', 'Criminology'),
-        ('Microbiology', 'Microbiology'),
-        ('Economics', 'Economics'),
-        ('Accounting', 'Accounting'),
-    ])
+    programme_name = models.CharField(max_length=100, null=False, blank=False)
 
     def __str__(self):
         return self.programme_name
@@ -72,10 +49,7 @@ class Programme(models.Model):
 class Staff(models.Model):
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
     staff_id = models.CharField(max_length=10, null=False, blank=False)
-    post = models.CharField(max_length=25, null=False, blank=False, choices=[
-        ('Lecturer I', 'Lecturer I'),
-        ('Lecturer II', 'Lecturer II'),
-    ])
+    post = models.CharField(max_length=25, null=False, blank=False)
 
     def __str__(self):
         return self.staff_id
@@ -109,16 +83,7 @@ class Student(models.Model):
 class RegisteredStudent(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     students = models.ManyToManyField(Student, null=True, blank=True)
-    session = models.CharField(max_length=10, default='2022/2023', choices=[
-        ('2022/2023', '2022/2023'),
-        ('2023/2024', '2023/2024'),
-        ('2024/2025', '2024/2025'),
-        ('2025/2026', '2025/2026'),
-        ('2026/2027', '2026/2027'),
-        ('2027/2028', '2027/2028'),
-        ('2028/2029', '2028/2029'),
-        ('2029/2030', '2029/2030'),
-    ])
+    session = models.CharField(max_length=10, default='2022/2023')
 
     def __str__(self):
         return f'{self.course}'
@@ -128,16 +93,7 @@ class StudentAttendance(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     is_present = models.BooleanField(default=False)
     date = models.DateField()
-    session = models.CharField(max_length=10, null=False, blank=False, default='2022/2023', choices=[
-        ('2022/2023', '2022/2023'),
-        ('2023/2024', '2023/2024'),
-        ('2024/2025', '2024/2025'),
-        ('2025/2026', '2025/2026'),
-        ('2026/2027', '2026/2027'),
-        ('2027/2028', '2027/2028'),
-        ('2028/2029', '2028/2029'),
-        ('2029/2030', '2029/2030'),
-    ])
+    session = models.CharField(max_length=10, null=False, blank=False, default='2022/2023')
 
     def __str__(self):
         return f'{self.student} - {self.is_present}'
@@ -147,16 +103,7 @@ class CourseAttendance(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     student_attendance = models.ManyToManyField(StudentAttendance)
     date = models.DateField()
-    session = models.CharField(max_length=10, null=False, blank=False, default='2022/2023', choices=[
-        ('2022/2023', '2022/2023'),
-        ('2023/2024', '2023/2024'),
-        ('2024/2025', '2024/2025'),
-        ('2025/2026', '2025/2026'),
-        ('2026/2027', '2026/2027'),
-        ('2027/2028', '2027/2028'),
-        ('2028/2029', '2028/2029'),
-        ('2029/2030', '2029/2030'),
-    ])
+    session = models.CharField(max_length=10, null=False, blank=False, default='2022/2023')
 
     def __str__(self):
         return f'{self.course} - {self.date}'

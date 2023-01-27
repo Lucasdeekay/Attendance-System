@@ -15,7 +15,7 @@ Attendance Slip
 {% block content %}
 <div id="toast">
     {% for message in messages %}
-    <div class="alert alert-success" role="alert"><strong>Success! </strong>{{ message }}</div>
+    <div class="alert alert-info" role="alert">{{ message }}</div>
     {% endfor %}
 </div>
 
@@ -51,7 +51,7 @@ Attendance Slip
                     <h6 class="text-primary">Kindly choose your file to upload</h6>
                     <div class="input-group input-group-sm mb-3">
                         <div class="custom-file">
-                            <input type="file" class="custom-file-input" id="file">
+                            <input type="file" class="custom-file-input" name="file" id="file">
                             <label class="custom-file-label" for="file">Choose file</label>
                         </div>
                         <div class="input-group-append">
