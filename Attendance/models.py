@@ -58,7 +58,7 @@ class Staff(models.Model):
 class Course(models.Model):
     course_title = models.CharField(max_length=100, null=False, blank=False)
     course_code = models.CharField(max_length=7, null=False, blank=False)
-    department = models.ForeignKey(Department, on_delete=models.CASCADE)
+    programme = models.ForeignKey(Programme, on_delete=models.CASCADE)
     lecturer = models.ForeignKey(Staff, on_delete=models.CASCADE)
 
     def __str__(self):

@@ -18,7 +18,7 @@ from Attendance.forms import LoginForm, UpdatePasswordForm, StaffRegisterForm, S
 from Attendance.functions import get_number_of_course_attendance_absent, get_number_of_ineligible_students, \
     get_number_of_eligible_students, get_number_of_course_attendance_present, \
     get_number_of_course_attendance_percentage, upload_attendance, upload_student, upload_staff, upload_course, \
-    upload_department, upload_registered_students, upload_programme
+    upload_department, upload_registered_students, upload_programme, upload_faculty
 from Attendance.models import Staff, Course, RegisteredStudent, CourseAttendance, Student, \
     StudentAttendance, Person
 
@@ -119,6 +119,12 @@ class UploadView(View):
             elif file_type == "department":
                 try:
                     upload_department(file)
+                except Exception:
+                    messages.error(request, "Error uploading file")
+                    return HttpResponseRedirect(reverse("Attendance:upload"))
+            elif file_type == "faculty":
+                try:
+                    upload_faculty(file)
                 except Exception:
                     messages.error(request, "Error uploading file")
                     return HttpResponseRedirect(reverse("Attendance:upload"))

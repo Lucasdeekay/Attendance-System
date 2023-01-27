@@ -195,6 +195,20 @@ def upload_student(file):
         student.save()
 
 
+def upload_faculty(file):
+    df = pd.read_excel(file)
+    data = zip(df.values.tolist())
+    for index, i in enumerate(data):
+        data2 = []
+        for j in i[0]:
+            data2.append(j)
+
+        fac = data2
+        fac = capitalize(fac)
+        faculty = Faculty.objects.create(faculty_name=fac)
+        faculty.save()
+
+
 def upload_department(file):
     df = pd.read_excel(file)
     data = zip(df.values.tolist())
@@ -235,14 +249,14 @@ def upload_course(file):
         for j in i[0]:
             data2.append(j)
 
-        course_title, course_code, dep_name, staff_id = data2
+        course_title, course_code, prog_name, staff_id = data2
         course_title = capitalize(course_title)
         course_code = course_code.upper()
-        dep_name = capitalize(dep_name)
+        prog_name = capitalize(prog_name)
         staff_id = staff_id.upper()
-        department = get_object_or_404(Department, department_name=dep_name)
+        programme = get_object_or_404(Programme, programme_name=prog_name)
         lecturer = get_object_or_404(Staff, staff_id=staff_id)
-        course = Course.objects.create(course_title=course_title, course_code=course_code, department_name=department, lecturer=lecturer)
+        course = Course.objects.create(course_title=course_title, course_code=course_code, programme=programme, lecturer=lecturer)
         course.save()
 
 
