@@ -211,6 +211,22 @@ def upload_department(file):
         department.save()
 
 
+def upload_programme(file):
+    df = pd.read_excel(file)
+    data = zip(df.values.tolist())
+    for index, i in enumerate(data):
+        data2 = []
+        for j in i[0]:
+            data2.append(j)
+
+        prog_name, dep = data2
+        prog_name = capitalize(prog_name)
+        dep = capitalize(dep)
+        department = get_object_or_404(Faculty, faculty_name=dep)
+        programme = Department.objects.create(department=department, programme_name=prog_name)
+        programme.save()
+
+
 def upload_course(file):
     df = pd.read_excel(file)
     data = zip(df.values.tolist())
