@@ -1,0 +1,36 @@
+{% extends "auth.html" %}
+
+{% block title %}
+Verify User
+{% endblock title %}
+
+{% block page_title %}
+Verify User
+{% endblock page_title %}
+
+
+{% block content %}
+<div class="mx-4" id="toast">
+    {% for message in messages %}
+    <div class="alert alert-danger" role="alert"><strong>Error! </strong>{{ message }}</div>
+    {% endfor %}
+</div>
+<form action="" method="post">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="id_user_id">Matric No / Staff ID:</label>
+        <input type="text" name="user_id" placeholder="Enter your matric_no / staff id" required="" class="form-control"
+               maxlength="30" id="id_user_id">
+        <div class="pre-icon os-icon os-icon-user-male-circle "></div>
+    </div>
+
+    <div class="buttons-w" style="text-align:right">
+        <button class="btn btn-primary">Submit <i class="os-icon os-icon-log-in"></i></button>
+    </div>
+</form>
+{% endblock content %}
+
+{% block ajax %}
+$("#toast").fadeIn(3000);
+$("#toast").fadeOut(3000);
+{% endblock ajax %}

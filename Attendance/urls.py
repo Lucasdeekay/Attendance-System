@@ -3,10 +3,9 @@ from rest_framework import routers
 
 from Attendance import views
 from Attendance.views import DashboardView, AttendanceRegisterView, AttendanceSheetView, SettingsView, \
-    PrintAttendanceSheetView, LoginView, LogoutView, RegisterCoursesView, RegisteredCoursesView, MailView, RegisterView
+    PrintAttendanceSheetView, LoginView, LogoutView, MailView, UploadView, ForgotPasswordView, CheckUserView
 from Attendance.api_views import FacultyViewSet, DepartmentViewSet, StaffViewSet, StudentViewSet, CourseViewSet, \
-    StudentAttendanceViewSet, CourseAttendanceViewSet, ProgrammeViewSet, RegisteredStudentViewSet, PersonViewSet, \
-    RegisteredCoursesViewSet
+    StudentAttendanceViewSet, CourseAttendanceViewSet, ProgrammeViewSet, RegisteredStudentViewSet, PersonViewSet
 
 app_name = 'Attendance'
 
@@ -18,14 +17,15 @@ router.register('programme', ProgrammeViewSet)
 router.register('staff', StaffViewSet)
 router.register('student', StudentViewSet)
 router.register('course', CourseViewSet)
-router.register('registered_courses', RegisteredCoursesViewSet)
 router.register('registered_student', RegisteredStudentViewSet)
 router.register('student_attendance', StudentAttendanceViewSet)
 router.register('course_attendance', CourseAttendanceViewSet)
 
 urlpatterns = [
     path('', LoginView.as_view(), name="login"),
-    path('register', RegisterView.as_view(), name="register"),
+    path('upload', UploadView.as_view(), name="upload"),
+    path('forgot_password/<int:id>', ForgotPasswordView.as_view(), name="forgot_password"),
+    path('forgot_password/verify_user', CheckUserView.as_view(), name="verify_user"),
     path('logout', LogoutView.as_view(), name="logout"),
     path('dashboard', DashboardView.as_view(), name="dashboard"),
     path('profile/settings', SettingsView.as_view(), name="settings"),
@@ -33,11 +33,6 @@ urlpatterns = [
     path('profile/settings/mail/send', views.send_mail, name="send_mail"),
     path('profile/settings/update_password', views.update_password, name="update_password"),
     path('profile/settings/update_image', views.update_image, name="update_image"),
-    path('course_registration', RegisterCoursesView.as_view(), name="register_courses"),
-    path('course_registration/add_course', views.add_course, name="add_course"),
-    path('course_registration/registered_courses', RegisteredCoursesView.as_view(), name="registered_courses"),
-    path('course_registration/registered_courses/get', views.get_registered_courses, name="get_registered_courses"),
-    path('course_registration/filter_by_semester', views.submit_semester, name="submit_semester"),
     path('attendance', AttendanceRegisterView.as_view(), name="attendance_register"),
     path('attendance/search', views.search_attendance_register, name="search_attendance_register"),
     path('attendance/validate', views.validate_checkbox, name="validate_checkbox"),

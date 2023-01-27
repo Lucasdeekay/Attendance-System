@@ -1,9 +1,9 @@
 from rest_framework import viewsets
 from Attendance.models import Faculty, Department, Staff, Student, Course, StudentAttendance, CourseAttendance, \
-    Programme, RegisteredStudent, Person, RegisteredCourses
+    Programme, RegisteredStudent, Person
 from Attendance.serializers import FacultySerializer, DepartmentSerializer, StaffSerializer, StudentSerializer, \
     CourseSerializer, StudentAttendanceSerializer, CourseAttendanceSerializer, ProgrammeSerializer, \
-    RegisteredStudentSerializer, PersonSerializer, RegisteredCoursesSerializer
+    RegisteredStudentSerializer, PersonSerializer
 
 
 class PersonViewSet(viewsets.ModelViewSet):
@@ -39,11 +39,6 @@ class StudentViewSet(viewsets.ModelViewSet):
 class CourseViewSet(viewsets.ModelViewSet):
     serializer_class = CourseSerializer
     queryset = Course.objects.all()
-
-
-class RegisteredCoursesViewSet(viewsets.ModelViewSet):
-    serializer_class = RegisteredCoursesSerializer
-    queryset = RegisteredCourses.objects.all()
 
 
 class RegisteredStudentViewSet(viewsets.ModelViewSet):

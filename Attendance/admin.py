@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import Staff, Student, Faculty, Programme, Department, StudentAttendance, Course, CourseAttendance, \
-    RegisteredStudent, Person, RegisteredCourses
+    RegisteredStudent, Person
 
 
 class PersonAdmin(admin.ModelAdmin):
@@ -20,7 +20,7 @@ class ProgrammeAdmin(admin.ModelAdmin):
 
 
 class StaffAdmin(admin.ModelAdmin):
-    list_display = ('person', 'staff_id', 'post', 'department')
+    list_display = ('person', 'staff_id', 'post')
 
 
 class StudentAdmin(admin.ModelAdmin):
@@ -28,11 +28,7 @@ class StudentAdmin(admin.ModelAdmin):
 
 
 class CourseAdmin(admin.ModelAdmin):
-    list_display = ('course_name', 'course_code', 'course_unit', 'level', 'semester', 'department', 'lecturer')
-
-
-class RegisteredCoursesAdmin(admin.ModelAdmin):
-    list_display = ('student', 'session')
+    list_display = ('course_title', 'course_code', 'department', 'lecturer')
 
 
 class RegisteredStudentsAdmin(admin.ModelAdmin):
@@ -54,7 +50,6 @@ admin.site.register(Programme, ProgrammeAdmin)
 admin.site.register(Staff, StaffAdmin)
 admin.site.register(Student, StudentAdmin)
 admin.site.register(Course, CourseAdmin)
-admin.site.register(RegisteredCourses, RegisteredCoursesAdmin)
 admin.site.register(RegisteredStudent, RegisteredStudentsAdmin)
 admin.site.register(StudentAttendance, StudentAttendanceAdmin)
 admin.site.register(CourseAttendance, CourseAttendanceAdmin)

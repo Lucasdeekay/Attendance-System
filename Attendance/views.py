@@ -17,9 +17,10 @@ from django.views import View
 from Attendance.forms import LoginForm, UpdatePasswordForm, StaffRegisterForm, StudentRegisterForm
 from Attendance.functions import get_number_of_course_attendance_absent, get_number_of_ineligible_students, \
     get_number_of_eligible_students, get_number_of_course_attendance_present, \
-    get_number_of_course_attendance_percentage, upload_attendance
+    get_number_of_course_attendance_percentage, upload_attendance, upload_student, upload_staff, upload_course, \
+    upload_department, upload_registered_students
 from Attendance.models import Staff, Course, RegisteredStudent, CourseAttendance, Student, \
-    StudentAttendance, Person, RegisteredCourses
+    StudentAttendance, Person
 
 from AttendanceSystem.settings import EMAIL_HOST_USER
 
@@ -68,9 +69,9 @@ class LoginView(View):
 
 
 # Create a register view
-class RegisterView(View):
+class UploadView(View):
     # Add template name
-    template_name = 'auth_register.html'
+    template_name = 'upload.html'
 
     # Create get function
     def get(self, request):
@@ -80,54 +81,119 @@ class RegisterView(View):
             return HttpResponseRedirect(reverse('Attendance:dashboard'))
         # Otherwise
         else:
-            #  Get login form
-            staff_form = StaffRegisterForm()
-            student_form = StudentRegisterForm()
             # load the page with the form
-            return render(request, self.template_name, {'staff_form': staff_form, 'student_form': student_form})
+            return render(request, self.template_name)
 
     # Create post function to process the form on submission
     def post(self, request):
+        # Check if request method is POST
+        if request.method == "POST":
+            # Get user input
+            file = request.FILES.get('file')
+            file_type = request.POST.get('type')
+
+            if file_type == "student":
+                try:
+                    upload_student(file)
+                except Exception:
+                    messages.error(request, "Error uploading file")
+            elif file_type == "staff":
+                try:
+                    upload_staff(file)
+                except Exception:
+                    messages.error(request, "Error uploading file")
+                    return HttpResponseRedirect(reverse("Attendance:print_attendance_sheet"))
+            elif file_type == "course":
+                try:
+                    upload_course(file)
+                except Exception:
+                    messages.error(request, "Error uploading file")
+                    return HttpResponseRedirect(reverse("Attendance:print_attendance_sheet"))
+            elif file_type == "department":
+                try:
+                    upload_department(file)
+                except Exception:
+                    messages.error(request, "Error uploading file")
+                    return HttpResponseRedirect(reverse("Attendance:print_attendance_sheet"))
+            elif file_type == "reg_student":
+                try:
+                    upload_registered_students(file)
+                except Exception:
+                    messages.error(request, "Error uploading file")
+                    return HttpResponseRedirect(reverse("Attendance:print_attendance_sheet"))
+
+            messages.error(request, "File upload successful")
+            return HttpResponseRedirect(reverse("Attendance:print_attendance_sheet"))
+
+
+# Create a forgot password view
+class ForgotPasswordView(View):
+    # Add template name
+    template_name = 'forgot_password.html'
+
+    # Create get function
+    def get(self, request, id):
+        form = UpdatePasswordForm()
+        # load the page with the form
+        return render(request, self.template_name, {'form': form})
+
+    # Create post function to process the form on submission
+    def post(self, request, id):
         # Get the submitted form
-        staff_form = StaffRegisterForm(request.POST)
-        student_form = StudentRegisterForm(request.POST)
+        form = UpdatePasswordForm(request.POST)
         #  Check if the form is valid
-        if staff_form.is_valid():
-            # Process the input
-            last_name = staff_form.cleaned_data['last_name'].strip()
-            first_name = staff_form.cleaned_data['first_name'].strip()
-            middle_name = staff_form.cleaned_data['middle_name'].strip()
-            staff_id = staff_form.cleaned_data['staff_id'].strip()
-            post = staff_form.cleaned_data['post'].strip()
-            department = staff_form.cleaned_data['department'].strip()
+        if form.is_valid():
+            # Get user input
+            password = form.cleaned_data['password'].strip()
+            confirm_password = form.cleaned_data['confirm_password'].strip()
+            # Check if both passwords match
+            if password == confirm_password:
+                user = get_object_or_404(User, id=id)
+                # Update password
+                user.set_password(password)
+                # Save updated data
+                user.save()
 
-            user = User.objects.create_user(username=staff_id, password="password")
-            person = Person.objects.create(user=user, last_name=last_name, first_name=first_name,
-                                           middle_name=middle_name, is_staff=True)
-            staff = Staff.objects.create(person=person, staff_id=staff_id, post=post, department=department)
-            staff.save()
+                messages.success(request, "Password successfully updated")
 
-            messages.success(request, "Staff successfully registered")
+                # Redirect back to dashboard if true
+                return HttpResponseRedirect(reverse('Attendance:login'))
 
-        elif student_form.is_valid():
-            # Process the input
-            last_name = staff_form.cleaned_data['last_name'].strip()
-            first_name = staff_form.cleaned_data['first_name'].strip()
-            middle_name = staff_form.cleaned_data['middle_name'].strip()
-            matric_no = staff_form.cleaned_data['matric_no'].strip()
-            level = staff_form.cleaned_data['level'].strip()
-            programme = staff_form.cleaned_data['programme'].strip()
+            else:
+                messages.success(request, "Password does not match")
 
-            user = User.objects.create_user(username=matric_no, password="password")
-            person = Person.objects.create(user=user, last_name=last_name, first_name=first_name,
-                                           middle_name=middle_name, is_staff=False)
-            student = Student.objects.create(person=person, matric_no=matric_no, level=level, programme=programme)
-            student.save()
+                # Redirect back to dashboard if true
+                return HttpResponseRedirect(reverse('Attendance:forgot_password'))
 
-            messages.success(request, "Student successfully registered")
 
-        # Redirect back to dashboard if true
-        return HttpResponseRedirect(reverse('Attendance:register'))
+class CheckUserView(View):
+    # Add template name
+    template_name = 'verify_user.html'
+
+    def get(self, request):
+        # Check if user is logged in
+        if request.user.is_authenticated:
+            # Redirect back to dashboard if true
+            return HttpResponseRedirect(reverse('Attendance:dashboard'))
+        # Otherwise
+        else:
+            # load the page with the form
+            return render(request, self.template_name)
+
+    def post(self, request):
+        user_id = request.POST.get('user_id')
+        try:
+            staff = get_object_or_404(Staff, staff_id=user_id)
+            user = staff.person.user
+            return HttpResponseRedirect(reverse('Attendance:forgot_password', args=(user.id,)))
+        except Exception:
+            try:
+                student = get_object_or_404(Student, matric_no=user_id)
+                user = student.person.user
+                return HttpResponseRedirect(reverse('Attendance:forgot_password', args=(user.id,)))
+            except Exception:
+                messages.error(request, "User does not exist")
+                return HttpResponseRedirect(reverse('Attendance:verify_user'))
 
 
 # Create a dashboard view
@@ -190,9 +256,11 @@ class DashboardView(View):
             student = get_object_or_404(Student, person=person)
             try:
                 # Get all the registered courses by the student
-                reg_courses = get_object_or_404(RegisteredCourses, student=student)
+                reg_students = RegisteredStudent.objects.all()
                 # Get all the courses taken by the student
-                courses = reg_courses.courses.filter(level=student.level)
+                courses = [
+                    x.course for x in reg_students if student in x.students.all()
+                ]
                 # Get all the course codes
                 course_codes = [
                     x.course_code for x in courses
@@ -233,175 +301,6 @@ class DashboardView(View):
             }
         # Load te page with the data
         return render(request, self.template_name, context)
-
-
-# Create a register courses view
-class RegisterCoursesView(View):
-    # Add template name
-    template_name = 'register_courses.html'
-
-    # Add a method decorator to make sure user is logged in
-    @method_decorator(login_required())
-    # Create get function
-    def get(self, request):
-        # Get the current person logged in
-        person = get_object_or_404(Person, user=request.user)
-        # Get today's date
-        date = timezone.now().date().today()
-        # Check if user is a staff
-        if person.is_staff:
-            # Redirect to dashboard
-            return HttpResponseRedirect(reverse("Attendance:dashboard"))
-        # Otherwise
-        else:
-            # Get the current logged in student
-            student = get_object_or_404(Student, person=person)
-            # Create a dictionary of data to be accessed on the page
-            context = {
-                'user': student,
-                'date': date,
-            }
-        # Load te page with the data
-        return render(request, self.template_name, context)
-
-
-# Create function to handle filtering by semester
-def submit_semester(request):
-    # Check if request method is POST
-    if request.method == "POST":
-        # Get the user input
-        semester = request.POST.get("semester")
-
-        # Get the current person logged in
-        person = get_object_or_404(Person, user=request.user)
-        # Get the current logged in student
-        student = get_object_or_404(Student, person=person)
-        # Get every courses in the students department
-        courses = Course.objects.filter(level=student.level, semester=semester, department=student.programme.department)
-        try:
-            # Get registered courses for student
-            reg_courses = get_object_or_404(RegisteredCourses, student=student)
-            reg_courses = list(reg_courses.courses.all().values("id"))
-        except Exception:
-            reg_courses = []
-        context = {
-            'courses': list(courses.values()),
-            'reg_courses': reg_courses
-        }
-        # return data back to the page
-        return JsonResponse(context)
-
-
-# Create function to register the courses
-def add_course(request):
-    # Check if request method is POST
-    if request.method == "POST":
-        # Get the user input
-        course_id = request.POST.get("value")
-
-        # Get the current person logged in
-        person = get_object_or_404(Person, user=request.user)
-        # Get the current logged in student
-        student = get_object_or_404(Student, person=person)
-        # Get every courses in the students department
-        course = get_object_or_404(Course, id=course_id)
-        # Get registered courses for student
-        reg_courses = get_object_or_404(RegisteredCourses, student=student)
-        # Get the object instance of the registered students in a course
-        reg_students = get_object_or_404(RegisteredStudent, course=course)
-        # Convert query_set into a single list
-        reg_courses_list = [x[0] for x in list(reg_courses.courses.values_list("id"))]
-        # Check if course is already amongst registered
-        if len(reg_courses_list) == 0:
-            # Add course
-            reg_courses.courses.add(course)
-            # Add student
-            reg_students.students.add(student)
-            # Create a dictionary of data to be returned to the page
-            context = {
-                'msg': f"{course.course_name} has been successfully added",
-                'color': 'alert alert-success',
-            }
-        else:
-            if int(course_id) in reg_courses_list:
-                # Remove course
-                reg_courses.courses.remove(course)
-                # Remove student
-                reg_students.students.remove(student)
-                # Create a dictionary of data to be returned to the page
-                context = {
-                    'msg': f"{course.course_name} has been successfully removed",
-                    'color': 'alert alert-danger',
-                }
-            # Otherwise
-            else:
-                # Add course
-                reg_courses.courses.add(course)
-                # Add student
-                reg_students.students.add(student)
-                # Create a dictionary of data to be returned to the page
-                context = {
-                    'msg': f"{course.course_name} has been successfully added",
-                    'color': 'alert alert-success',
-                }
-        # return data back to the page
-        return JsonResponse(context)
-
-
-# Create a registered courses view
-class RegisteredCoursesView(View):
-    # Add template name
-    template_name = 'registered_courses.html'
-
-    # Add a method decorator to make sure user is logged in
-    @method_decorator(login_required())
-    # Create get function
-    def get(self, request):
-        # Get the current person logged in
-        person = get_object_or_404(Person, user=request.user)
-        # Get today's date
-        date = timezone.now().date().today()
-        # Check if user is a staff
-        if person.is_staff:
-            # Redirect to dashboard
-            return HttpResponseRedirect(reverse("Attendance:dashboard"))
-        # Otherwise
-        else:
-            # Get the current logged in student
-            student = get_object_or_404(Student, person=person)
-            # Create a dictionary of data to be accessed on the page
-            context = {
-                'user': student,
-                'date': date,
-            }
-        # Load te page with the data
-        return render(request, self.template_name, context)
-
-
-# Create function to handle filtering by semester
-def get_registered_courses(request):
-    # Check if request method is POST
-    if request.method == "POST":
-        # Get the user input
-        semester = request.POST.get("semester")
-
-        # Get the current person logged in
-        person = get_object_or_404(Person, user=request.user)
-        # Get the current logged in student
-        student = get_object_or_404(Student, person=person)
-        try:
-            # Get registered courses for student
-            reg_courses = get_object_or_404(RegisteredCourses, student=student)
-        except Exception:
-            # Create registered courses object
-            reg_courses = RegisteredCourses.objects.create(student=student)
-        # Get every courses in the students department
-        courses = reg_courses.courses.filter(semester=semester)
-        context = {
-            'courses': list(courses.values())
-        }
-        # return data back to the page
-        return JsonResponse(context)
 
 
 # Create a attendance register view
@@ -965,9 +864,11 @@ class PrintAttendanceSheetView(View):
             student = get_object_or_404(Student, person=person)
             try:
                 # Get all the registered courses by the student
-                reg_courses = get_object_or_404(RegisteredCourses, student=student)
+                reg_students = RegisteredStudent.objects.all()
                 # Get all the courses taken by the student
-                courses = reg_courses.courses.filter(level=student.level)
+                courses = [
+                    x.course for x in reg_students if student in x.students.all()
+                ]
             except Exception:
                 courses = {}
             # Create a dictionary of data to be accessed on the page
@@ -1148,12 +1049,9 @@ def upload_attendance_sheet(request):
         upload_attendance(file)
 
         # Create a dictionary of data to be returned to the page
-        context = {
-            'msg': "File upload successful",
-            'color': 'alert alert-success',
-        }
+        messages.success(request, "File upload successful")
         # return data back to page
-        return JsonResponse(context)
+        return HttpResponseRedirect(reverse("Attendance:print_attendance_sheet"))
 
 
 # Create a logout view

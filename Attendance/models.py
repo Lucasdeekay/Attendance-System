@@ -76,26 +76,14 @@ class Staff(models.Model):
         ('Lecturer I', 'Lecturer I'),
         ('Lecturer II', 'Lecturer II'),
     ])
-    department = models.ForeignKey(Department, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.staff_id
 
 
 class Course(models.Model):
-    course_name = models.CharField(max_length=100, null=False, blank=False)
+    course_title = models.CharField(max_length=100, null=False, blank=False)
     course_code = models.CharField(max_length=7, null=False, blank=False)
-    course_unit = models.IntegerField()
-    level = models.CharField(max_length=3, null=False, blank=False, choices=[
-        ('100', '100'),
-        ('200', '200'),
-        ('300', '300'),
-        ('400', '400'),
-    ])
-    semester = models.CharField(max_length=3, null=False, blank=False, choices=[
-        ('1st', '1st'),
-        ('2nd', '2nd'),
-    ])
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
     lecturer = models.ForeignKey(Staff, on_delete=models.CASCADE)
 
@@ -118,25 +106,10 @@ class Student(models.Model):
         return self.matric_no
 
 
-class RegisteredCourses(models.Model):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    courses = models.ManyToManyField(Course)
-    session = models.CharField(max_length=10, null=False, blank=False, default='2022/2023', choices=[
-        ('2022/2023', '2022/2023'),
-        ('2023/2024', '2023/2024'),
-        ('2024/2025', '2024/2025'),
-        ('2025/2026', '2025/2026'),
-        ('2026/2027', '2026/2027'),
-        ('2027/2028', '2027/2028'),
-        ('2028/2029', '2028/2029'),
-        ('2029/2030', '2029/2030'),
-    ])
-
-
 class RegisteredStudent(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     students = models.ManyToManyField(Student, null=True, blank=True)
-    session = models.CharField(max_length=10, null=False, blank=False, default='2022/2023', choices=[
+    session = models.CharField(max_length=10, default='2022/2023', choices=[
         ('2022/2023', '2022/2023'),
         ('2023/2024', '2023/2024'),
         ('2024/2025', '2024/2025'),

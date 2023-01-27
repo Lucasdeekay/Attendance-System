@@ -15,7 +15,7 @@ Attendance Slip
 {% block content %}
 <div id="toast">
     {% for message in messages %}
-    <div class="alert alert-danger" role="alert"><strong>Error! </strong>{{ message }}</div>
+    <div class="alert alert-success" role="alert"><strong>Success! </strong>{{ message }}</div>
     {% endfor %}
 </div>
 
@@ -46,7 +46,7 @@ Attendance Slip
     <div class="col-sm-5">
         <div class="element-wrapper">
             <div class="element-box mb-3">
-                <form id="uploadSheetForm" method="post">
+                <form action="{% url 'Attendance:upload_attendance_sheet' %}" method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     <h6 class="text-primary">Kindly choose your file to upload</h6>
                     <div class="input-group input-group-sm mb-3">
@@ -70,23 +70,4 @@ Attendance Slip
 {% block ajax %}
 $("#toast").fadeIn(3000);
 $("#toast").fadeOut(3000);
-
-$('#uploadSheetForm').submit(function(e) {
-    e.preventDefault();
-    $.ajax({
-        type: 'POST',
-        url: "{% url 'Attendance:upload_attendance_sheet' %}",
-        data:{
-        file: $("#file").val(),
-        csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
-    },
-    success: function(data){
-
-        var toast = `<div class="${ data.color }" role="alert"><strong>${ data.msg }</strong></div>`
-        $("#toast").html(toast);
-        $("#toast").fadeIn(3000);
-        $("#toast").fadeOut(3000);
-    },
-    });
-});
 {% endblock ajax %}

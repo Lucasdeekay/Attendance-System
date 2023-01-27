@@ -1,0 +1,46 @@
+{% extends "auth.html" %}
+
+{% block title %}
+Upload Spreadsheet
+{% endblock title %}
+
+{% block page_title %}
+Upload Spreadsheet
+{% endblock page_title %}
+
+
+{% block content %}
+<div class="mx-4" id="toast">
+    {% for message in messages %}
+    <div class="alert alert-danger" role="alert">{{ message }}</div>
+    {% endfor %}
+</div>
+<form action="" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <h6 class="text-info">Upload spreadsheet</h6>
+    <div class="input-group input-group-sm mb-3">
+        <select class="form-control form-control-sm rounded bright" required name="type" id="type">
+            <option value="">Select...</option>
+            <option value="student">Student</option>
+            <option value="staff">Staff</option>
+            <option value="course">Course</option>
+            <option value="department">Department</option>
+            <option value="reg_student">Register Student</option>
+        </select>
+    </div>
+    <div class="input-group input-group-sm mb-3">
+        <div class="custom-file">
+            <input type="file" class="custom-file-input" id="file">
+            <label class="custom-file-label" for="file">Choose file</label>
+        </div>
+        <div class="input-group-append">
+            <button class="btn btn-sm btn-primary">Upload <i class="os-icon os-icon-upload"></i></button>
+        </div>
+    </div>
+</form>
+{% endblock content %}
+
+{% block ajax %}
+$("#toast").fadeIn(3000);
+$("#toast").fadeOut(3000);
+{% endblock ajax %}

@@ -1,9 +1,11 @@
 import datetime
 
 import pandas as pd
+from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 
-from Attendance.models import CourseAttendance, RegisteredStudent, Student, Course, StudentAttendance
+from Attendance.models import CourseAttendance, RegisteredStudent, Student, Course, StudentAttendance, Person, Staff, \
+    Faculty, Department
 
 
 # function returns the total amount of times a student is present for a course
@@ -138,3 +140,83 @@ def upload_attendance(file):
                         course_attendance = CourseAttendance.objects.create(course=course, date=user_date)
                     finally:
                         course_attendance.student_attendance.add(student_attendance)
+
+
+def upload_staff(file):
+    df = pd.read_excel(file)
+    data = zip(df.values.tolist())
+    for index, i in enumerate(data):
+        data2 = []
+        for j in i[0]:
+            data2.append(j)
+
+        last_name, first_name, middle_name, staff_id, post = data2
+        user = User.objects.create_user(username=staff_id, password="password")
+        person = Person.objects.create(user=user, last_name=last_name, first_name=first_name, middle_name=middle_name, is_staff=True)
+        staff = Staff.objects.create(person=person, staff_id=staff_id, post=post)
+        staff.save()
+
+
+def upload_student(file):
+    df = pd.read_excel(file)
+    data = zip(df.values.tolist())
+    for index, i in enumerate(data):
+        data2 = []
+        for j in i[0]:
+            data2.append(j)
+
+        last_name, first_name, middle_name, matric_no, level, programme = data2
+        user = User.objects.create_user(username=matric_no, password="password")
+        person = Person.objects.create(user=user, last_name=last_name, first_name=first_name, middle_name=middle_name)
+        student = Student.objects.create(person=person, matric_no=matric_no, level=level, programme=programme)
+        student.save()
+
+
+def upload_department(file):
+    df = pd.read_excel(file)
+    data = zip(df.values.tolist())
+    for index, i in enumerate(data):
+        data2 = []
+        for j in i[0]:
+            data2.append(j)
+
+        dep_name, fac = data2
+        faculty = get_object_or_404(Faculty, faculty_name=fac)
+        department = Department.objects.create(faculty=faculty, department_name=dep_name)
+        department.save()
+
+
+def upload_course(file):
+    df = pd.read_excel(file)
+    data = zip(df.values.tolist())
+    for index, i in enumerate(data):
+        data2 = []
+        for j in i[0]:
+            data2.append(j)
+
+        course_title, course_code, dep_name, staff_id = data2
+        department = get_object_or_404(Department, department_name=dep_name)
+        lecturer = get_object_or_404(Staff, staff_id=staff_id)
+        course = Course.objects.create(course_title=course_title, course_code=course_code, department_name=department, lecturer=lecturer)
+        course.save()
+
+
+def upload_registered_students(file):
+    excel_file = pd.ExcelFile(file)
+    for name in excel_file.sheet_names:
+        course = get_object_or_404(Course, course_code=name)
+        df = pd.read_excel(file, sheet_name=name)
+        data = zip(df.values.tolist())
+        for index, i in enumerate(data):
+            data2 = []
+            for j in i[0]:
+                data2.append(j)
+
+            matric_no, session = data2
+            try:
+                reg_students = get_object_or_404(RegisteredStudent, course=course, session=session)
+            except Exception:
+                reg_students = RegisteredStudent.objects.create(course=course, session=session)
+            finally:
+                student = get_object_or_404(Student, matric_no=matric_no)
+                reg_students.students.add(student)

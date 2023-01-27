@@ -76,22 +76,7 @@ Profile Settings
                                 </div>
                             </div>
                         </div>
-                        <div class="os-progress-bar primary">
-                            <div class="bar-labels">
-                                <div class="bar-label-left">
-                                    <span>Faculty</span>
-                                </div>
-                                <div class="bar-label-right">
-                                    <h6 class="info">
-                                        {% if user.person.is_staff %}
-                                        {{ user.department.faculty.faculty_name }}
-                                        {% else %}
-                                        {{ user.programme.department.faculty.faculty_name }}
-                                        {% endif %}
-                                    </h6>
-                                </div>
-                            </div>
-                        </div>
+                        {% if not user.person.is_staff %}
                         <div class="os-progress-bar primary">
                             <div class="bar-labels">
                                 <div class="bar-label-left">
@@ -99,16 +84,11 @@ Profile Settings
                                 </div>
                                 <div class="bar-label-right">
                                     <h6 class="info">
-                                        {% if user.person.is_staff %}
-                                        {{ user.department.department_name }}
-                                        {% else %}
                                         {{ user.programme.department.department_name }}
-                                        {% endif %}
                                     </h6>
                                 </div>
                             </div>
                         </div>
-                        {% if not user.person.is_staff %}
                         <div class="os-progress-bar primary">
                             <div class="bar-labels">
                                 <div class="bar-label-left">

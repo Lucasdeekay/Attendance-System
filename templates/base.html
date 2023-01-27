@@ -76,29 +76,22 @@
                             <span>Dashboard</span>
                         </a>
                     </li>
+                    {% if user.person.is_staff %}
                     <li class="has-sub-menu" id="att-mobile">
                         <a>
                             <div class="icon-w">
                                 <div class="os-icon os-icon-file-text"></div>
                             </div>
                             <span>
-                                {% if user.person.is_staff %}
                                 Attendance Sheet
-                                {% else %}
-                                Course Registration
-                                {% endif %}
                             </span>
                         </a>
                         <ul class="sub-menu" id="att-mobile-slide">
-                            {% if user.person.is_staff %}
                             <li><a href="{% url 'Attendance:attendance_register' %}">Take Attendance</a></li>
                             <li><a href="{% url 'Attendance:attendance_sheet' %}">View Attendance</a></li>
-                            {% else %}
-                            <li><a href="{% url 'Attendance:register_courses' %}">Register Courses</a></li>
-                            <li><a href="{% url 'Attendance:registered_courses' %}">Registered Courses</a></li>
-                            {% endif %}
                         </ul>
                     </li>
+                    {% endif %}
                     <li class="has-sub-menu" id="admin-mobile">
                         <a>
                             <div class="icon-w">
@@ -154,41 +147,30 @@
                         <span>Dashboard</span>
                     </a>
                 </li>
+                {% if user.person.is_staff %}
                 <li class="has-sub-menu" id="att-main">
                     <a>
                         <div class="icon-w">
                             <div class="os-icon os-icon-file-text"></div>
                         </div>
                         <span>
-                            {% if user.person.is_staff %}
                             Attendance Sheet
-                            {% else %}
-                            Course Registration
-                            {% endif %}
                         </span>
                     </a>
                     <div class="sub-menu-w">
                         <div class="sub-menu-header">
-                            {% if user.person.is_staff %}
                             Attendance Sheet
-                            {% else %}
-                            Course Registration
-                            {% endif %}
                         </div>
                         <div class="sub-menu-icon"><i class="os-icon os-icon-file-text"></i></div>
                         <div class="sub-menu-i">
                             <ul class="sub-menu">
-                                {% if user.person.is_staff %}
                                 <li><a href="{% url 'Attendance:attendance_register' %}">Take Attendance</a></li>
                                 <li><a href="{% url 'Attendance:attendance_sheet' %}">View Attendance</a></li>
-                                {% else %}
-                                <li><a href="{% url 'Attendance:register_courses' %}">Register Courses</a></li>
-                                <li><a href="{% url 'Attendance:registered_courses' %}">Registered Courses</a></li>
-                                {% endif %}
                             </ul>
                         </div>
                     </div>
                 </li>
+                {% endif %}
                 <li class="has-sub-menu" id="admin-main">
                     <a>
                         <div class="icon-w">
