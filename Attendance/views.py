@@ -20,7 +20,8 @@ from Attendance.functions import get_number_of_course_attendance_absent, get_num
     get_number_of_course_attendance_percentage, upload_attendance, upload_student, upload_staff, upload_course, \
     upload_department, upload_registered_students, upload_programme, upload_faculty
 from Attendance.models import Staff, Course, RegisteredStudent, CourseAttendance, Student, \
-    StudentAttendance, Person
+    StudentAttendance, Person, Programme
+from Attendance.utils import render_to_pdf
 
 from AttendanceSystem.settings import EMAIL_HOST_USER
 
@@ -226,8 +227,13 @@ class DashboardView(View):
         if person.is_staff:
             # Get the current logged in staff
             staff = get_object_or_404(Staff, person=person)
-            # Get all the courses taken by the lecturer from 100 level to 400 level
-            courses = Course.objects.filter(lecturer=staff)
+            programmes = Programme.objects.filter(department=staff.department)
+            #  Filter all the courses in staff department
+            courses = []
+            for x in programmes:
+                prog_courses = Course.objects.filter(programme=x)
+                for y in prog_courses:
+                    courses.append(y)
             # Get all the course codes
             course_codes = [
                 x.course_code for x in courses
@@ -331,8 +337,13 @@ class AttendanceRegisterView(View):
         if person.is_staff:
             # Get the current logged in staff
             current_staff = get_object_or_404(Staff, person=person)
-            #  Filter all the courses taken by the staff
-            courses = Course.objects.filter(lecturer=current_staff)
+            programmes = Programme.objects.filter(department=current_staff.department)
+            #  Filter all the courses in staff department
+            courses = []
+            for x in programmes:
+                prog_courses = Course.objects.filter(programme=x)
+                for y in prog_courses:
+                    courses.append(y)
             # Get the current date
             date = timezone.now().date().today()
             # Create a dictionary of data to be accessed on the page
@@ -384,7 +395,7 @@ def submit_course(request):
             # Get all students records
             student_records = student_records.students.all()
             student_bio = [
-                [x.person.last_name, x.person.first_name] for x in student_records
+                x.person.full_name for x in student_records
             ]
             # Create a dictionary of data containing the list of all registered student for the course
             # and the list of individual attendance for the course
@@ -426,7 +437,7 @@ def search_attendance_register(request):
                 students = Student.objects.filter(matric_no__icontains=text)
 
                 student_records = [
-                    [x.person.last_name, x.person.first_name, x.matric_no] for x in students if x in registered_students.students.all()
+                    [x.person.full_name, x.matric_no] for x in students if x in registered_students.students.all()
                 ]
 
                 student_attendance = [
@@ -446,44 +457,16 @@ def search_attendance_register(request):
             except Exception:
                 return JsonResponse({'student_records': []})
         else:
-            # Initialize a list
-            persons_list = []
             try:
                 # Filter search
-                persons = Person.objects.filter(last_name__icontains=text)
+                persons = Person.objects.filter(full_name__icontains=text)
 
-                # Add person to list
-                for person in persons:
-                    if person not in persons_list:
-                        persons_list.append(person)
-            except Exception:
-                pass
-            try:
-                # Filter search
-                persons = Person.objects.filter(first_name__icontains=text)
-
-                # Add person to list
-                for person in persons:
-                    if person not in persons_list:
-                        persons_list.append(person)
-            except Exception:
-                pass
-
-            # If list is empty
-            if len(persons_list) == 0:
-                return JsonResponse({'student_attendance': []})
-            # Otherwise
-            else:
-                students = []
-                for x in persons_list:
-                    try:
-                        std = get_object_or_404(Student, person=x)
-                        students.append(std)
-                    except Exception:
-                        pass
+                students = [
+                    get_object_or_404(Student, person=x) for x in persons
+                ]
 
                 student_records = [
-                    [x.person.last_name, x.person.first_name, x.matric_no] for x in students if
+                    [x.person.full_name, x.matric_no] for x in students if
                     x in registered_students.students.all()
                 ]
 
@@ -499,6 +482,8 @@ def search_attendance_register(request):
                 }
                 # return data back to page
                 return JsonResponse(context)
+            except Exception:
+                return JsonResponse({'student_attendance': []})
 
 
 # Create function view to process ajax request
@@ -544,8 +529,13 @@ class AttendanceSheetView(View):
         if person.is_staff:
             # Get the current logged in staff
             current_staff = get_object_or_404(Staff, person=person)
-            #  Filter all the courses taken by the staff
-            courses = Course.objects.filter(lecturer=current_staff)
+            programmes = Programme.objects.filter(department=current_staff.department)
+            #  Filter all the courses in staff department
+            courses = []
+            for x in programmes:
+                prog_courses = Course.objects.filter(programme=x)
+                for y in prog_courses:
+                    courses.append(y)
             # Get the current date
             date = timezone.now().date().today()
             # Create a dictionary of data to be accessed on the page
@@ -586,8 +576,7 @@ def get_attendance_records(request):
             student_attendance_status = course_attendance.student_attendance.values_list('is_present')
             # Create a list 2d list containing each student name and matric no
             student_attendance_info = [
-                [get_object_or_404(Student, id=x[0]).person.last_name,
-                 get_object_or_404(Student, id=x[0]).person.first_name,
+                [get_object_or_404(Student, id=x[0]).person.full_name,
                  get_object_or_404(Student, id=x[0]).matric_no] for x in student_attendance_ids
             ]
             # Create a dictionary of data to be returned to the page
@@ -630,7 +619,7 @@ def search_attendance_sheet(request):
                 # Get the search results
                 students = Student.objects.filter(matric_no__icontains=text)
                 student_attendance_info = [
-                    [x.person.last_name, x.person.first_name, x.matric_no] for x in students if
+                    [x.person.full_name, x.matric_no] for x in students if
                     x in registered_students.students.all()
                 ]
 
@@ -649,36 +638,12 @@ def search_attendance_sheet(request):
             except Exception:
                 return JsonResponse({'student_attendance_info': []})
         else:
-            # Initialize a list
-            persons_list = []
             try:
                 # Filter search
-                persons = Person.objects.filter(last_name__icontains=text)
+                persons = Person.objects.filter(full_name__icontains=text)
 
-                # Add person to list
-                for person in persons:
-                    if person not in persons_list:
-                        persons_list.append(person)
-            except Exception:
-                pass
-            try:
-                # Filter search
-                persons = Person.objects.filter(first_name__icontains=text)
-
-                # Add person to list
-                for person in persons:
-                    if person not in persons_list:
-                        persons_list.append(person)
-            except Exception:
-                pass
-
-            # If set is empty
-            if len(persons_list) == 0:
-                return JsonResponse({'student_attendance_info': []})
-            # Otherwise
-            else:
                 students = []
-                for x in persons_list:
+                for x in persons:
                     try:
                         std = get_object_or_404(Student, person=x)
                         students.append(std)
@@ -686,7 +651,7 @@ def search_attendance_sheet(request):
                         pass
 
                 student_attendance_info = [
-                    [x.person.last_name, x.person.first_name, x.matric_no] for x in students if
+                    [x.person.full_name, x.matric_no] for x in students if
                     x in registered_students.students.all()
                 ]
 
@@ -701,6 +666,8 @@ def search_attendance_sheet(request):
                 }
                 # return data back to page
                 return JsonResponse(context)
+            except Exception:
+                return JsonResponse({'student_attendance_info': []})
 
 
 # Create a settings view
@@ -863,8 +830,13 @@ class PrintAttendanceSheetView(View):
         if person.is_staff:
             # Get the current logged in staff
             current_staff = get_object_or_404(Staff, person=person)
-            #  Filter all the courses taken by the staff
-            courses = Course.objects.filter(lecturer=current_staff)
+            programmes = Programme.objects.filter(department=current_staff.department)
+            #  Filter all the courses in staff department
+            courses = []
+            for x in programmes:
+                prog_courses = Course.objects.filter(programme=x)
+                for y in prog_courses:
+                    courses.append(y)
             # Create a dictionary of data to be accessed on the page
             context = {
                 'user': current_staff,
@@ -927,16 +899,16 @@ class PrintAttendanceSheetView(View):
             # Redirect back to the current page
             return HttpResponseRedirect(reverse('Attendance:print_attendance_sheet'))
 
-        # Create an in-memory output file for the workbook
-        output = io.BytesIO()
-
-        # Create an excel spreadsheet workbook
-        attendance_book = xlsxwriter.Workbook(output)
 
         # Get the current person logged in
         person = get_object_or_404(Person, user=request.user)
         # Check if user is a staff
         if person.is_staff:
+            # Create an in-memory output file for the workbook
+            output = io.BytesIO()
+
+            # Create an excel spreadsheet workbook
+            attendance_book = xlsxwriter.Workbook(output)
 
             # Give the file created a name
             filename = f"{course}.xlsx"
@@ -996,61 +968,68 @@ class PrintAttendanceSheetView(View):
 
                 std_row += 1
 
+            # Close workbook
+            attendance_book.close()
+
+            # Rewind the buffer
+            output.seek(0)
+
+            # Set up the Http response informing the browser that this is xlsx file and not html file
+            response = HttpResponse(
+                output,
+                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+            response['Content-Disposition'] = f'attachment; filename={filename}'
+
+            # return response back to page
+            return response
+
         else:
+            # Get the current person logged in
+            person = get_object_or_404(Person, user=request.user)
             # Get the current logged in student
             student = get_object_or_404(Student, person=person)
+            # Get today's date
+            date = timezone.now().date().today()
+            try:
+                # Get all the registered courses by the student
+                reg_students = RegisteredStudent.objects.all()
+                # Get all the courses taken by the student
+                courses = [
+                    x.course for x in reg_students if student in x.students.all()
+                ]
+                # Get all the course codes
+                course_codes = [
+                    x.course_code for x in courses
+                ]
+                # Get the percentage of attendance for each course
+                course_attendance_percentage = [
+                    get_number_of_course_attendance_percentage(x, student) for x in courses
+                ]
+                zipped = zip(course_codes, course_attendance_percentage)
+            except Exception:
+                courses = {}
+                zipped = []
 
-            # Give the file created a name
-            filename = f"{course} for {person.last_name} {person.first_name}.xlsx"
+            # Create a dictionary of data to be accessed on the page
+            context = {
+                'user': student,
+                'zipped': zipped,
+                'courses': courses,
+                'date': date,
+            }
 
-            # Add a worksheet
-            attendance_sheet = attendance_book.add_worksheet(f"{course} for {person.last_name} {person.first_name}")
+            open('templates/temp.html', "w").write(render_to_string('slip.html', context))
 
-            # Instantiate the rows and columns
-            row = col = 0
+            # Converting the HTML template into a PDF file
+            pdf = render_to_pdf('temp.html')
 
-            # Create row headers
-            attendance_sheet.write(row, col, "Date")
-            attendance_sheet.write(row, col + 1, "Present")
+            response = HttpResponse(pdf, content_type='application/pdf')
 
-            for att in course_attendance:
-                attendance_sheet.write(row + 1, col, att.date.strftime("%d/%m/%Y"))
-                try:
-                    student_att = att.student_attendance.get(student=student)
-                    if student_att.is_present:
-                        attendance_sheet.write(row + 1, col + 1, "Yes")
-                    else:
-                        attendance_sheet.write(row + 1, col + 1, "No")
-                except Exception:
-                    pass
+            response['Content-Disposition'] = f'attachment; filename={student.person.full_name} Attendance Slip.pdf'
 
-                row += 1
-
-            present = get_number_of_course_attendance_percentage(course, student)
-            attendance_sheet.write(len(course_attendance) + 2, 0, f"Eligibility (%)")
-            attendance_sheet.write(len(course_attendance) + 2, 1, f"{present} %")
-
-            attendance_sheet.write(len(course_attendance) + 3, 0, f"Eligible")
-            if present < 75:
-                attendance_sheet.write(len(course_attendance) + 3, 1, "No")
-            else:
-                attendance_sheet.write(len(course_attendance) + 3, 1, "Yes")
-
-        # Close workbook
-        attendance_book.close()
-
-        # Rewind the buffer
-        output.seek(0)
-
-        # Set up the Http response informing the browser that this is xlsx file and not html file
-        response = HttpResponse(
-            output,
-            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        )
-        response['Content-Disposition'] = f'attachment; filename={filename}'
-
-        # return response back to page
-        return response
+            # rendering the template
+            return response
 
 
 # create a function to handle upload of excel sheet
@@ -1085,3 +1064,4 @@ def error_404(request, exception):
 
 def error_500(request):
     return render(request, 'error_400.html')
+

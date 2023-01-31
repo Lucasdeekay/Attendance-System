@@ -8,9 +8,8 @@ from Attendance.extra import ContentTypeRestrictedFileField
 
 class Person(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    last_name = models.CharField(max_length=100, null=False, blank=False)
-    first_name = models.CharField(max_length=100, null=False, blank=False)
-    middle_name = models.CharField(max_length=100, null=True, blank=True)
+    full_name = models.CharField(max_length=250, null=False, blank=False)
+    gender = models.CharField(max_length=10, null=False, blank=False)
     is_staff = models.BooleanField(default=False)
     image = ContentTypeRestrictedFileField(upload_to='AttendanceSystem/profile-image',
                                            max_upload_size=5242880,
@@ -20,7 +19,7 @@ class Person(models.Model):
                                            max_length=250)
 
     def __str__(self):
-        return f'{self.last_name} {self.first_name} {self.middle_name}'
+        return f'{self.full_name}'
 
 
 class Faculty(models.Model):
@@ -50,6 +49,7 @@ class Staff(models.Model):
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
     staff_id = models.CharField(max_length=10, null=False, blank=False)
     post = models.CharField(max_length=25, null=False, blank=False)
+    department = models.ForeignKey(Department, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.staff_id
@@ -58,8 +58,8 @@ class Staff(models.Model):
 class Course(models.Model):
     course_title = models.CharField(max_length=100, null=False, blank=False)
     course_code = models.CharField(max_length=7, null=False, blank=False)
+    course_unit = models.IntegerField()
     programme = models.ForeignKey(Programme, on_delete=models.CASCADE)
-    lecturer = models.ForeignKey(Staff, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.course_code
@@ -68,13 +68,8 @@ class Course(models.Model):
 class Student(models.Model):
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
     matric_no = models.CharField(max_length=10, null=False, blank=False)
-    level = models.CharField(max_length=3, null=False, blank=False, choices=[
-        ('100', '100'),
-        ('200', '200'),
-        ('300', '300'),
-        ('400', '400'),
-    ])
     programme = models.ForeignKey(Programme, on_delete=models.CASCADE)
+    year_of_entry = models.CharField(max_length=10, null=False, blank=False)
 
     def __str__(self):
         return self.matric_no

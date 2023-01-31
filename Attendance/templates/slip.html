@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Examination Slip</title>
+</head>
+<style>
+  body {
+    color:cream;
+    margin: 0px;
+    padding: 0px;
+  }
+  .center{
+    text-align:center;
+  }
+  .left{
+    text-align:left;
+  }
+  .right{
+    text-align:right;
+  }
+  .color{
+    color:#123050;
+  }
+  .tpad{
+    padding: 2px;
+  }
+  .tborder{
+    border: solid 1px #123050;
+    border-collapse: collapse;
+  }
+  .table{
+    margin:0% 25%;
+  }
+</style>
+<body>
+<main>
+    <div class="center">
+        <img src="Attendance/{% static 'images/DU_LOGO.png' %}" alt="Logo">
+    </div>
+    <div class="center">
+        <h1 class="color">ATTENDANCE STATUS SLIP</h1>
+    </div>
+    <div class="table center">
+        <table>
+            <tbody>
+                <tr>
+                    <td class="tpad">
+                        <b class="color">Name: </b>
+                        <strong>{{ user.person.full_name }}</strong>
+                    </td>
+                    <td class="tpad">
+                        <b class="color">Matric No: </b>
+                        <strong>{{ user.matric_no }}</strong>
+                    </td>
+                    <td class="tpad">
+                        <b class="color"> Programme: </b>
+                        <strong>{{ user.programme.programme_name }}</strong>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="tpad">
+                        <b class="color"> Department: </b>
+                        <strong>{{ user.programme.department.department_name }}</strong>
+                    </td>
+                    <td class="tpad">
+                        <b class="color">Faculty: </b>
+                        <strong>{{ user.programme.department.faculty.faculty_name }}</strong>
+                    </td>
+                    <td class="tpad">
+                        <b class="color">Date: </b>
+                        <strong>{{ date }}</strong>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="table center">
+        <table>
+            <thead>
+                <tr class="tborder">
+                    <th class="color tborder tpad">Course Code</th>
+                    <th class="color tborder tpad">Percentage</th>
+                    <th class="color tborder tpad">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for code, percent in zipped %}
+                <tr class="tborder">
+                    <td class="tborder tpad"><b>{{ code }}</b></td>
+                    <td class="tborder tpad"><b>{{ percent }}%</b></td>
+                    {% if percent >= 75 %}
+                    <td class="tborder tpad" style="color:limegreen"><b>Eligible</b></td>
+                    {% else %}
+                    <td class="tborder tpad" style="color:tomato"><b>Not Eligible</b></td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>

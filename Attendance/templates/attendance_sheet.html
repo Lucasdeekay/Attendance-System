@@ -101,15 +101,15 @@ $('#dateCourseForm').submit(function(e) {
                     var temp = '';
                     if (data.student_attendance_status[key][0]){
                         temp = `<tr>
-                                <td><h6>${ data.student_attendance_info[key][0] } ${ data.student_attendance_info[key][1] }</h6></td>
-                                <td><h6>${ data.student_attendance_info[key][2] }</h6></td>
+                                <td><h6>${ data.student_attendance_info[key][0] }</h6></td>
+                                <td><h6>${ data.student_attendance_info[key][1] }</h6></td>
                                 <td><i class="bi bi-check-circle-fill text-success"></i></td>
                             </tr>`;
                     }
                     else {
                         temp = `<tr>
-                                <td><h6>${ data.student_attendance_info[key][0] } ${ data.student_attendance_info[key][1] }</h6></td>
-                                <td><h6>${ data.student_attendance_info[key][2] }</h6></td>
+                                <td><h6>${ data.student_attendance_info[key][0] }</h6></td>
+                                <td><h6>${ data.student_attendance_info[key][1] }</h6></td>
                                 <td><i class="bi bi-x-circle-fill text-danger"></i></td>
                             </tr>`;
                     }
@@ -175,15 +175,15 @@ function submitSearch(e) {
                 for (var key in data.student_attendance_info){
                     if (data.student_attendance_status[key][0]){
                         temp = `<tr>
-                                <td><h6>${ data.student_attendance_info[key][0] } ${ data.student_attendance_info[key][1] }</h6></td>
-                                <td><h6>${ data.student_attendance_info[key][2] }</h6></td>
+                                <td><h6>${ data.student_attendance_info[key][0] }</h6></td>
+                                <td><h6>${ data.student_attendance_info[key][1] }</h6></td>
                                 <td><i class="bi bi-check-circle-fill text-success"></i></td>
                             </tr>`;
                     }
                     else {
                         temp = `<tr>
-                                <td><h6>${ data.student_attendance_info[key][0] } ${ data.student_attendance_info[key][1] }</h6></td>
-                                <td><h6>${ data.student_attendance_info[key][2] }</h6></td>
+                                <td><h6>${ data.student_attendance_info[key][0] }</h6></td>
+                                <td><h6>${ data.student_attendance_info[key][1] }</h6></td>
                                 <td><i class="bi bi-x-circle-fill text-danger"></i></td>
                             </tr>`;
                     }

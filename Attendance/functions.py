@@ -8,18 +8,6 @@ from Attendance.models import CourseAttendance, RegisteredStudent, Student, Cour
     Faculty, Department, Programme
 
 
-def capitalize(text):
-    result = text.split(" ")
-    if len(result) > 1:
-        result_list = [
-            i.capitalize for i in result
-        ]
-        result = " ".join(result_list)
-        return result
-    else:
-        return text.capitalize
-
-
 # function returns the total amount of times a student is present for a course
 def get_number_of_course_attendance_present(course, student):
     all_attendance = CourseAttendance.objects.filter(course=course)
@@ -65,7 +53,7 @@ def get_number_of_course_attendance_percentage(course, student):
     if absent == 0:
         return 0
     else:
-        return round((present/(present + absent)) * 100, 2)
+        return round((present / (present + absent)) * 100, 2)
 
 
 # Function returns the total number of eligible students
@@ -144,7 +132,8 @@ def upload_attendance(file):
 
                     course = get_object_or_404(Course, course_code=course_code.upper())
 
-                    student_attendance = StudentAttendance.objects.create(student=student, is_present=attendance_status, date=user_date)
+                    student_attendance = StudentAttendance.objects.create(student=student, is_present=attendance_status,
+                                                                          date=user_date)
 
                     try:
                         course_attendance = get_object_or_404(CourseAttendance, course=course)
@@ -162,36 +151,28 @@ def upload_staff(file):
         for j in i[0]:
             data2.append(j)
 
-        last_name, first_name, middle_name, staff_id, post = data2
-        last_name = capitalize(last_name)
-        first_name = capitalize(first_name)
-        middle_name = capitalize(middle_name)
-        staff_id = staff_id.upper()
-        post = capitalize(post)
-        user = User.objects.create_user(username=staff_id, password="password")
-        person = Person.objects.create(user=user, last_name=last_name, first_name=first_name, middle_name=middle_name, is_staff=True)
-        staff = Staff.objects.create(person=person, staff_id=staff_id, post=post)
+        full_name, gender, staff_id, post, dep = data2
+        user = User.objects.create_user(username=staff_id.upper(), password="password")
+        person = Person.objects.create(user=user, full_name=full_name.upper(), gender=gender.upper(), is_staff=True)
+        department = get_object_or_404(Faculty, faculty_name=dep.upper())
+        staff = Staff.objects.create(person=person, staff_id=staff_id, post=post, department=department)
         staff.save()
 
 
 def upload_student(file):
-    df = pd.read_excel(file)
+    df = pd.read_excel(file, sheet_name="ALL")
     data = zip(df.values.tolist())
     for index, i in enumerate(data):
         data2 = []
         for j in i[0]:
             data2.append(j)
 
-        last_name, first_name, middle_name, matric_no, level, prog = data2
-        last_name = capitalize(last_name)
-        first_name = capitalize(first_name)
-        middle_name = capitalize(middle_name)
-        matric_no = matric_no.upper()
-        prog = capitalize(prog)
-        user = User.objects.create_user(username=matric_no, password="password")
-        programme = get_object_or_404(Programme, programme_name=prog)
-        person = Person.objects.create(user=user, last_name=last_name, first_name=first_name, middle_name=middle_name)
-        student = Student.objects.create(person=person, matric_no=matric_no, level=level, programme=programme)
+        matric_no, full_name, moe, yoa, fac, dep, prog, gender = data2
+        user = User.objects.create_user(username=matric_no.upper(), password="password")
+        programme = get_object_or_404(Programme, programme_name=prog.upper())
+        person = Person.objects.create(user=user, full_name=full_name.upper(), gender=gender.upper())
+        student = Student.objects.create(person=person, matric_no=matric_no.upper(), programme=programme,
+                                         year_of_entry=yoa)
         student.save()
 
 
@@ -204,8 +185,7 @@ def upload_faculty(file):
             data2.append(j)
 
         fac = data2
-        fac = capitalize(fac)
-        faculty = Faculty.objects.create(faculty_name=fac)
+        faculty = Faculty.objects.create(faculty_name=fac.upper())
         faculty.save()
 
 
@@ -217,11 +197,9 @@ def upload_department(file):
         for j in i[0]:
             data2.append(j)
 
-        dep_name, fac = data2
-        dep_name = capitalize(dep_name)
-        fac = capitalize(fac)
-        faculty = get_object_or_404(Faculty, faculty_name=fac)
-        department = Department.objects.create(faculty=faculty, department_name=dep_name)
+        fac, dep_name = data2
+        faculty = get_object_or_404(Faculty, faculty_name=fac.upper())
+        department = Department.objects.create(faculty=faculty, department_name=dep_name.upper())
         department.save()
 
 
@@ -233,31 +211,28 @@ def upload_programme(file):
         for j in i[0]:
             data2.append(j)
 
-        prog_name, dep = data2
-        prog_name = capitalize(prog_name)
-        dep = capitalize(dep)
-        department = get_object_or_404(Faculty, faculty_name=dep)
-        programme = Department.objects.create(department=department, programme_name=prog_name)
+        dep, prog_name = data2
+        department = get_object_or_404(Faculty, faculty_name=dep.upper())
+        programme = Department.objects.create(department=department, programme_name=prog_name.upper())
         programme.save()
 
 
 def upload_course(file):
-    df = pd.read_excel(file)
-    data = zip(df.values.tolist())
-    for index, i in enumerate(data):
-        data2 = []
-        for j in i[0]:
-            data2.append(j)
+    excel_file = pd.ExcelFile(file)
+    for name in excel_file.sheet_names:
+        if name.upper() != "ALL DEPARTMENTS":
+            programme = get_object_or_404(Programme, programme_name__icontains=name)
+            df = pd.read_excel(file)
+            data = zip(df.values.tolist())
+            for index, i in enumerate(data):
+                data2 = []
+                for j in i[0]:
+                    data2.append(j)
 
-        course_title, course_code, prog_name, staff_id = data2
-        course_title = capitalize(course_title)
-        course_code = course_code.upper()
-        prog_name = capitalize(prog_name)
-        staff_id = staff_id.upper()
-        programme = get_object_or_404(Programme, programme_name=prog_name)
-        lecturer = get_object_or_404(Staff, staff_id=staff_id)
-        course = Course.objects.create(course_title=course_title, course_code=course_code, programme=programme, lecturer=lecturer)
-        course.save()
+                course_code, course_title, status, course_unit = data2
+                course = Course.objects.create(course_title=course_title.upper(), course_code=course_code.upper(),
+                                               programme=programme, course_unit=int(course_unit))
+                course.save()
 
 
 def upload_registered_students(file):
@@ -272,7 +247,6 @@ def upload_registered_students(file):
                 data2.append(j)
 
             matric_no, session = data2
-            matric_no = matric_no.upper()
             try:
                 reg_students = get_object_or_404(RegisteredStudent, course=course, session=session)
             except Exception:

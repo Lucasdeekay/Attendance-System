@@ -103,7 +103,7 @@ $('#courseForm').submit(function(e) {
             else{
                 for (var key in data.student_records){
                     var temp = `<tr>
-                                <td><h6>${ data.student_bio[key][0] } ${ data.student_bio[key][1] }</h6></td>
+                                <td><h6>${ data.student_bio[key] }</h6></td>
                                 <td><h6>${ data.student_records[key].matric_no}</h6></td>
                                 <td>
                                     <form method="post">
@@ -179,8 +179,8 @@ function submitSearch(e) {
             else{
                 for (var key in data.student_records){
                     var temp = `<tr>
-                                <td><h6>${ data.student_records[key][0] } ${ data.student_records[key][1] }</h6></td>
-                                <td><h6>${ data.student_records[key][2] }</h6></td>
+                                <td><h6>${ data.student_records[key][0] }</h6></td>
+                                <td><h6>${ data.student_records[key][1] }</h6></td>
                                 <td>
                                     <form method="post">
                                         {% csrf_token %}

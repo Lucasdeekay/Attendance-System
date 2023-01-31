@@ -4,7 +4,7 @@ from .models import Staff, Student, Faculty, Programme, Department, StudentAtten
 
 
 class PersonAdmin(admin.ModelAdmin):
-    list_display = ('user', 'last_name', 'first_name', 'is_staff', 'image')
+    list_display = ('user', 'full_name', 'gender', 'is_staff', 'image')
 
 
 class FacultyAdmin(admin.ModelAdmin):
@@ -20,15 +20,15 @@ class ProgrammeAdmin(admin.ModelAdmin):
 
 
 class StaffAdmin(admin.ModelAdmin):
-    list_display = ('person', 'staff_id', 'post')
+    list_display = ('person', 'staff_id', 'post', 'department')
 
 
 class StudentAdmin(admin.ModelAdmin):
-    list_display = ('person', 'matric_no', 'level', 'programme')
+    list_display = ('person', 'matric_no', 'programme', 'year_of_entry')
 
 
 class CourseAdmin(admin.ModelAdmin):
-    list_display = ('course_title', 'course_code', 'programme', 'lecturer')
+    list_display = ('course_title', 'course_code', 'course_unit', 'programme')
 
 
 class RegisteredStudentsAdmin(admin.ModelAdmin):
