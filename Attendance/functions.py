@@ -213,7 +213,7 @@ def upload_programme(file):
 
         dep, prog_name = data2
         department = get_object_or_404(Department, department_name=dep.upper())
-        programme = Department.objects.create(department=department, programme_name=prog_name.upper())
+        programme = Programme.objects.create(department=department, programme_name=prog_name.upper())
         programme.save()
 
 
