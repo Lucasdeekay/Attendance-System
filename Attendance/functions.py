@@ -237,20 +237,42 @@ def upload_course(file):
 
 def upload_registered_students(file):
     excel_file = pd.ExcelFile(file)
-    for name in excel_file.sheet_names:
-        course = get_object_or_404(Course, course_code=name)
-        df = pd.read_excel(file, sheet_name=name)
-        data = zip(df.values.tolist())
-        for index, i in enumerate(data):
-            data2 = []
-            for j in i[0]:
-                data2.append(j)
+    for course_code in excel_file.sheet_names:
+        df = pd.read_excel(file, sheet_name=course_code)
 
-            matric_no, session = data2
-            try:
-                reg_students = get_object_or_404(RegisteredStudent, course=course, session=session)
-            except Exception:
-                reg_students = RegisteredStudent.objects.create(course=course, session=session)
-            finally:
-                student = get_object_or_404(Student, matric_no=matric_no)
-                reg_students.students.add(student)
+        for index, value in enumerate(df.values):
+            if 'NAME OF STUDENTS' in value:
+                df = pd.DataFrame(df.values[index + 1:])
+                break
+
+        for index, value in enumerate(df.values):
+            new_list = set(value)
+            if len(new_list) <= 2:
+                df.drop(index, inplace=True)
+
+        headings = df.values[0]
+        headings[0] = 'index'
+        headings[1] = 'Name Of Students'
+        headings[2] = 'Matric No'
+        headings[-1] = 'Eligibility Status'
+        headings[-2] = 'Attendance (%)'
+        headings[-3] = 'Number Of Times Absent'
+        headings[-4] = 'Total Attendance'
+
+        df = df.T.dropna().T
+        headings = df.values[0]
+        df.columns = headings.tolist()
+        df.drop(0, inplace=True)
+
+        df = df["Matric No"]
+
+        course = get_object_or_404(Course, course_code=course_code.upper())
+
+        try:
+            reg_students = get_object_or_404(RegisteredStudent, course=course)
+        except Exception:
+            reg_students = RegisteredStudent.objects.create(course=course)
+
+        for i in df:
+            student = get_object_or_404(Student, matric_no=i)
+            reg_students.students.add(student)
