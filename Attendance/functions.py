@@ -184,7 +184,7 @@ def upload_faculty(file):
         for j in i[0]:
             data2.append(j)
 
-        fac = data2
+        fac = data2[0]
         faculty = Faculty.objects.create(faculty_name=fac.upper())
         faculty.save()
 
