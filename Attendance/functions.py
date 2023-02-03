@@ -168,12 +168,23 @@ def upload_student(file):
             data2.append(j)
 
         matric_no, full_name, moe, yoa, fac, dep, prog, gender = data2
-        user = User.objects.create_user(username=matric_no.upper(), password="password")
-        programme = get_object_or_404(Programme, programme_name=prog.upper())
-        person = Person.objects.create(user=user, full_name=full_name.upper(), gender=gender.upper())
-        student = Student.objects.create(person=person, matric_no=matric_no.upper(), programme=programme,
-                                         year_of_entry=yoa)
-        student.save()
+        if "DU" in matric_no.upper() and yoa != "NIL":
+            try:
+                user = get_object_or_404(User, username=matric_no.upper().strip())
+                print(user)
+                if user:
+                    pass
+            except Exception:
+                user = User.objects.create_user(username=matric_no.upper().strip(), password="password")
+                programme = get_object_or_404(Programme, programme_name=prog.upper().strip())
+                person = Person.objects.create(user=user, full_name=full_name.upper().strip(),
+                                               gender=gender.upper().strip())
+                student = Student.objects.create(person=person, matric_no=matric_no.upper().strip(),
+                                                 programme=programme,
+                                                 year_of_entry=yoa.strip())
+                student.save()
+        else:
+            pass
 
 
 def upload_faculty(file):
@@ -221,7 +232,7 @@ def upload_course(file):
     excel_file = pd.ExcelFile(file)
     for name in excel_file.sheet_names:
         if name.upper() != "ALL DEPARTMENTS":
-            programme = get_object_or_404(Programme, programme_name__icontains=name)
+            programme = get_object_or_404(Programme, programme_name__icontains=name.upper())
             df = pd.read_excel(file)
             data = zip(df.values.tolist())
             for index, i in enumerate(data):
@@ -274,5 +285,8 @@ def upload_registered_students(file):
             reg_students = RegisteredStudent.objects.create(course=course)
 
         for i in df:
-            student = get_object_or_404(Student, matric_no=i)
-            reg_students.students.add(student)
+            try:
+                student = get_object_or_404(Student, matric_no=i)
+                reg_students.students.add(student)
+            except Exception:
+                pass

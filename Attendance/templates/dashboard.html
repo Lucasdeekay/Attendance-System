@@ -22,14 +22,14 @@ Dashboard
                 <div class="row">
                     <div class="col-sm-7 col-xxxl-7">
                         <div class="user-profile compact">
-                            <div class="up-head-w" style="background-image:url({% static 'images/logo.png' %})">
+                            <div class="up-head-w" style="background-image:url({% static 'images/logo.png' %}); background-size:200px">
                                 <div class="up-main-info">
                                     <h2 class="up-header">{{ user.person.full_name }}</h2>
                                     <h6 class="up-sub-header">
                                         {% if user.person.is_staff %}
                                         {{ user.post }}
                                         {% else %}
-                                        {{ user.matric_no }}
+                                        MATRIC NO: {{ user.matric_no }}
                                         {% endif %}
                                     </h6>
                                 </div>

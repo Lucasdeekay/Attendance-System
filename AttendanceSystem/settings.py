@@ -85,8 +85,12 @@ if DEBUG:
 
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'Demo_Attendance',
+            'USER': 'postgres',
+            'PASSWORD': 'luc45d3nn15',
+            'HOST': 'localhost',
+            'PORT': 5432,
         }
     }
     # Email
