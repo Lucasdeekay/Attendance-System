@@ -136,7 +136,7 @@ class StaffModelTest(TestCase):
     def test_staff_id_max_length(self):
         staff = get_object_or_404(Staff, staff_id="ID01")
         max_length = staff._meta.get_field("staff_id").max_length
-        self.assertEqual(max_length, 10)
+        self.assertEqual(max_length, 25)
 
     def test_post_label(self):
         staff = get_object_or_404(Staff, staff_id="ID01")

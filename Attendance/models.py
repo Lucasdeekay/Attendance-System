@@ -9,7 +9,7 @@ from Attendance.extra import ContentTypeRestrictedFileField
 class Person(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     full_name = models.CharField(max_length=250, null=False, blank=False)
-    gender = models.CharField(max_length=10, null=False, blank=False)
+    gender = models.CharField(max_length=10)
     is_staff = models.BooleanField(default=False)
     image = ContentTypeRestrictedFileField(upload_to='AttendanceSystem/profile-image',
                                            max_upload_size=5242880,
@@ -47,8 +47,8 @@ class Programme(models.Model):
 
 class Staff(models.Model):
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
-    staff_id = models.CharField(max_length=10, null=False, blank=False)
-    post = models.CharField(max_length=25, null=False, blank=False)
+    staff_id = models.CharField(max_length=25, null=False, blank=False)
+    post = models.CharField(max_length=25)
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
 
     def __str__(self):

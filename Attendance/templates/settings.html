@@ -49,7 +49,7 @@ Profile Settings
                                     <span>Full Name</span>
                                 </div>
                                 <div class="bar-label-right">
-                                    <h6 class="info">{{ user.person.last_name }} {{ user.person.first_name }}</h6>
+                                    <h6 class="info">{{ user.person.full_name }}</h6>
                                 </div>
                             </div>
                         </div>
@@ -58,7 +58,7 @@ Profile Settings
                                 <div class="bar-label-left">
                                     <span>
                                         {% if user.person.is_staff %}
-                                        Staff ID
+                                        Post
                                         {% else %}
                                         Matric No
                                         {% endif %}
@@ -67,7 +67,7 @@ Profile Settings
                                 <div class="bar-label-right">
                                     <h6 class="info">
                                         {% if user.person.is_staff %}
-                                        {{ user.staff_id }}
+                                        {{ user.post }}
                                         {% else %}
                                         {{ user.matric_no }}
                                         {% endif %}

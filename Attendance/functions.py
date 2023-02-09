@@ -151,11 +151,12 @@ def upload_staff(file):
         for j in i[0]:
             data2.append(j)
 
-        full_name, gender, staff_id, post, dep = data2
+        index, full_name, dep = data2
+        staff_id = full_name.split()[-1]
         user = User.objects.create_user(username=staff_id.upper(), password="password")
-        person = Person.objects.create(user=user, full_name=full_name.upper(), gender=gender.upper(), is_staff=True)
-        department = get_object_or_404(Faculty, faculty_name=dep.upper())
-        staff = Staff.objects.create(person=person, staff_id=staff_id, post=post, department=department)
+        person = Person.objects.create(user=user, full_name=full_name.upper(), is_staff=True)
+        department = get_object_or_404(Department, department_name=dep.upper())
+        staff = Staff.objects.create(person=person, staff_id=staff_id.upper(), department=department)
         staff.save()
 
 
@@ -232,8 +233,8 @@ def upload_course(file):
     excel_file = pd.ExcelFile(file)
     for name in excel_file.sheet_names:
         if name.upper() != "ALL DEPARTMENTS":
-            programme = get_object_or_404(Programme, programme_name__icontains=name.upper())
-            df = pd.read_excel(file)
+            programme = get_object_or_404(Programme, programme_name=name.upper())
+            df = pd.read_excel(file, sheet_name=name)
             data = zip(df.values.tolist())
             for index, i in enumerate(data):
                 data2 = []
@@ -241,7 +242,7 @@ def upload_course(file):
                     data2.append(j)
 
                 course_code, course_title, status, course_unit = data2
-                course = Course.objects.create(course_title=course_title.upper(), course_code=course_code.upper(),
+                course = Course.objects.create(course_title=course_title.upper(), course_code=' '.join(course_code.upper().split()),
                                                programme=programme, course_unit=int(course_unit))
                 course.save()
 
@@ -265,28 +266,16 @@ def upload_registered_students(file):
         headings[0] = 'index'
         headings[1] = 'Name Of Students'
         headings[2] = 'Matric No'
-        headings[-1] = 'Eligibility Status'
-        headings[-2] = 'Attendance (%)'
-        headings[-3] = 'Number Of Times Absent'
-        headings[-4] = 'Total Attendance'
-
-        df = df.T.dropna().T
-        headings = df.values[0]
         df.columns = headings.tolist()
-        df.drop(0, inplace=True)
-
-        df = df["Matric No"]
-
-        course = get_object_or_404(Course, course_code=course_code.upper())
-
-        try:
-            reg_students = get_object_or_404(RegisteredStudent, course=course)
-        except Exception:
-            reg_students = RegisteredStudent.objects.create(course=course)
+        df = df['Matric No']
 
         for i in df:
-            try:
-                student = get_object_or_404(Student, matric_no=i)
-                reg_students.students.add(student)
-            except Exception:
-                pass
+            if Student.objects.filter(matric_no=i).count() == 1 and i != 'Matric No':
+                student = Student.objects.get(matric_no=i)
+                if Course.objects.filter(course_code=course_code, programme=student.programme).count() == 1:
+                    course = Course.objects.get(course_code=course_code, programme=student.programme)
+                    if RegisteredStudent.objects.filter(course=course).count() == 1:
+                        reg_students = get_object_or_404(RegisteredStudent, course=course)
+                    else:
+                        reg_students = RegisteredStudent.objects.create(course=course)
+                    reg_students.students.add(student)

@@ -67,7 +67,7 @@ Dashboard
 </div>
 <div class="row">
     {% if user.person.is_staff %}
-    <div class="col-sm-8 col-xxxl-6">
+    <div class="col-sm-12 col-xxxl-12">
         <div class="element-wrapper"><h6 class="element-header">Courses Info</h6>
             <div class="element-box">
                 <div class="table-responsive">
@@ -133,7 +133,6 @@ Dashboard
             </div>
         </div>
     </div>
-    {% endif %}
     <div class="col-sm-4 d-xxxl-none">
         <div class="element-wrapper">
             <h6 class="element-header">Courses</h6>
@@ -144,7 +143,7 @@ Dashboard
                         <div class="activity-time">{{ course.course_code }}</div>
                         <div class="activity-box">
                             <div class="activity-info">
-                                <div class="activity-role">{{ course.course_name }}</div>
+                                <div class="activity-role">{{ course.course_title }}</div>
                                 <strong class="activity-title">{{ course.programme }}</strong></div>
                         </div>
                     </div>
@@ -153,5 +152,7 @@ Dashboard
             </div>
         </div>
     </div>
+    {% endif %}
+
 </div>
 {% endblock content %}

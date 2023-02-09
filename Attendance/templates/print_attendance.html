@@ -25,6 +25,7 @@ Attendance Slip
             <div class="element-box mb-3">
                 <form id="attendanceSheetForm" method="post">
                     {% csrf_token %}
+                    {% if user.person.is_staff %}
                     <h6 class="text-primary">Choose your preferred course to print out attendance slip</h6>
                     <div class="form-group col-8">
                         <label for="course">Courses</label>
@@ -35,8 +36,9 @@ Attendance Slip
                             {% endfor %}
                         </select>
                     </div>
+                    {% endif %}
                     <div class="form-buttons col-8" style="text-align:right">
-                        <button class="btn btn-primary" type="submit">Download <i class="os-icon os-icon-download"></i></button>
+                        <button class="btn btn-primary" type="submit">Print Slip <i class="os-icon os-icon-download"></i></button>
                     </div>
                 </form>
             </div>

@@ -238,25 +238,30 @@ class DashboardView(View):
             course_codes = [
                 x.course_code for x in courses
             ]
+            print(course_codes)
             # Get the total number of students for each course
             course_total_students = [
-                len(RegisteredStudent.objects.get(course=x).students.all()) for x in courses
+                len(RegisteredStudent.objects.get(course=x).students.all()) for x in courses if
+                RegisteredStudent.objects.filter(course=x).count() > 0
             ]
             # Get the number of programs offering each course
             course_total_programs = []
             for course in courses:
-                students = RegisteredStudent.objects.get(course=course).students.all()
-                program_list = []
-                for student in students:
-                    program_list.append(student.programme)
-                course_total_programs.append(len(set(program_list)))
+                if RegisteredStudent.objects.filter(course=course).count() > 0:
+                    students = RegisteredStudent.objects.get(course=course).students.all()
+                    program_list = []
+                    for student in students:
+                        program_list.append(student.programme)
+                    course_total_programs.append(len(set(program_list)))
 
             eligible_status = [
-                get_number_of_eligible_students(x) for x in courses
+                get_number_of_eligible_students(x) for x in courses if
+                RegisteredStudent.objects.filter(course=x).count() > 0
             ]
 
             ineligible_status = [
-                get_number_of_ineligible_students(x) for x in courses
+                get_number_of_ineligible_students(x) for x in courses if
+                RegisteredStudent.objects.filter(course=x).count() > 0
             ]
 
             zipped = zip(course_codes, course_total_students, course_total_programs, eligible_status, ineligible_status)
@@ -302,7 +307,8 @@ class DashboardView(View):
                 no_of_ineligible_courses = [
                     x for x in course_attendance_percentage if x < 75
                 ]
-                zipped = zip(course_codes, course_attendance_present, course_attendance_absent, course_attendance_percentage)
+                zipped = zip(course_codes, course_attendance_present, course_attendance_absent,
+                             course_attendance_percentage)
             except Exception:
                 courses = {}
                 zipped = []
@@ -373,6 +379,7 @@ def submit_course(request):
         # split the date input and convert to datetime object
         user_date = date_input.split('-')
         user_date = datetime.date(int(user_date[0]), int(user_date[1]), int(user_date[2]))
+
         # Get the registered students for the course
         student_records = get_object_or_404(RegisteredStudent, course=course)
         # Use a try block
@@ -870,40 +877,40 @@ class PrintAttendanceSheetView(View):
     @method_decorator(login_required())
     # Create post method to handle form submission
     def post(self, request):
-        # Get user input
-        course_code = request.POST.get('course')
+        # Get the current person logged in
+        person = get_object_or_404(Person, user=request.user)
+        # Check if user is a staff
+        if person.is_staff:
+            # Get user input
+            course_code = request.POST.get('course')
 
-        # Get the course using the course code
-        course = get_object_or_404(Course, course_code=course_code)
+            # Get the course using the course code
+            course = get_object_or_404(Course, course_code=course_code)
 
-        # Use a try block
-        try:
-            # Get course attendance for the course for specified date
-            course_attendance = CourseAttendance.objects.filter(course=course).order_by("date")
-            # Get all course attendance dates
-            course_attendance_dates = CourseAttendance.objects.filter(course=course).order_by("date").values_list('date')
-            # Get list of students offering course
-            reg_students = RegisteredStudent.objects.get(course=course)
-            reg_students = reg_students.students.all().order_by('matric_no')
+            # Use a try block
+            try:
+                # Get course attendance for the course for specified date
+                course_attendance = CourseAttendance.objects.filter(course=course).order_by("date")
+                # Get all course attendance dates
+                course_attendance_dates = CourseAttendance.objects.filter(course=course).order_by("date").values_list(
+                    'date')
+                # Get list of students offering course
+                reg_students = RegisteredStudent.objects.get(course=course)
+                reg_students = reg_students.students.all().order_by('matric_no')
 
-            if len(course_attendance) == 0:
+                if len(course_attendance) == 0:
+                    #  Create an error message
+                    messages.error(request, f"Attendance for {course} does not exist")
+                    # Redirect back to the current page
+                    return HttpResponseRedirect(reverse('Attendance:print_attendance_sheet'))
+
+            # If course attendance has not been created before
+            except Exception:
                 #  Create an error message
                 messages.error(request, f"Attendance for {course} does not exist")
                 # Redirect back to the current page
                 return HttpResponseRedirect(reverse('Attendance:print_attendance_sheet'))
 
-        # If course attendance has not been created before
-        except Exception:
-            #  Create an error message
-            messages.error(request, f"Attendance for {course} does not exist")
-            # Redirect back to the current page
-            return HttpResponseRedirect(reverse('Attendance:print_attendance_sheet'))
-
-
-        # Get the current person logged in
-        person = get_object_or_404(Person, user=request.user)
-        # Check if user is a staff
-        if person.is_staff:
             # Create an in-memory output file for the workbook
             output = io.BytesIO()
 
@@ -1064,4 +1071,3 @@ def error_404(request, exception):
 
 def error_500(request):
     return render(request, 'error_400.html')
-
