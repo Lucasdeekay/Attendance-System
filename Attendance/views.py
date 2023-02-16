@@ -725,46 +725,46 @@ def upload_file(request):
                 upload_student(file)
             except Exception:
                 messages.error(request, "Error uploading file")
-                return HttpResponseRedirect(reverse("Attendance:upload"))
+                return HttpResponseRedirect(reverse("Attendance:settings"))
         elif file_type == "staff":
             try:
                 upload_staff(file)
             except Exception:
                 messages.error(request, "Error uploading file")
-                return HttpResponseRedirect(reverse("Attendance:upload"))
+                return HttpResponseRedirect(reverse("Attendance:settings"))
         elif file_type == "course":
             try:
                 upload_course(file)
             except Exception:
                 messages.error(request, "Error uploading file")
-                return HttpResponseRedirect(reverse("Attendance:upload"))
+                return HttpResponseRedirect(reverse("Attendance:settings"))
         elif file_type == "programme":
             try:
                 upload_programme(file)
             except Exception:
                 messages.error(request, "Error uploading file")
-                return HttpResponseRedirect(reverse("Attendance:upload"))
+                return HttpResponseRedirect(reverse("Attendance:settings"))
         elif file_type == "department":
             try:
                 upload_department(file)
             except Exception:
                 messages.error(request, "Error uploading file")
-                return HttpResponseRedirect(reverse("Attendance:upload"))
+                return HttpResponseRedirect(reverse("Attendance:settings"))
         elif file_type == "faculty":
             try:
                 upload_faculty(file)
             except Exception:
                 messages.error(request, "Error uploading file")
-                return HttpResponseRedirect(reverse("Attendance:upload"))
+                return HttpResponseRedirect(reverse("Attendance:settings"))
         elif file_type == "reg_student":
             try:
                 upload_registered_students(file)
             except Exception:
                 messages.error(request, "Error uploading file")
-                return HttpResponseRedirect(reverse("Attendance:upload"))
+                return HttpResponseRedirect(reverse("Attendance:settings"))
 
         messages.error(request, "File upload successful")
-        return HttpResponseRedirect(reverse("Attendance:upload"))
+        return HttpResponseRedirect(reverse("Attendance:settings"))
 
 
 # Create a mail view
