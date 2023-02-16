@@ -850,37 +850,19 @@ class PrintAttendanceSheetView(View):
         if person.is_staff:
             # Get the current logged in staff
             current_staff = get_object_or_404(Staff, person=person)
-            programmes = Programme.objects.filter(department=current_staff.department)
-            #  Filter all the courses in staff department
-            courses = []
-            for x in programmes:
-                prog_courses = Course.objects.filter(programme=x)
-                for y in prog_courses:
-                    courses.append(y)
             # Create a dictionary of data to be accessed on the page
             context = {
                 'user': current_staff,
                 'date': date,
-                'courses': courses,
             }
         # Otherwise
         else:
             # Get the current logged in student
             student = get_object_or_404(Student, person=person)
-            try:
-                # Get all the registered courses by the student
-                reg_students = RegisteredStudent.objects.all()
-                # Get all the courses taken by the student
-                courses = [
-                    x.course for x in reg_students if student in x.students.all()
-                ]
-            except Exception:
-                courses = {}
             # Create a dictionary of data to be accessed on the page
             context = {
                 'user': student,
                 'date': date,
-                'courses': courses,
             }
 
         # login to te page with the data
@@ -895,7 +877,9 @@ class PrintAttendanceSheetView(View):
         # Check if user is a staff
         if person.is_staff:
             # Get user input
-            course_code = request.POST.get('course')
+            course_code = request.POST.get('course').upper()
+
+            course_code = " ".join([course_code[:3], course_code[-3:]])
 
             # Get the course using the course code
             course = get_object_or_404(Course, course_code=course_code)

@@ -28,17 +28,14 @@ Attendance Slip
                     {% if user.person.is_staff %}
                     <h6 class="text-primary">Choose your preferred course to print out attendance slip</h6>
                     <div class="form-group col-8">
-                        <label for="course">Courses</label>
-                        <select class="form-control form-control-sm rounded bright" required name="course" id="course">
-                            <option value="">Select Course</option>
-                            {% for course in courses %}
-                            <option value="{{ course }}">{{ course }}</option>
-                            {% endfor %}
-                        </select>
+                        <input class="form-control form-control-sm rounded bright" placeholder="Enter Course Code"
+                               type="text" name="course" id="course" required>
                     </div>
+                    {% else %}
+                    <h6 class="text-primary mb-3 pb-3">Click the button below to print out attendance slip</h6>
                     {% endif %}
                     <div class="form-buttons col-8" style="text-align:right">
-                        <button class="btn btn-primary" type="submit">Print Slip <i class="os-icon os-icon-download"></i></button>
+                        <button class="btn btn-primary" type="submit">Print Attendance Slip <i class="os-icon os-icon-download"></i></button>
                     </div>
                 </form>
             </div>
