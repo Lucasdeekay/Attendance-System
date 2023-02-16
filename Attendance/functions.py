@@ -230,21 +230,24 @@ def upload_programme(file):
 
 
 def upload_course(file):
-    excel_file = pd.ExcelFile(file)
-    for name in excel_file.sheet_names:
-        if name.upper() != "ALL DEPARTMENTS":
-            programme = get_object_or_404(Programme, programme_name=name.upper())
-            df = pd.read_excel(file, sheet_name=name)
-            data = zip(df.values.tolist())
-            for index, i in enumerate(data):
-                data2 = []
-                for j in i[0]:
-                    data2.append(j)
+    df = pd.read_excel(file)
+    data = zip(df.values.tolist())
+    for index, i in enumerate(data):
+        data2 = []
+        for j in i[0]:
+            data2.append(j)
 
-                course_code, course_title, status, course_unit = data2
-                course = Course.objects.create(course_title=course_title.upper(), course_code=' '.join(course_code.upper().split()),
-                                               programme=programme, course_unit=int(course_unit))
-                course.save()
+        course_code, course_title, course_unit, dep = data2
+        if dep == 'COMPUTER SCIENCE' or dep == 'CYBER SECURITY' or dep == 'SOFTWARE ENGINEERING':
+            department = get_object_or_404(Department, department_name="COMPUTER SCIENCES")
+        elif dep == 'CRIMINOLOGY AND SECURITY STUDIES':
+            department = get_object_or_404(Department, department_name="CRIMINOLOGY")
+        else:
+            department = get_object_or_404(Department, department_name=dep)
+        if Course.objects.filter(course_code=' '.join(course_code.upper().split())).count() < 1:
+            course = Course.objects.create(course_title=course_title.upper(), course_code=' '.join(course_code.upper().split()),
+                                           course_unit=int(course_unit), department=department)
+            course.save()
 
 
 def upload_registered_students(file):
@@ -272,8 +275,8 @@ def upload_registered_students(file):
         for i in df:
             if Student.objects.filter(matric_no=i).count() == 1 and i != 'Matric No':
                 student = Student.objects.get(matric_no=i)
-                if Course.objects.filter(course_code=course_code, programme=student.programme).count() == 1:
-                    course = Course.objects.get(course_code=course_code, programme=student.programme)
+                if Course.objects.filter(course_code=course_code, department=student.programme.department).count() == 1:
+                    course = Course.objects.get(course_code=course_code, department=student.programme.department)
                     if RegisteredStudent.objects.filter(course=course).count() == 1:
                         reg_students = get_object_or_404(RegisteredStudent, course=course)
                     else:

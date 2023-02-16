@@ -23,12 +23,8 @@ Take Attendance
                         <div class="col-sm-12" id="formDiv">
                             <form class="form-inline justify-content-sm-end" method="post" id="courseForm">
                                 {% csrf_token %}
-                                <select class="form-control form-control-sm rounded bright" name="course" id="course" required>
-                                    <option value="">Select Course</option>
-                                    {% for course in courses %}
-                                    <option value="{{ course.course_code }}">{{ course.course_code }}</option>
-                                    {% endfor %}
-                                </select>
+                                <input class="form-control form-control-sm rounded bright" placeholder="Enter Course Code"
+                                           type="text" name="course" id="course" required>
                                 <input class="form-control form-control-sm rounded bright"
                                        type="date" name="date" id="date" required>
 
@@ -40,7 +36,7 @@ Take Attendance
                     </div>
                 </div>
                 <div class="table-responsive">
-                    <table class="table table-striped table-hover">
+                    <table class="table table-striped table-hover" style="max-height: 400px; overflow-y: auto;">
                         <thead>
                         <tr>
                             <th>Name</th>
@@ -55,21 +51,6 @@ Take Attendance
                         </tbody>
                     </table>
                 </div>
-
-                <!--TODO:ADD PAGINATION-->
-                <!--<div class="controls-below-table">
-                    <div class="table-records-info">Showing records 1 - 5</div>
-                    <div class="table-records-pages">
-                        <ul>
-                            <li><a href="#">Previous</a></li>
-                            <li><a class="current" href="#">1</a></li>
-                            <li><a href="#">2</a></li>
-                            <li><a href="#">3</a></li>
-                            <li><a href="#">4</a></li>
-                            <li><a href="#">Next</a></li>
-                        </ul>
-                    </div>
-                </div>-->
             </div>
         </div>
     </div>
@@ -102,9 +83,27 @@ $('#courseForm').submit(function(e) {
             }
             else{
                 for (var key in data.student_records){
-                    var temp = `<tr>
-                                <td><h6>${ data.student_bio[key] }</h6></td>
-                                <td><h6>${ data.student_records[key].matric_no}</h6></td>
+                    var temp = '';
+                    if (data.student_attendance[key][2]) {
+                        var temp = `<tr>
+                                <td><h6>${ data.student_bio[key][0] }</h6></td>
+                                <td><h6>${ data.student_bio[key][1] }</h6></td>
+                                <td>
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        <input class="form-control" type="checkbox"
+                                           id="${ data.student_attendance[key][0] }"
+                                           value="${ data.student_attendance[key][2] }"
+                                               checked
+                                            onclick="validateCheckbox(this)">
+                                    </form>
+                                </td>
+                            </tr>`;
+                    }
+                    else {
+                        var temp = `<tr>
+                                <td><h6>${ data.student_bio[key][0] }</h6></td>
+                                <td><h6>${ data.student_bio[key][1] }</h6></td>
                                 <td>
                                     <form method="post">
                                         {% csrf_token %}
@@ -115,10 +114,8 @@ $('#courseForm').submit(function(e) {
                                     </form>
                                 </td>
                             </tr>`;
-                    $("#tbody").append(temp);
-                    if (data.student_attendance[key][2]) {
-                        $('#'+data.student_attendance[key][0]).attr('checked', 'checked');
                     }
+                    $("#tbody").append(temp);
 
                     var form = `<div class="form-inline justify-content-sm-end">
                                     {% csrf_token %}
@@ -211,22 +208,21 @@ function submitSearch(e) {
 };
 
 function validateCheckbox(e){
-    $(function(){
-        $.ajax({
-            type: 'POST',
-            url: "{% url 'Attendance:validate_checkbox' %}",
-            data:{
-                id: e.id,
-                value: e.value,
-                csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
-            },
-            success: function(data){
-                var toast = `<div class="${ data.color }" role="alert"><strong>${ data.msg }</strong></div>`;
-                $("#toast").html(toast);
-                $("#toast").fadeIn(3000);
-                $("#toast").fadeOut(3000);
-            },
-        });
+    $.ajax({
+        type: 'POST',
+        url: "{% url 'Attendance:validate_checkbox' %}",
+        data:{
+            id: e.id,
+            value: e.value,
+            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+        },
+        success: function(data){
+            console.log(data);
+            var toast = `<div class="${ data.color }" role="alert"><strong>${ data.msg }</strong></div>`;
+            $("#toast").html(toast);
+            $("#toast").fadeIn(3000);
+            $("#toast").fadeOut(3000);
+        },
     });
 }
 {% endblock javascript %}

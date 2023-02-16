@@ -229,16 +229,11 @@ class DashboardView(View):
             staff = get_object_or_404(Staff, person=person)
             programmes = Programme.objects.filter(department=staff.department)
             #  Filter all the courses in staff department
-            courses = []
-            for x in programmes:
-                prog_courses = Course.objects.filter(programme=x)
-                for y in prog_courses:
-                    courses.append(y)
+            courses = Course.objects.filter(department=staff.department)
             # Get all the course codes
             course_codes = [
                 x.course_code for x in courses
             ]
-            print(course_codes)
             # Get the total number of students for each course
             course_total_students = [
                 len(RegisteredStudent.objects.get(course=x).students.all()) for x in courses if
@@ -343,13 +338,8 @@ class AttendanceRegisterView(View):
         if person.is_staff:
             # Get the current logged in staff
             current_staff = get_object_or_404(Staff, person=person)
-            programmes = Programme.objects.filter(department=current_staff.department)
             #  Filter all the courses in staff department
-            courses = []
-            for x in programmes:
-                prog_courses = Course.objects.filter(programme=x)
-                for y in prog_courses:
-                    courses.append(y)
+            courses = Course.objects.filter(department=current_staff.department)
             # Get the current date
             date = timezone.now().date().today()
             # Create a dictionary of data to be accessed on the page
@@ -371,8 +361,10 @@ def submit_course(request):
     # Check if request method is POST
     if request.method == "POST":
         # Get the user input
-        course_code = request.POST.get("course")
+        course_code = request.POST.get("course").upper()
         date_input = request.POST.get('date')
+
+        course_code = " ".join([course_code[:3], course_code[-3:]])
 
         # Get the course using the course code
         course = get_object_or_404(Course, course_code=course_code)
@@ -386,6 +378,24 @@ def submit_course(request):
         try:
             # Get course attendance for the course for today
             course_attendance = get_object_or_404(CourseAttendance, date=user_date, course=course)
+            # Get a list of all the ids of students in the course attendance
+            student_attendance_ids = course_attendance.student_attendance.values_list('student')
+            # Create a list 2d list containing each student name and matric no
+            student_bio = [
+                [get_object_or_404(Student, id=x[0]).person.full_name,
+                 get_object_or_404(Student, id=x[0]).matric_no] for x in student_attendance_ids
+            ]
+            # Create a dictionary of data containing the list of all registered student for the course
+            # and the list of individual attendance for the course
+            context = {
+                'student_records': list(student_records.students.all().values()),
+                'student_attendance': list(course_attendance.student_attendance.all().values_list()),
+                'student_bio': student_bio,
+                'date': date_input,
+                'course': course_code,
+            }
+            # return data back to the page
+            return JsonResponse(context)
         # If course attendance has not been created before
         except Exception:
             # Create course attendance for the course for today
@@ -397,13 +407,13 @@ def submit_course(request):
                 student_attendance = StudentAttendance.objects.create(student=student, is_present=False, date=user_date)
                 # Add the individual student attendance to the course attendance
                 course_attendance.student_attendance.add(student_attendance)
-        # always run
-        finally:
-            # Get all students records
+
             student_records = student_records.students.all()
+            # Get all students records
             student_bio = [
-                x.person.full_name for x in student_records
+                [x.person.full_name, x.matric_no] for x in student_records
             ]
+
             # Create a dictionary of data containing the list of all registered student for the course
             # and the list of individual attendance for the course
             context = {
@@ -422,10 +432,12 @@ def search_attendance_register(request):
     # Check if request method is POST
     if request.method == "POST":
         # Get user input
-        course_code = request.POST.get('course')
+        course_code = request.POST.get('course').upper()
         date_input = request.POST.get('date')
         text = request.POST.get('text')
         mode = request.POST.get('searchMethod')
+
+        course_code = " ".join([course_code[:3], course_code[-3:]])
 
         # Get the course using the course code
         course = get_object_or_404(Course, course_code=course_code)
@@ -511,10 +523,11 @@ def validate_checkbox(request):
 
         # Save the updated data
         student.save()
+        print(student)
 
         # Create a dictionary of data to be returned to the page
         context = {
-            'msg': f"{student.student.student_name}'s attendance status updated",
+            'msg': f"{student.student.matric_no}'s attendance status updated",
             'color': 'alert alert-success',
         }
         # return data back to page
@@ -536,13 +549,8 @@ class AttendanceSheetView(View):
         if person.is_staff:
             # Get the current logged in staff
             current_staff = get_object_or_404(Staff, person=person)
-            programmes = Programme.objects.filter(department=current_staff.department)
             #  Filter all the courses in staff department
-            courses = []
-            for x in programmes:
-                prog_courses = Course.objects.filter(programme=x)
-                for y in prog_courses:
-                    courses.append(y)
+            courses = Course.objects.filter(department=current_staff.department)
             # Get the current date
             date = timezone.now().date().today()
             # Create a dictionary of data to be accessed on the page
@@ -564,8 +572,10 @@ def get_attendance_records(request):
     # Check if request method is POST
     if request.method == "POST":
         # Get user input
-        course_code = request.POST.get('course')
+        course_code = request.POST.get('course').upper()
         date_input = request.POST.get('date')
+
+        course_code = " ".join([course_code[:3], course_code[-3:]])
 
         # Get the course using the course code
         course = get_object_or_404(Course, course_code=course_code)
@@ -586,6 +596,7 @@ def get_attendance_records(request):
                 [get_object_or_404(Student, id=x[0]).person.full_name,
                  get_object_or_404(Student, id=x[0]).matric_no] for x in student_attendance_ids
             ]
+
             # Create a dictionary of data to be returned to the page
             context = {
                 'student_attendance_status': list(student_attendance_status),
@@ -605,10 +616,12 @@ def search_attendance_sheet(request):
     # Check if request method is POST
     if request.method == "POST":
         # Get user input
-        course_code = request.POST.get('course')
+        course_code = request.POST.get('course').upper()
         date_input = request.POST.get('date')
         text = request.POST.get('text')
         mode = request.POST.get('searchMethod')
+
+        course_code = " ".join([course_code[:3], course_code[-3:]])
 
         # Get the course using the course code
         course = get_object_or_404(Course, course_code=course_code)
