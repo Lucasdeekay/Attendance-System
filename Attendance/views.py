@@ -881,8 +881,14 @@ class PrintAttendanceSheetView(View):
 
             course_code = " ".join([course_code[:3], course_code[-3:]])
 
-            # Get the course using the course code
-            course = get_object_or_404(Course, course_code=course_code)
+            try:
+                # Get the course using the course code
+                course = get_object_or_404(Course, course_code=course_code)
+            except Exception:
+                #  Create an error message
+                messages.error(request, f"{course} does not exist")
+                # Redirect back to the current page
+                return HttpResponseRedirect(reverse('Attendance:print_attendance_sheet'))
 
             # Use a try block
             try:
