@@ -161,7 +161,7 @@ def upload_staff(file):
 
 
 def upload_student(file):
-    df = pd.read_excel(file, sheet_name="ALL")
+    df = pd.read_excel(file)
     data = zip(df.values.tolist())
     for index, i in enumerate(data):
         data2 = []
