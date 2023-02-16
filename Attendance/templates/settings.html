@@ -16,6 +16,12 @@ Profile Settings
 
 {% block content %}
 
+<div id="toast"></div>
+<div id="toast2">
+    {% for message in messages %}
+    <div class="alert alert-success" role="alert"><strong>Success!!! </strong>{{ message }}</div>
+    {% endfor %}
+</div>
 <div class="row">
     <div class="col-sm-5">
         <div class="user-profile compact">
@@ -105,6 +111,48 @@ Profile Settings
                 </div>
             </div>
         </div>
+        {% if superuser %}
+        <div class="element-wrapper">
+            <div class="element-box">
+                <form action="{% url 'Attendance:upload_file' %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="element-info">
+                        <div class="element-info-with-icon">
+                            <div class="element-info-icon">
+                                <div class="os-icon os-icon-ui-46"></div>
+                            </div>
+                            <div class="element-info-text">
+                                <h5 class="element-inner-header">Upload Sheet</h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-group input-group-sm mb-3">
+                        <div class="custom-file">
+                            <select class="form-control form-control-sm rounded bright" required name="type" id="type">
+                                <option value="">Select...</option>
+                                <option value="reg_student">Register Students</option>
+                                <option value="student">Students</option>
+                                <option value="staff">Staff</option>
+                                <option value="course">Courses</option>
+                                <option value="programme">Programmes</option>
+                                <option value="department">Departments</option>
+                                <option value="faculty">Faculties</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="input-group input-group-sm mb-3">
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input" name="file" id="file">
+                            <label class="custom-file-label" for="file">Choose file</label>
+                        </div>
+                        <div class="input-group-append">
+                            <button class="btn btn-sm btn-primary">Upload <i class="os-icon os-icon-upload"></i></button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endif %}
     </div>
     <div class="col-sm-7">
         <div class="element-wrapper">
@@ -121,13 +169,14 @@ Profile Settings
                             </div>
                         </div>
                     </div>
-                    <div id="toast"></div>
                     {% include 'form2.html' with form=form %}
                     <div class="form-group col-8" style="text-align:right">
                         <button class="btn btn-primary" type="submit">Submit <i class="os-icon os-icon-send"></i></button>
                     </div>
                 </form>
             </div>
+        </div>
+        <div class="element-wrapper">
             <div class="element-box">
                 <form action="{% url 'Attendance:update_image' %}" method="post" enctype="multipart/form-data">
                     {% csrf_token %}
@@ -140,11 +189,6 @@ Profile Settings
                                 <h5 class="element-inner-header">Upload Profile Picture</h5>
                             </div>
                         </div>
-                    </div>
-                    <div id="toast2">
-                        {% for message in messages %}
-                        <div class="alert alert-success" role="alert"><strong>Success!!! </strong>{{ message }}</div>
-                        {% endfor %}
                     </div>
                     <div class="input-group input-group-sm mb-3">
                         <div class="custom-file">

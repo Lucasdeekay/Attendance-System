@@ -3,7 +3,7 @@ from rest_framework import routers
 
 from Attendance import views
 from Attendance.views import DashboardView, AttendanceRegisterView, AttendanceSheetView, SettingsView, \
-    PrintAttendanceSheetView, LoginView, LogoutView, MailView, UploadView, ForgotPasswordView, CheckUserView
+    PrintAttendanceSheetView, LoginView, LogoutView, MailView, ForgotPasswordView, CheckUserView
 from Attendance.api_views import FacultyViewSet, DepartmentViewSet, StaffViewSet, StudentViewSet, CourseViewSet, \
     StudentAttendanceViewSet, CourseAttendanceViewSet, ProgrammeViewSet, RegisteredStudentViewSet, PersonViewSet
 
@@ -23,7 +23,6 @@ router.register('course_attendance', CourseAttendanceViewSet)
 
 urlpatterns = [
     path('', LoginView.as_view(), name="login"),
-    path('upload', UploadView.as_view(), name="upload"),
     path('forgot_password/<int:id>', ForgotPasswordView.as_view(), name="forgot_password"),
     path('forgot_password/verify_user', CheckUserView.as_view(), name="verify_user"),
     path('logout', LogoutView.as_view(), name="logout"),
@@ -33,6 +32,7 @@ urlpatterns = [
     path('profile/settings/mail/send', views.send_mail, name="send_mail"),
     path('profile/settings/update_password', views.update_password, name="update_password"),
     path('profile/settings/update_image', views.update_image, name="update_image"),
+    path('profile/settings/upload', views.upload_file, name="upload_file"),
     path('attendance', AttendanceRegisterView.as_view(), name="attendance_register"),
     path('attendance/search', views.search_attendance_register, name="search_attendance_register"),
     path('attendance/validate', views.validate_checkbox, name="validate_checkbox"),

@@ -69,77 +69,6 @@ class LoginView(View):
                 return HttpResponseRedirect(reverse('Attendance:login'))
 
 
-# Create a register view
-class UploadView(View):
-    # Add template name
-    template_name = 'upload.html'
-
-    # Create get function
-    def get(self, request):
-        # Check if user is logged in
-        if request.user.is_authenticated:
-            # Redirect back to dashboard if true
-            return HttpResponseRedirect(reverse('Attendance:dashboard'))
-        # Otherwise
-        else:
-            # load the page with the form
-            return render(request, self.template_name)
-
-    # Create post function to process the form on submission
-    def post(self, request):
-        # Check if request method is POST
-        if request.method == "POST":
-            # Get user input
-            file = request.FILES.get('file')
-            file_type = request.POST.get('type')
-
-            if file_type == "student":
-                try:
-                    upload_student(file)
-                except Exception:
-                    messages.error(request, "Error uploading file")
-                    return HttpResponseRedirect(reverse("Attendance:upload"))
-            elif file_type == "staff":
-                try:
-                    upload_staff(file)
-                except Exception:
-                    messages.error(request, "Error uploading file")
-                    return HttpResponseRedirect(reverse("Attendance:upload"))
-            elif file_type == "course":
-                try:
-                    upload_course(file)
-                except Exception:
-                    messages.error(request, "Error uploading file")
-                    return HttpResponseRedirect(reverse("Attendance:upload"))
-            elif file_type == "programme":
-                try:
-                    upload_programme(file)
-                except Exception:
-                    messages.error(request, "Error uploading file")
-                    return HttpResponseRedirect(reverse("Attendance:upload"))
-            elif file_type == "department":
-                try:
-                    upload_department(file)
-                except Exception:
-                    messages.error(request, "Error uploading file")
-                    return HttpResponseRedirect(reverse("Attendance:upload"))
-            elif file_type == "faculty":
-                try:
-                    upload_faculty(file)
-                except Exception:
-                    messages.error(request, "Error uploading file")
-                    return HttpResponseRedirect(reverse("Attendance:upload"))
-            elif file_type == "reg_student":
-                try:
-                    upload_registered_students(file)
-                except Exception:
-                    messages.error(request, "Error uploading file")
-                    return HttpResponseRedirect(reverse("Attendance:upload"))
-
-            messages.error(request, "File upload successful")
-            return HttpResponseRedirect(reverse("Attendance:upload"))
-
-
 # Create a forgot password view
 class ForgotPasswordView(View):
     # Add template name
@@ -704,6 +633,11 @@ class SettingsView(View):
         person = get_object_or_404(Person, user=request.user)
         # Get the current date
         date = timezone.now().date().today()
+
+        superuser = False
+        if request.user.is_superuser:
+            superuser = True
+
         # Check if user is a staff
         if person.is_staff:
             # Get the current logged in staff
@@ -713,6 +647,7 @@ class SettingsView(View):
                 'user': staff,
                 'date': date,
                 'form': form,
+                'superuser': superuser,
             }
         # Otherwise
         else:
@@ -723,6 +658,7 @@ class SettingsView(View):
                 'user': student,
                 'date': date,
                 'form': form,
+                'superuser': superuser,
             }
         # login to te page with the data
         return render(request, self.template_name, context)
@@ -774,6 +710,61 @@ def update_image(request):
     messages.success(request, "Profile picture successfully updated")
     # return data back to page
     return HttpResponseRedirect(reverse("Attendance:settings"))
+
+
+# Create post function to process the form on submission
+def upload_file(self, request):
+    # Check if request method is POST
+    if request.method == "POST":
+        # Get user input
+        file = request.FILES.get('file')
+        file_type = request.POST.get('type')
+
+        if file_type == "student":
+            try:
+                upload_student(file)
+            except Exception:
+                messages.error(request, "Error uploading file")
+                return HttpResponseRedirect(reverse("Attendance:upload"))
+        elif file_type == "staff":
+            try:
+                upload_staff(file)
+            except Exception:
+                messages.error(request, "Error uploading file")
+                return HttpResponseRedirect(reverse("Attendance:upload"))
+        elif file_type == "course":
+            try:
+                upload_course(file)
+            except Exception:
+                messages.error(request, "Error uploading file")
+                return HttpResponseRedirect(reverse("Attendance:upload"))
+        elif file_type == "programme":
+            try:
+                upload_programme(file)
+            except Exception:
+                messages.error(request, "Error uploading file")
+                return HttpResponseRedirect(reverse("Attendance:upload"))
+        elif file_type == "department":
+            try:
+                upload_department(file)
+            except Exception:
+                messages.error(request, "Error uploading file")
+                return HttpResponseRedirect(reverse("Attendance:upload"))
+        elif file_type == "faculty":
+            try:
+                upload_faculty(file)
+            except Exception:
+                messages.error(request, "Error uploading file")
+                return HttpResponseRedirect(reverse("Attendance:upload"))
+        elif file_type == "reg_student":
+            try:
+                upload_registered_students(file)
+            except Exception:
+                messages.error(request, "Error uploading file")
+                return HttpResponseRedirect(reverse("Attendance:upload"))
+
+        messages.error(request, "File upload successful")
+        return HttpResponseRedirect(reverse("Attendance:upload"))
 
 
 # Create a mail view
