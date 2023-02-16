@@ -713,7 +713,7 @@ def update_image(request):
 
 
 # Create post function to process the form on submission
-def upload_file(self, request):
+def upload_file(request):
     # Check if request method is POST
     if request.method == "POST":
         # Get user input
