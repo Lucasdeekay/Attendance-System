@@ -921,27 +921,25 @@ class PrintAttendanceSheetView(View):
             row = col = 0
 
             # Create row headers
-            attendance_sheet.write(row, col, "Last Name")
-            attendance_sheet.write(row, col + 1, "First Name")
-            attendance_sheet.write(row, col + 2, "Matric No")
+            attendance_sheet.write(row, col, "Full Name")
+            attendance_sheet.write(row, col + 1, "Matric No")
 
             # Fill in the respective dates
             for index, date in enumerate(course_attendance_dates):
-                date_col = 3
+                date_col = 2
                 attendance_sheet.write(row, date_col + index, date[0].strftime("%d/%m/%Y"))
 
-            attendance_sheet.write(row, len(course_attendance_dates) + 3, "Eligiblity (%)")
-            attendance_sheet.write(row, len(course_attendance_dates) + 4, "Eligible")
+            attendance_sheet.write(row, len(course_attendance_dates) + 2, "Eligiblity (%)")
+            attendance_sheet.write(row, len(course_attendance_dates) + 3, "Eligible")
 
             # Fill in the names and matric_no
             for student in reg_students:
-                attendance_sheet.write(row + 1, col, student.person.last_name)
-                attendance_sheet.write(row + 1, col + 1, student.person.first_name)
-                attendance_sheet.write(row + 1, col + 2, student.matric_no)
+                attendance_sheet.write(row + 1, col, student.person.full_name)
+                attendance_sheet.write(row + 1, col + 1, student.matric_no)
 
                 row += 1
 
-            date_col = 3
+            date_col = 2
             # Loop through all attendance
             for att in course_attendance:
                 date_row = 1
@@ -961,11 +959,11 @@ class PrintAttendanceSheetView(View):
             # Loop through registered student for the course
             for student in reg_students:
                 present = get_number_of_course_attendance_percentage(course, student)
-                attendance_sheet.write(std_row, len(course_attendance_dates) + 3, f"{present} %")
+                attendance_sheet.write(std_row, len(course_attendance_dates) + 2, f"{present} %")
                 if present < 75:
-                    attendance_sheet.write(std_row, len(course_attendance_dates) + 4, "No")
+                    attendance_sheet.write(std_row, len(course_attendance_dates) + 3, "No")
                 else:
-                    attendance_sheet.write(std_row, len(course_attendance_dates) + 4, "Yes")
+                    attendance_sheet.write(std_row, len(course_attendance_dates) + 3, "Yes")
 
                 std_row += 1
 
@@ -1020,7 +1018,7 @@ class PrintAttendanceSheetView(View):
                 'date': date,
             }
 
-            open('templates/temp.html', "w").write(render_to_string('slip.html', context))
+            open('AttendanceSystem/templates/temp.html', "w").write(render_to_string('slip.html', context))
 
             # Converting the HTML template into a PDF file
             pdf = render_to_pdf('temp.html')
