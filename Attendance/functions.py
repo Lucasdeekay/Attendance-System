@@ -169,6 +169,10 @@ def upload_student(file):
             data2.append(j)
 
         matric_no, full_name, moe, yoa, fac, dep, prog, gender = data2[:8]
+        if prog == 'CRIMINOLOGY AND SECURITY STUDIES':
+            prog = "CRIMINOLOGY"
+        elif prog == 'CYBERSECURITY':
+            prog = "CYBER SECURITY"
         try:
             user = get_object_or_404(User, username=matric_no.upper().strip())
             if user:
