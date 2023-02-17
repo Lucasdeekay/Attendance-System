@@ -168,24 +168,20 @@ def upload_student(file):
         for j in i[0]:
             data2.append(j)
 
-        matric_no, full_name, moe, yoa, fac, dep, prog, gender = data2
-        if "DU" in matric_no.upper() and yoa != "NIL":
-            try:
-                user = get_object_or_404(User, username=matric_no.upper().strip())
-                print(user)
-                if user:
-                    pass
-            except Exception:
-                user = User.objects.create_user(username=matric_no.upper().strip(), password="password")
-                programme = get_object_or_404(Programme, programme_name=prog.upper().strip())
-                person = Person.objects.create(user=user, full_name=full_name.upper().strip(),
-                                               gender=gender.upper().strip())
-                student = Student.objects.create(person=person, matric_no=matric_no.upper().strip(),
-                                                 programme=programme,
-                                                 year_of_entry=yoa.strip())
-                student.save()
-        else:
-            pass
+        matric_no, full_name, moe, yoa, fac, dep, prog, gender = data2[:8]
+        try:
+            user = get_object_or_404(User, username=matric_no.upper().strip())
+            if user:
+                pass
+        except Exception:
+            user = User.objects.create_user(username=matric_no.upper().strip(), password="password")
+            programme = get_object_or_404(Programme, programme_name=prog.upper().strip())
+            person = Person.objects.create(user=user, full_name=full_name.upper().strip(),
+                                           gender=gender.upper().strip())
+            student = Student.objects.create(person=person, matric_no=matric_no.upper().strip(),
+                                             programme=programme,
+                                             year_of_entry=yoa.strip())
+            student.save()
 
 
 def upload_faculty(file):
