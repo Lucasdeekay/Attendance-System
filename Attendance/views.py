@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.core.mail import send_mail
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.template.loader import render_to_string
@@ -801,27 +802,24 @@ class MailView(View):
         # login to te page with the data
         return render(request, self.template_name, context)
 
+    # Create a function to send mail
+    def post(self, request):
+        # Check if request method is POST
+        if request.method == "POST":
+            # Get user input
+            email = request.POST.get('email')
+            title = request.POST.get('title')
+            msg = request.POST.get('msg')
 
-# Create a function to send mail
-def send_mail(request):
-    # Check if request method is POST
-    if request.method == "POST":
-        # Get user input
-        email = request.POST.get('email')
-        title = request.POST.get('title')
-        msg = request.POST.get('msg')
+            context = {'title': title, 'msg': msg}
+            html_message = render_to_string('email.html', context=context)
+            send_mail(title, msg, EMAIL_HOST_USER, [email], html_message=html_message, fail_silently=False)
 
-        context = {'title': title, 'msg': msg}
-        html_message = render_to_string('email.html', context=context)
-        send_mail(title, msg, EMAIL_HOST_USER, [email], html_message=html_message, fail_silently=False)
+            # Create message
+            messages.success(request, "Mail has been successfully sent")
 
-        # Create a dictionary of data to be returned to the page
-        context = {
-            'msg': "Mail has been successfully sent",
-            'color': 'alert alert-success',
-        }
-        # return data back to page
-        return JsonResponse(context)
+            # return data back to page
+            return HttpResponseRedirect(reverse('Attendance:mail'))
 
 
 # Create a print attendance sheet view

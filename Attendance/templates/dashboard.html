@@ -20,7 +20,7 @@ Dashboard
         <div class="element-wrapper">
             <div class="element-content">
                 <div class="row">
-                    <div class="col-sm-7 col-xxxl-7">
+                    <div class="col-sm-5 col-xxxl-5">
                         <div class="user-profile compact">
                             <div class="up-head-w" style="background-image:url({% static 'images/logo2.png' %});">
                                 <div class="up-main-info">
@@ -44,8 +44,8 @@ Dashboard
                             </div>
                         </div>
                     </div>
-                    <div class="col-sm-auto col-xxxl-auto">
-                        <a class="element-box el-tablo box-shadow text-center" style="padding:5px 0px">
+                    <div class="col-sm-7 col-xxxl-7">
+                        <a class="element-box el-tablo text-center">
                             <div class="label">
                                 {% if user.person.is_staff %}
                                 Students' Eligibility Ratio
@@ -56,7 +56,7 @@ Dashboard
                             <!-- DONUT CHART -->
                             <svg onload="calculate({{ eligible }}, {{ ineligible }}, 'Eligible', 'Ineligible', 'donut1')"
                                  id="donut1" width="80%" height="100%"
-                                 viewBox="0 0 80 40">
+                                 viewBox="0 0 100 50">
                             </svg>
                         </a>
                     </div>

@@ -18,11 +18,11 @@ Send Mail
         <div class="element-wrapper">
             <div id="toast">
                 {% for message in messages %}
-                <div class="alert alert-danger" role="alert"><strong>Error! </strong>{{ message }}</div>
+                <div class="alert alert-info" role="alert">{{ message }}</div>
                 {% endfor %}
             </div>
             <div class="mb-3">
-                <form id="mailForm" method="post">
+                <form method="post">
                     {% csrf_token %}
                     <div class="form-group col-8">
                         <div class="form-group">
@@ -56,25 +56,6 @@ Send Mail
 {% endblock content %}
 
 {% block ajax %}
-$('#mailForm').submit(function(e) {
-    e.preventDefault();
-    $.ajax({
-        type: 'POST',
-        url: "{% url 'Attendance:send_mail' %}",
-        data:{
-        email: $("#email").val(),
-        title: $("#title").val(),
-        msg: $("#msg").val(),
-        csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
-    },
-    success: function(data){
-        var toast = `<div class="${ data.color }" role="alert"><strong>${ data.msg }</strong></div>`
-        $("#email").val("");
-        $("#msg").val("");
-        $("#toast").html(toast);
-        $("#toast").fadeIn(3000);
-        $("#toast").fadeOut(3000);
-    },
-    });
-});
+$("#toast").fadeIn(3000);
+$("#toast").fadeOut(3000);
 {% endblock ajax %}
