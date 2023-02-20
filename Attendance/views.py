@@ -621,6 +621,71 @@ def search_attendance_sheet(request):
 
 
 # Create a settings view
+class UploadView(View):
+    # Add template name
+    template_name = 'upload.html'
+
+    # Create get function
+    def get(self, request):
+        # login to te page with the data
+        return render(request, self.template_name)
+
+    # Create post function
+    def post(self, request):
+        # Check if request method is POST
+        if request.method == "POST":
+            # Get user input
+            file = request.FILES.get('file')
+            file_type = request.POST.get('type')
+
+            if file_type == "student":
+                try:
+                    upload_student(file)
+                except Exception:
+                    messages.error(request, "Error uploading file")
+                    return HttpResponseRedirect(reverse("Attendance:upload"))
+            elif file_type == "staff":
+                try:
+                    upload_staff(file)
+                except Exception:
+                    messages.error(request, "Error uploading file")
+                    return HttpResponseRedirect(reverse("Attendance:upload"))
+            elif file_type == "course":
+                try:
+                    upload_course(file)
+                except Exception:
+                    messages.error(request, "Error uploading file")
+                    return HttpResponseRedirect(reverse("Attendance:upload"))
+            elif file_type == "programme":
+                try:
+                    upload_programme(file)
+                except Exception:
+                    messages.error(request, "Error uploading file")
+                    return HttpResponseRedirect(reverse("Attendance:upload"))
+            elif file_type == "department":
+                try:
+                    upload_department(file)
+                except Exception:
+                    messages.error(request, "Error uploading file")
+                    return HttpResponseRedirect(reverse("Attendance:upload"))
+            elif file_type == "faculty":
+                try:
+                    upload_faculty(file)
+                except Exception:
+                    messages.error(request, "Error uploading file")
+                    return HttpResponseRedirect(reverse("Attendance:upload"))
+            elif file_type == "reg_student":
+                try:
+                    upload_registered_students(file)
+                except Exception:
+                    messages.error(request, "Error uploading file")
+                    return HttpResponseRedirect(reverse("Attendance:upload"))
+
+            messages.error(request, "File upload successful")
+            return HttpResponseRedirect(reverse("Attendance:upload"))
+
+
+# Create a settings view
 class SettingsView(View):
     # Add template name
     template_name = 'settings.html'

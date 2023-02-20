@@ -3,7 +3,7 @@ from rest_framework import routers
 
 from Attendance import views
 from Attendance.views import DashboardView, AttendanceRegisterView, AttendanceSheetView, SettingsView, \
-    PrintAttendanceSheetView, LoginView, LogoutView, MailView, ForgotPasswordView, CheckUserView
+    PrintAttendanceSheetView, LoginView, LogoutView, MailView, ForgotPasswordView, CheckUserView, UploadView
 from Attendance.api_views import FacultyViewSet, DepartmentViewSet, StaffViewSet, StudentViewSet, CourseViewSet, \
     StudentAttendanceViewSet, CourseAttendanceViewSet, ProgrammeViewSet, RegisteredStudentViewSet, PersonViewSet
 
@@ -26,6 +26,7 @@ urlpatterns = [
     path('forgot_password/<int:id>', ForgotPasswordView.as_view(), name="forgot_password"),
     path('forgot_password/verify_user', CheckUserView.as_view(), name="verify_user"),
     path('logout', LogoutView.as_view(), name="logout"),
+    path('upload', UploadView.as_view(), name="upload"),
     path('dashboard', DashboardView.as_view(), name="dashboard"),
     path('profile/settings', SettingsView.as_view(), name="settings"),
     path('profile/settings/mail', MailView.as_view(), name="mail"),
