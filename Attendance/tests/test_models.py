@@ -11,7 +11,7 @@ class PersonModelTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         user = User.objects.create_user(username="username", password="password")
-        Person.objects.create(user=user, full_name="John", gender="Male", is_staff=False)
+        Person.objects.create(user=user, full_name="John", email="john@gmail.com", gender="Male", is_staff=False)
 
     def test_user_label(self):
         person = get_object_or_404(Person, full_name="John")
@@ -37,6 +37,11 @@ class PersonModelTest(TestCase):
         person = get_object_or_404(Person, full_name="John")
         max_length = person._meta.get_field("gender").max_length
         self.assertEqual(max_length, 10)
+
+    def test_email_label(self):
+        person = get_object_or_404(Person, full_name="John")
+        field_label = person._meta.get_field("email").verbose_name
+        self.assertEqual(field_label, "gender")
 
     def test_is_staff_label(self):
         person = get_object_or_404(Person, full_name="John")

@@ -10,9 +10,9 @@ Login
 
 
 {% block content %}
-<div class="mx-4" id="toast">
+<div id="toast">
     {% for message in messages %}
-    <div class="alert alert-danger" role="alert"><strong>Error! </strong>{{ message }}</div>
+    <div class="alert alert-info" role="alert"><strong>Message: </strong><i>{{ message }}</i></div>
     {% endfor %}
 </div>
 <form action="" method="post">
@@ -21,7 +21,7 @@ Login
 
     <div class="row">
         <div class="col-6" style="text-align:left">
-            <a href="{% url 'Attendance:verify_user' %}">Forgot Password?</a>
+            <a href="{% url 'Attendance:forgot_password' %}">Forgot Password?</a>
         </div>
         <div class="col-6" style="text-align:right">
             <button class="btn btn-primary">Login <i class="os-icon os-icon-log-in"></i></button>

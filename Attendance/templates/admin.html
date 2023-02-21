@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}
+Attendance Admin
+{% endblock title %}
+
+{% block page_title %}
+Attendance Admin
+{% endblock page_title %}
+
+{% block date %}
+{{ date }}
+{% endblock date %}
+
+{% block content %}
+<div id="toast">
+    {% for message in messages %}
+    <div class="alert alert-info" role="alert">{{ message }}</div>
+    {% endfor %}
+</div>
+
+<div class="row" style="{% if not student_record %}height:730px{% endif %}">
+    <div class="col-sm-4">
+        <div class="element-wrapper">
+            <div class="element-box mb-3">
+                <form action="{% url 'Attendance:upload_file' %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="element-info">
+                        <div class="element-info-with-icon">
+                            <div class="element-info-icon">
+                                <div class="os-icon os-icon-file"></div>
+                            </div>
+                            <div class="element-info-text">
+                                <h5 class="element-inner-header">Upload Spreadsheet</h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-group input-group-sm mb-3">
+                        <div class="custom-file col-10">
+                            <select class="form-control form-control-sm rounded bright" required name="type" id="type">
+                                <option value="">Select...</option>
+                                <option value="reg_student">Register Students</option>
+                                <option value="student">Students</option>
+                                <option value="staff">Staff</option>
+                                <option value="course">Courses</option>
+                                <option value="programme">Programmes</option>
+                                <option value="department">Departments</option>
+                                <option value="faculty">Faculties</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="input-group input-group-sm mb-3">
+                        <div class="form-group col-10">
+                            <input type="file" name="file" id="file"
+                                   style="border: solid 2px #d1d1d182;border-radius: 20px;">
+                        </div>
+                        <div class="form-group col-10" style="text-align:right">
+                            <button class="btn btn-sm btn-primary" type="submit">Upload <i
+                                    class="os-icon os-icon-upload"></i></button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="element-wrapper">
+            <div class="element-box">
+                <form action="{% url 'Attendance:add_student' %}" method="post">
+                    {% csrf_token %}
+                    <div class="element-info">
+                        <div class="element-info-with-icon">
+                            <div class="element-info-icon">
+                                <div class="os-icon os-icon-user-plus"></div>
+                            </div>
+                            <div class="element-info-text">
+                                <h5 class="element-inner-header">Add New Student</h5>
+                            </div>
+                        </div>
+                    </div>
+                    {% include 'form2.html' with form=student_form %}
+                    <div class="form-group col-8" style="text-align:right">
+                        <button class="btn btn-primary" type="submit">Submit <i class="os-icon os-icon-send"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="element-wrapper">
+            <div class="element-box">
+                <form action="{% url 'Attendance:add_staff' %}" method="post">
+                    {% csrf_token %}
+                    <div class="element-info">
+                        <div class="element-info-with-icon">
+                            <div class="element-info-icon">
+                                <div class="os-icon os-icon-user-plus"></div>
+                            </div>
+                            <div class="element-info-text">
+                                <h5 class="element-inner-header">Add New Staff</h5>
+                            </div>
+                        </div>
+                    </div>
+                    {% include 'form2.html' with form=staff_form %}
+                    <div class="form-group col-12" style="text-align:right">
+                        <button class="btn btn-primary" type="submit">Submit <i class="os-icon os-icon-send"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+
+{% block ajax %}
+$("#toast").fadeIn(3000);
+$("#toast").fadeOut(3000);
+{% endblock ajax %}

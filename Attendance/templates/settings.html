@@ -16,14 +16,13 @@ Profile Settings
 
 {% block content %}
 
-<div id="toast"></div>
-<div id="toast2">
+<div id="toast">
     {% for message in messages %}
-    <div class="alert alert-success" role="alert"><strong>Success!!! </strong>{{ message }}</div>
+    <div class="alert alert-info" role="alert"><strong>Message: </strong><i>{{ message }}</i></div>
     {% endfor %}
 </div>
 <div class="row">
-    <div class="col-sm-5">
+    <div class="col-sm-6">
         <div class="user-profile compact">
             <div class="up-head-w" style="background-image:url({% static 'images/logo2.png' %});">
                 <div class="up-main-info">
@@ -111,71 +110,6 @@ Profile Settings
                 </div>
             </div>
         </div>
-        {% if superuser %}
-        <div class="element-wrapper">
-            <div class="element-box">
-                <form action="{% url 'Attendance:upload_file' %}" method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <div class="element-info">
-                        <div class="element-info-with-icon">
-                            <div class="element-info-icon">
-                                <div class="os-icon os-icon-ui-46"></div>
-                            </div>
-                            <div class="element-info-text">
-                                <h5 class="element-inner-header">Upload Sheet</h5>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="input-group input-group-sm mb-3">
-                        <div class="custom-file">
-                            <select class="form-control form-control-sm rounded bright" required name="type" id="type">
-                                <option value="">Select...</option>
-                                <option value="reg_student">Register Students</option>
-                                <option value="student">Students</option>
-                                <option value="staff">Staff</option>
-                                <option value="course">Courses</option>
-                                <option value="programme">Programmes</option>
-                                <option value="department">Departments</option>
-                                <option value="faculty">Faculties</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="input-group input-group-sm mb-3">
-                        <div class="custom-file">
-                            <input type="file" class="custom-file-input" name="file" id="file">
-                            <label class="custom-file-label" for="file">Choose file</label>
-                        </div>
-                        <div class="input-group-append">
-                            <button class="btn btn-sm btn-primary">Upload <i class="os-icon os-icon-upload"></i></button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-        {% endif %}
-    </div>
-    <div class="col-sm-7">
-        <div class="element-wrapper">
-            <div class="element-box">
-                <form id="passwordForm" method="post">
-                    {% csrf_token %}
-                    <div class="element-info">
-                        <div class="element-info-with-icon">
-                            <div class="element-info-icon">
-                                <div class="os-icon os-icon-ui-46"></div>
-                            </div>
-                            <div class="element-info-text">
-                                <h5 class="element-inner-header">Update Password</h5>
-                            </div>
-                        </div>
-                    </div>
-                    {% include 'form2.html' with form=form %}
-                    <div class="form-group col-8" style="text-align:right">
-                        <button class="btn btn-primary" type="submit">Submit <i class="os-icon os-icon-send"></i></button>
-                    </div>
-                </form>
-            </div>
-        </div>
         <div class="element-wrapper">
             <div class="element-box">
                 <form action="{% url 'Attendance:update_image' %}" method="post" enctype="multipart/form-data">
@@ -190,48 +124,83 @@ Profile Settings
                             </div>
                         </div>
                     </div>
-                    <div class="input-group input-group-sm mb-3">
-                        <div class="custom-file">
-                            <input type="file" class="custom-file-input" name="image" id="image">
-                            <label class="custom-file-label" for="image">Choose Image</label>
-                        </div>
-                        <div class="input-group-append">
-                            <button class="btn btn-sm btn-primary" type="submit">Upload <i class="os-icon os-icon-upload"></i></button>
-                        </div>
+                    {% include 'form2.html' with form=image_form %}
+                    <div class="form-group col-12" style="text-align:right">
+                        <button class="btn btn-sm btn-primary" type="submit">Upload <i
+                                class="os-icon os-icon-upload"></i></button>
                     </div>
                     <div>
-                        <small class="text-danger">Image file must not be more than 10mb</small>
+                        <small class="text-danger">Image file should be jpeg, jpg or png and must not exceed
+                            10mb</small>
                     </div>
                 </form>
             </div>
         </div>
     </div>
+    <div class="col-sm-6">
+        <div class="element-wrapper">
+            <div class="element-box">
+                <form action="{% url 'Attendance:update_password' %}" method="post">
+                    {% csrf_token %}
+                    <div class="element-info">
+                        <div class="element-info-with-icon">
+                            <div class="element-info-icon">
+                                <div class="os-icon os-icon-ui-46"></div>
+                            </div>
+                            <div class="element-info-text">
+                                <h5 class="element-inner-header">Update Password</h5>
+                            </div>
+                        </div>
+                    </div>
+                    {% include 'form2.html' with form=form %}
+                    <div class="form-group col-8" style="text-align:right">
+                        <button class="btn btn-primary" type="submit">Submit <i class="os-icon os-icon-send"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% if user.person.is_staff %}
+        <div class="element-wrapper">
+            <div class="element-box">
+                <form action="{% url 'Attendance:register_student' %}" method="post">
+                    {% csrf_token %}
+                    <div class="element-info">
+                        <div class="element-info-with-icon">
+                            <div class="element-info-icon">
+                                <div class="os-icon os-icon-ui-46"></div>
+                            </div>
+                            <div class="element-info-text">
+                                <h5 class="element-inner-header">Register Student</h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group col-8">
+                        <label><label for="matric_no">Matric No:</label> </label>
+                        <input type="text" name="matric_no" placeholder="Full Name" required=""
+                               class="form-control form-control-sm rounded bright" id="matric_no">
+                    </div>
+                    <div class="form-group col-8">
+                        <label><label for="course">Course:</label> </label>
+                        <input type="text" name="course" placeholder="Course" required=""
+                               class="form-control form-control-sm rounded bright" id="course">
+                    </div>
+                    <div class="form-group col-8" style="text-align:right">
+                        <button class="btn btn-primary" type="submit">Submit <i class="os-icon os-icon-send"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+    </div>
 </div>
 {% endblock content %}
 
 {% block ajax %}
+
 $("#toast").hide();
+$("#toast").fadeIn(3000);
+$("#toast").fadeOut(3000);
 
-$("#toast2").fadeIn(3000);
-$("#toast2").fadeOut(3000);
-
-$('#passwordForm').submit(function(e) {
-    e.preventDefault();
-    $.ajax({
-        type: 'POST',
-        url: "{% url 'Attendance:update_password' %}",
-        data:{
-            password: $("#id_password").val(),
-            confirm_password: $("#id_confirm_password").val(),
-            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
-        },
-        success: function(data){
-            var toast = `
-            <div class="${ data.color }" role="alert"><strong>${ data.msg }</strong></div>`
-            $("#toast").html(toast);
-            $("#toast").fadeIn(3000);
-            $("#toast").fadeOut(3000);
-        },
-    });
-});
 {% endblock ajax %}

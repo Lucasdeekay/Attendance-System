@@ -10,27 +10,17 @@ Upload Spreadsheet
 
 
 {% block content %}
-<div class="mx-4" id="toast">
+<div id="toast">
     {% for message in messages %}
-    <div class="alert alert-danger" role="alert"><strong>Error! </strong>{{ message }}</div>
+    <div class="alert alert-info" role="alert"><strong>Message: </strong><i>{{ message }}</i></div>
     {% endfor %}
 </div>
 <div class="element-wrapper">
-    <div class="element-box">
+    <div class="">
         <form action="{% url 'Attendance:upload_file' %}" method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            <div class="element-info">
-                <div class="element-info-with-icon">
-                    <div class="element-info-icon">
-                        <div class="os-icon os-icon-ui-46"></div>
-                    </div>
-                    <div class="element-info-text">
-                        <h5 class="element-inner-header">Upload Sheet</h5>
-                    </div>
-                </div>
-            </div>
             <div class="input-group input-group-sm mb-3">
-                <div class="custom-file">
+                <div class="custom-file col-10">
                     <select class="form-control form-control-sm rounded bright" required name="type" id="type">
                         <option value="">Select...</option>
                         <option value="reg_student">Register Students</option>
@@ -44,12 +34,13 @@ Upload Spreadsheet
                 </div>
             </div>
             <div class="input-group input-group-sm mb-3">
-                <div class="custom-file">
-                    <input type="file" class="custom-file-input" name="file" id="file">
-                    <label class="custom-file-label" for="file">Choose file</label>
+                <div class="form-group col-10">
+                    <input type="file" name="file" id="file"
+                           style="border: solid 2px #d1d1d182;border-radius: 20px;">
                 </div>
-                <div class="input-group-append">
-                    <button class="btn btn-sm btn-primary">Upload <i class="os-icon os-icon-upload"></i></button>
+                <div class="form-group col-10" style="text-align:right">
+                    <button class="btn btn-sm btn-primary" type="submit">Upload <i
+                            class="os-icon os-icon-upload"></i></button>
                 </div>
             </div>
         </form>

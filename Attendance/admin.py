@@ -1,10 +1,10 @@
 from django.contrib import admin
 from .models import Staff, Student, Faculty, Programme, Department, StudentAttendance, Course, CourseAttendance, \
-    RegisteredStudent, Person
+    RegisteredStudent, Person, Password
 
 
 class PersonAdmin(admin.ModelAdmin):
-    list_display = ('user', 'full_name', 'gender', 'is_staff', 'image')
+    list_display = ('user', 'full_name', 'gender', 'email', 'is_staff', 'image')
 
 
 class FacultyAdmin(admin.ModelAdmin):
@@ -43,6 +43,10 @@ class CourseAttendanceAdmin(admin.ModelAdmin):
     list_display = ('course', 'date', 'session')
 
 
+class PasswordAdmin(admin.ModelAdmin):
+    list_display = ('person', 'recovery_password', 'time', 'is_active')
+
+
 admin.site.register(Person, PersonAdmin)
 admin.site.register(Faculty, FacultyAdmin)
 admin.site.register(Department, DepartmentAdmin)
@@ -53,3 +57,4 @@ admin.site.register(Course, CourseAdmin)
 admin.site.register(RegisteredStudent, RegisteredStudentsAdmin)
 admin.site.register(StudentAttendance, StudentAttendanceAdmin)
 admin.site.register(CourseAttendance, CourseAttendanceAdmin)
+admin.site.register(Password, PasswordAdmin)

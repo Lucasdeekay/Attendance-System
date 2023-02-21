@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from Attendance.models import Faculty, Department, Staff, Student, Course, StudentAttendance, CourseAttendance, \
-    Programme, RegisteredStudent, Person
+    Programme, RegisteredStudent, Person, Password
 
 
 class PersonSerializer(serializers.ModelSerializer):
@@ -61,4 +61,10 @@ class StudentAttendanceSerializer(serializers.ModelSerializer):
 class CourseAttendanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = CourseAttendance
+        fields = "__all__"
+
+
+class PasswordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Password
         fields = "__all__"

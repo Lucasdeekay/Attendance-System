@@ -31,55 +31,35 @@ class LoginForm(forms.Form):
 
 
 class StaffRegisterForm(forms.Form):
-    last_name = forms.CharField(
+    full_name = forms.CharField(
         max_length=30,
         widget=forms.TextInput(
             attrs={
-                'placeholder': 'Enter your last name',
+                'placeholder': 'Full Name',
                 'required': '',
                 'class': 'form-control',
             }
         )
     )
-    first_name = forms.CharField(
+    email = forms.EmailField(
         max_length=30,
-        widget=forms.TextInput(
+        widget=forms.EmailInput(
             attrs={
-                'placeholder': 'Enter your first name',
+                'placeholder': 'Email Address',
                 'required': '',
                 'class': 'form-control',
             }
         )
     )
-    middle_name = forms.CharField(
-        max_length=30,
-        widget=forms.TextInput(
-            attrs={
-                'placeholder': 'Enter your middle name',
-                'required': '',
-                'class': 'form-control',
-            }
-        )
-    )
-    staff_id = forms.CharField(
-        max_length=30,
-        widget=forms.TextInput(
-            attrs={
-                'placeholder': 'Enter your staff id',
-                'required': '',
-                'class': 'form-control',
-            }
-        )
-    )
-    post = forms.CharField(
+    gender = forms.CharField(
         max_length=30,
         widget=forms.Select(
             choices=[
-                ('Lecturer I', 'Lecturer I'),
-                ('Lecturer II', 'Lecturer II'),
+                ('', 'Select Gender...'),
+                ('MALE', 'MALE'),
+                ('FEMALE', 'FEMALE'),
             ],
             attrs={
-                'placeholder': 'Enter your post',
                 'required': '',
                 'class': 'form-control',
             }
@@ -89,16 +69,16 @@ class StaffRegisterForm(forms.Form):
         max_length=30,
         widget=forms.Select(
             choices=[
-                ('Computer Science', 'Computer Science'),
-                ('Biological Science', 'Biological Science'),
-                ('Chemical Science', 'Chemical Science'),
-                ('Business Administration', 'Business Administration'),
-                ('Mass Communication', 'Mass Communication'),
-                ('Criminology', 'Criminology'),
-                ('Accounting', 'Accounting'),
+                ('', 'Select Department...'),
+                ('COMPUTER SCIENCES', 'COMPUTER SCIENCES'),
+                ('BIOLOGICAL SCIENCES', 'BIOLOGICAL SCIENCES'),
+                ('CHEMICAL SCIENCES', 'CHEMICAL SCIENCES'),
+                ('MANAGEMENT SCIENCES', 'MANAGEMENT SCIENCES'),
+                ('MASS COMMUNICATION', 'MASS COMMUNICATION'),
+                ('CRIMINOLOGY', 'CRIMINOLOGY'),
+                ('GENERAL STUDIES', 'GENERAL STUDIES'),
             ],
             attrs={
-                'placeholder': 'Enter your department',
                 'required': '',
                 'class': 'form-control',
             }
@@ -107,42 +87,20 @@ class StaffRegisterForm(forms.Form):
 
     def clean(self):
         cleaned_data = super(StaffRegisterForm, self).clean()
-        last_name = cleaned_data.get('last_name')
-        first_name = cleaned_data.get('first_name')
-        middle_name = cleaned_data.get('middle_name')
-        staff_id = cleaned_data.get('staff_id')
-        post = cleaned_data.get('post')
-        department = cleaned_data.get('last_name')
-        if not last_name or not first_name or not middle_name or not staff_id or not post or not department:
+        full_name = cleaned_data.get('full_name')
+        email = cleaned_data.get('email')
+        gender = cleaned_data.get('gender')
+        department = cleaned_data.get('department')
+        if not full_name or not email or not gender or not department:
             raise forms.ValidationError("Field cannot be empty")
 
 
 class StudentRegisterForm(forms.Form):
-    last_name = forms.CharField(
+    full_name = forms.CharField(
         max_length=30,
         widget=forms.TextInput(
             attrs={
-                'placeholder': 'Enter your last name',
-                'required': '',
-                'class': 'form-control',
-            }
-        )
-    )
-    first_name = forms.CharField(
-        max_length=30,
-        widget=forms.TextInput(
-            attrs={
-                'placeholder': 'Enter your first name',
-                'required': '',
-                'class': 'form-control',
-            }
-        )
-    )
-    middle_name = forms.CharField(
-        max_length=30,
-        widget=forms.TextInput(
-            attrs={
-                'placeholder': 'Enter your middle name',
+                'placeholder': 'Full Name',
                 'required': '',
                 'class': 'form-control',
             }
@@ -152,7 +110,30 @@ class StudentRegisterForm(forms.Form):
         max_length=30,
         widget=forms.TextInput(
             attrs={
-                'placeholder': 'Enter your matric no',
+                'placeholder': 'Matric No',
+                'required': '',
+                'class': 'form-control',
+            }
+        )
+    )
+    email = forms.EmailField(
+        max_length=30,
+        widget=forms.EmailInput(
+            attrs={
+                'placeholder': 'Email Address',
+                'class': 'form-control',
+            }
+        )
+    )
+    gender = forms.CharField(
+        max_length=30,
+        widget=forms.Select(
+            choices=[
+                ('', 'Select Gender...'),
+                ('Male', 'Male'),
+                ('Female', 'Female'),
+            ],
+            attrs={
                 'required': '',
                 'class': 'form-control',
             }
@@ -162,36 +143,40 @@ class StudentRegisterForm(forms.Form):
         max_length=30,
         widget=forms.Select(
             choices=[
-                ('Computer Science', 'Computer Science'),
-                ('Software Engineering', 'Software Engineering'),
-                ('Cyber Security', 'Cyber Security'),
-                ('Biochemistry', 'Biochemistry'),
-                ('Industrial Chemistry', 'Industrial Chemistry'),
-                ('Business Administration', 'Business Administration'),
-                ('Mass Communication', 'Mass Communication'),
-                ('Criminology', 'Criminology'),
-                ('Microbiology', 'Microbiology'),
-                ('Economics', 'Economics'),
-                ('Accounting', 'Accounting'),
+                ('', 'Select Programme...'),
+                ('CYBER SECURITY', 'CYBER SECURITY'),
+                ('COMPUTER SCIENCE', 'COMPUTER SCIENCE'),
+                ('SOFTWARE ENGINEERING', 'SOFTWARE ENGINEERING'),
+                ('MICROBIOLOGY', 'MICROBIOLOGY'),
+                ('INDUSTRIAL CHEMISTRY', 'INDUSTRIAL CHEMISTRY'),
+                ('BIOCHEMISTRY', 'BIOCHEMISTRY'),
+                ('BUSINESS ADMINISTRATION', 'BUSINESS ADMINISTRATION'),
+                ('ECONOMICS', 'ECONOMICS'),
+                ('ACCOUNTING', 'ACCOUNTING'),
+                ('MASS COMMUNICATION', 'MASS COMMUNICATION'),
+                ('CRIMINOLOGY', 'CRIMINOLOGY'),
             ],
             attrs={
-                'placeholder': 'Enter your programme',
                 'required': '',
                 'class': 'form-control',
             }
         )
     )
-    level = forms.CharField(
+    year_of_entry = forms.CharField(
         max_length=30,
         widget=forms.Select(
             choices=[
-                ('100', '100'),
-                ('200', '200'),
-                ('300', '300'),
-                ('400', '400'),
+                ('', 'Select Session...'),
+                ('2022/2023', '2022/2023'),
+                ('2023/2024', '2023/2024'),
+                ('2024/2025', '2024/2025'),
+                ('2025/2026', '2025/2026'),
+                ('2026/2027', '2026/2027'),
+                ('2027/2028', '2027/2028'),
+                ('2028/2029', '2028/2029'),
+                ('2029/2030', '2029/2030'),
             ],
             attrs={
-                'placeholder': 'Enter your level',
                 'required': '',
                 'class': 'form-control',
             }
@@ -199,34 +184,81 @@ class StudentRegisterForm(forms.Form):
     )
 
     def clean(self):
-        cleaned_data = super(StaffRegisterForm, self).clean()
-        last_name = cleaned_data.get('last_name')
-        first_name = cleaned_data.get('first_name')
-        middle_name = cleaned_data.get('middle_name')
+        cleaned_data = super(StudentRegisterForm, self).clean()
+        full_name = cleaned_data.get('full_name')
         matric_no = cleaned_data.get('matric_no')
-        level = cleaned_data.get('level')
+        email = cleaned_data.get('email')
+        gender = cleaned_data.get('gender')
         programme = cleaned_data.get('programme')
-        if not last_name or not first_name or not middle_name or not matric_no or not level or not programme:
+        year_of_entry = cleaned_data.get('year_of_entry')
+        if not full_name or not matric_no or not email or not gender or not programme or not year_of_entry:
+            raise forms.ValidationError("Field cannot be empty")
+
+
+class ForgotPasswordForm(forms.Form):
+    user_id = forms.CharField(
+        max_length=30,
+        widget=forms.TextInput(
+            attrs={
+                'placeholder': 'Enter Matric No/Staff No',
+                'required': '',
+                'class': 'input',
+            }
+        )
+    )
+    email = forms.EmailField(
+        widget=forms.EmailInput(
+            attrs={
+                'placeholder': 'Enter Email',
+                'required': '',
+                'class': 'input',
+            }
+        )
+    )
+
+    def clean(self):
+        cleaned_data = super(ForgotPasswordForm, self).clean()
+        user_id = cleaned_data.get('user_id')
+        email = cleaned_data.get('email')
+        if not user_id or not email:
+            raise forms.ValidationError("Field cannot be empty")
+
+
+class PasswordRetrievalForm(forms.Form):
+    password = forms.CharField(
+        max_length=12,
+        widget=forms.PasswordInput(
+            attrs={
+                'placeholder': 'Enter Password',
+                'required': '',
+                'class': 'input',
+            }
+        )
+    )
+
+    def clean(self):
+        cleaned_data = super(PasswordRetrievalForm, self).clean()
+        password = cleaned_data.get('password')
+        if not password:
             raise forms.ValidationError("Field cannot be empty")
 
 
 class UpdatePasswordForm(forms.Form):
     password = forms.CharField(
-        help_text="Minimum of 8 characters",
         widget=forms.PasswordInput(
             attrs={
-                'placeholder': 'Password',
+                'placeholder': 'Enter Password',
                 'required': '',
-                'class': 'form-control form-control-sm rounded bright',
+                'class': 'input',
             }
         )
     )
     confirm_password = forms.CharField(
         widget=forms.PasswordInput(
             attrs={
-                'placeholder': 'Confirm password',
+                'placeholder': 'Enter Password',
                 'required': '',
-                'class': 'form-control form-control-sm rounded bright',
+                'class': 'input',
             }
         )
     )
@@ -238,4 +270,37 @@ class UpdatePasswordForm(forms.Form):
         if not password or not confirm_password:
             raise forms.ValidationError("Field cannot be empty")
 
+
+class UploadImageForm(forms.Form):
+    image = forms.FileField(
+        widget=forms.FileInput(
+            attrs={
+                'required': '',
+                'class': 'input',
+            }
+        )
+    )
+
+    def clean(self):
+        cleaned_data = super(UploadImageForm, self).clean()
+        image = cleaned_data.get('image')
+        if not image:
+            raise forms.ValidationError("Field cannot be empty")
+
+
+class UploadFileForm(forms.Form):
+    file = forms.FileField(
+        widget=forms.FileInput(
+            attrs={
+                'required': '',
+                'class': 'input',
+            }
+        )
+    )
+
+    def clean(self):
+        cleaned_data = super(UploadImageForm, self).clean()
+        file = cleaned_data.get('file')
+        if not file:
+            raise forms.ValidationError("Field cannot be empty")
 

@@ -1,9 +1,9 @@
 from rest_framework import viewsets
 from Attendance.models import Faculty, Department, Staff, Student, Course, StudentAttendance, CourseAttendance, \
-    Programme, RegisteredStudent, Person
+    Programme, RegisteredStudent, Person, Password
 from Attendance.serializers import FacultySerializer, DepartmentSerializer, StaffSerializer, StudentSerializer, \
     CourseSerializer, StudentAttendanceSerializer, CourseAttendanceSerializer, ProgrammeSerializer, \
-    RegisteredStudentSerializer, PersonSerializer
+    RegisteredStudentSerializer, PersonSerializer, PasswordSerializer
 
 
 class PersonViewSet(viewsets.ModelViewSet):
@@ -54,3 +54,8 @@ class StudentAttendanceViewSet(viewsets.ModelViewSet):
 class CourseAttendanceViewSet(viewsets.ModelViewSet):
     serializer_class = CourseAttendanceSerializer
     queryset = CourseAttendance.objects.all()
+
+
+class PasswordViewSet(viewsets.ModelViewSet):
+    serializer_class = PasswordSerializer
+    queryset = Password.objects.all()

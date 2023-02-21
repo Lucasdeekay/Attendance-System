@@ -89,6 +89,7 @@
                         <ul class="sub-menu" id="att-mobile-slide">
                             <li><a href="{% url 'Attendance:attendance_register' %}">Take Attendance</a></li>
                             <li><a href="{% url 'Attendance:attendance_sheet' %}">View Attendance</a></li>
+                            <li><a href="{% url 'Attendance:track_attendance' %}">Track Student Attendance</a></li>
                         </ul>
                     </li>
                     {% endif %}
@@ -101,12 +102,19 @@
                         </a>
                         <ul class="sub-menu" id="admin-mobile-slide">
                             <li><a href="{% url 'Attendance:print_attendance_sheet' %}">Print Attendance</a></li>
-                            {% if user.person.is_staff %}
-                            <li><a href="{% url 'Attendance:mail' %}">Send Mail</a></li>
-                            {% endif %}
                             <li><a href="{% url 'Attendance:settings' %}">Profile Settings</a></li>
                         </ul>
                     </li>
+                    {% if superuser %}
+                    <li>
+                        <a href="{% url 'Attendance:admin' %}">
+                            <div class="icon-w">
+                                <div class="os-icon os-icon-users"></div>
+                            </div>
+                            <span>Admin</span>
+                        </a>
+                    </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
@@ -166,6 +174,7 @@
                             <ul class="sub-menu">
                                 <li><a href="{% url 'Attendance:attendance_register' %}">Take Attendance</a></li>
                                 <li><a href="{% url 'Attendance:attendance_sheet' %}">View Attendance</a></li>
+                                <li><a href="{% url 'Attendance:track_attendance' %}">Track Student Attendance</a></li>
                             </ul>
                         </div>
                     </div>
@@ -179,19 +188,26 @@
                         <span>Settings</span>
                     </a>
                     <div class="sub-menu-w">
-                        <div class="sub-menu-header">Admin</div>
+                        <div class="sub-menu-header">Settings</div>
                         <div class="sub-menu-icon"><i class="os-icon os-icon-database"></i></div>
                         <div class="sub-menu-i">
                             <ul class="sub-menu">
                                 <li><a href="{% url 'Attendance:print_attendance_sheet' %}">Print Attendance</a></li>
-                                {% if user.person.is_staff %}
-                                <li><a href="{% url 'Attendance:mail' %}">Send Mail</a></li>
-                                {% endif %}
                                 <li><a href="{% url 'Attendance:settings' %}">Profile Settings</a></li>
                             </ul>
                         </div>
                     </div>
                 </li>
+                {% if superuser %}
+                <li>
+                    <a href="{% url 'Attendance:admin' %}">
+                        <div class="icon-w">
+                            <div class="os-icon os-icon-users"></div>
+                        </div>
+                        <span>Admin</span>
+                    </a>
+                </li>
+                {% endif %}
             </ul>
         </div>
         <div class="content-w">
