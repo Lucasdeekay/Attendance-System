@@ -126,13 +126,11 @@ class ForgotPasswordView(View):
                                         time=timezone.now())
 
                 msg = f"Recovery password will expire after an hour. Your password is displayed below"
-                context = {'subject': subject, 'msg': msg, 'recovery_password': recovery_password,
-                           'id': user.id}
+                context = {'title': subject, 'msg': msg, 'recovery_password': recovery_password}
                 html_message = render_to_string('email.html', context=context)
 
                 send_mail(subject, msg, EMAIL_HOST_USER, [email], html_message=html_message, fail_silently=False)
 
-                print(recovery_password)
                 messages.success(request, "Recovery password has been successfully sent")
 
                 # Redirect back to dashboard if true
