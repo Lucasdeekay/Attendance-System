@@ -235,10 +235,15 @@ class CourseModelTest(TestCase):
         field_label = course._meta.get_field("course_unit").verbose_name
         self.assertEqual(field_label, "course unit")
 
-    def test_programme_label(self):
+    def test_department_label(self):
         course = get_object_or_404(Course, course_title="course")
-        field_label = course._meta.get_field("programme").verbose_name
-        self.assertEqual(field_label, "programme")
+        field_label = course._meta.get_field("department").verbose_name
+        self.assertEqual(field_label, "department")
+
+    def test_lecturer_label(self):
+        course = get_object_or_404(Course, course_title="course")
+        field_label = course._meta.get_field("lecturer").verbose_name
+        self.assertEqual(field_label, "lecturer")
 
 
 class RegisteredStudentModelTest(TestCase):

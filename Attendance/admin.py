@@ -20,7 +20,7 @@ class ProgrammeAdmin(admin.ModelAdmin):
 
 
 class StaffAdmin(admin.ModelAdmin):
-    list_display = ('person', 'staff_id', 'post', 'department')
+    list_display = ('id', 'person', 'staff_id', 'post', 'department')
 
 
 class StudentAdmin(admin.ModelAdmin):
@@ -28,11 +28,11 @@ class StudentAdmin(admin.ModelAdmin):
 
 
 class CourseAdmin(admin.ModelAdmin):
-    list_display = ('course_title', 'course_code', 'course_unit', 'department')
+    list_display = ('course_title', 'course_code', 'course_unit', 'department', 'lecturer')
 
 
 class RegisteredStudentsAdmin(admin.ModelAdmin):
-    list_display = ('course', 'session')
+    list_display = ('course', 'semester', 'session')
 
 
 class StudentAttendanceAdmin(admin.ModelAdmin):

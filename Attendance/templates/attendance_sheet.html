@@ -22,8 +22,12 @@ View Attendance
                         <div class="col-sm-12" id="formDiv">
                             <form class="form-inline justify-content-sm-end" method="post" id="dateCourseForm">
                                 {% csrf_token %}
-                                <input class="form-control form-control-sm rounded bright" placeholder="Enter Course Code"
-                                           type="text" name="course" id="course" required>
+                                <select class="form-control form-control-sm rounded bright" name="course" id="course" required>
+                                    <option value="">Select Course..</option>
+                                    {% for course in courses %}
+                                    <option value="{{ course.course_code }}">{{ course.course_code }}</option>
+                                    {% endfor %}
+                                </select>
                                 <input class="form-control form-control-sm rounded bright"
                                        type="date" name="date" id="date" required>
                                 <div class="form-group my-2">

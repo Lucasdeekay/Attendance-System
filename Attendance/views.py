@@ -2,6 +2,7 @@ import datetime
 import io
 import string
 
+import pandas as pd
 import requests
 import xlsxwriter
 
@@ -174,7 +175,8 @@ class PasswordRetrievalView(View):
                         context = {'subject': subject, 'msg': msg}
                         html_message = render_to_string('email.html', context=context)
 
-                        send_mail(subject, msg, EMAIL_HOST_USER, [person.email], html_message=html_message, fail_silently=False)
+                        send_mail(subject, msg, EMAIL_HOST_USER, [person.email], html_message=html_message,
+                                  fail_silently=False)
 
                         messages.success(request,
                                          'Account has been successfully recovered. Kindly update your password')
@@ -212,10 +214,11 @@ class UpdatePasswordView(View):
                     context = {'subject': subject, 'msg': msg}
                     html_message = render_to_string('email.html', context=context)
 
-                    send_mail(subject, msg, EMAIL_HOST_USER, [user.email], html_message=html_message, fail_silently=False)
+                    send_mail(subject, msg, EMAIL_HOST_USER, [user.email], html_message=html_message,
+                              fail_silently=False)
 
                     messages.success(request, 'Password successfully changed')
-                    return HttpResponseRedirect(reverse('Attendance:home'))
+                    return HttpResponseRedirect(reverse('Attendance:login'))
                 else:
                     messages.error(request, "Password does not match")
                     return HttpResponseRedirect(reverse('Attendance:update_password', args=(user_id,)))
@@ -243,9 +246,8 @@ class DashboardView(View):
         if person.is_staff:
             # Get the current logged in staff
             staff = get_object_or_404(Staff, person=person)
-            programmes = Programme.objects.filter(department=staff.department)
             #  Filter all the courses in staff department
-            courses = Course.objects.filter(department=staff.department)
+            courses = Course.objects.filter(lecturer=staff)
             # Get all the course codes
             course_codes = [
                 x.course_code for x in courses
@@ -362,7 +364,7 @@ class AttendanceRegisterView(View):
             # Get the current logged in staff
             current_staff = get_object_or_404(Staff, person=person)
             #  Filter all the courses in staff department
-            courses = Course.objects.filter(department=current_staff.department)
+            courses = Course.objects.filter(lecturer=current_staff)
             # Get the current date
             date = timezone.now().date().today()
             # Create a dictionary of data to be accessed on the page
@@ -387,8 +389,6 @@ def submit_course(request):
         # Get the user input
         course_code = request.POST.get("course").upper()
         date_input = request.POST.get('date')
-
-        course_code = " ".join([course_code[:3], course_code[-3:]])
 
         # Get the course using the course code
         course = get_object_or_404(Course, course_code=course_code)
@@ -579,7 +579,7 @@ class AttendanceSheetView(View):
             # Get the current logged in staff
             current_staff = get_object_or_404(Staff, person=person)
             #  Filter all the courses in staff department
-            courses = Course.objects.filter(department=current_staff.department)
+            courses = Course.objects.filter(lecturer=current_staff)
             # Get the current date
             date = timezone.now().date().today()
             # Create a dictionary of data to be accessed on the page
@@ -604,8 +604,6 @@ def get_attendance_records(request):
         # Get user input
         course_code = request.POST.get('course').upper()
         date_input = request.POST.get('date')
-
-        course_code = " ".join([course_code[:3], course_code[-3:]])
 
         # Get the course using the course code
         course = get_object_or_404(Course, course_code=course_code)
@@ -650,8 +648,6 @@ def search_attendance_sheet(request):
         date_input = request.POST.get('date')
         text = request.POST.get('text')
         mode = request.POST.get('searchMethod')
-
-        course_code = " ".join([course_code[:3], course_code[-3:]])
 
         # Get the course using the course code
         course = get_object_or_404(Course, course_code=course_code)
@@ -740,15 +736,12 @@ class TrackAttendanceView(View):
         if person.is_staff:
             # Get the current logged in staff
             current_staff = get_object_or_404(Staff, person=person)
-            #  Filter all the courses in staff department
-            courses = Course.objects.filter(department=current_staff.department)
             # Get the current date
             date = timezone.now().date().today()
             # Create a dictionary of data to be accessed on the page
             context = {
                 'user': current_staff,
                 'date': date,
-                'courses': courses,
                 'superuser': superuser,
             }
             # login to te page with the data
@@ -770,13 +763,14 @@ def get_students(request):
             students = Student.objects.filter(matric_no__icontains=text)
 
             students = [
-               [x.person.id, x.person.full_name, x.matric_no] for x in students
+                [x.person.id, x.person.full_name, x.matric_no] for x in students
             ]
         else:
             # Filter search
             persons = Person.objects.filter(full_name__icontains=text)
             students = [
-                [get_object_or_404(Student, person=x).id, x.full_name, get_object_or_404(Student, person=x).matric_no] for x in persons
+                [get_object_or_404(Student, person=x).id, x.full_name, get_object_or_404(Student, person=x).matric_no]
+                for x in persons
                 if Student.objects.filter(person=x).count() > 0
             ]
             print(students)
@@ -979,7 +973,7 @@ def update_image(request):
     # Check if request method is POST
     if request.method == "POST":
         # Get the submitted form
-        form = UploadImageForm(request.POST)
+        form = UploadImageForm(request.POST, request.FILES)
         # Check if form is valid
         if form.is_valid():
             # Get user input
@@ -1055,9 +1049,9 @@ def register_student(request):
         # Get user input
         matric_no = request.POST.get('matric_no').strip()
         course_code = request.POST.get('course').strip()
+        semester = request.POST.get('semester').strip()
 
         # Get the course using the course code
-        course_code = " ".join([course_code[:3], course_code[-3:]])
         course = get_object_or_404(Course, course_code=course_code)
 
         # Get student
@@ -1068,7 +1062,7 @@ def register_student(request):
             # return data back to page
             return HttpResponseRedirect(reverse("Attendance:settings"))
 
-        reg_students = get_object_or_404(RegisteredStudent, course=course)
+        reg_students = get_object_or_404(RegisteredStudent, course=course, semester=semester)
         if student not in reg_students.students.all():
             reg_students.students.add(student)
         else:
@@ -1102,19 +1096,31 @@ class PrintAttendanceSheetView(View):
         if person.is_staff:
             # Get the current logged in staff
             user = get_object_or_404(Staff, person=person)
+            # Get the current logged in staff
+            current_staff = get_object_or_404(Staff, person=person)
+            #  Filter all the courses in staff department
+            courses = Course.objects.filter(lecturer=current_staff)
+            # Create a dictionary of data to be accessed on the page
+            context = {
+                'user': user,
+                'date': date,
+                'courses': courses,
+                'superuser': superuser,
+                'file_form': file_form,
+            }
 
         # Otherwise
         else:
             # Get the current logged in student
             user = get_object_or_404(Student, person=person)
 
-        # Create a dictionary of data to be accessed on the page
-        context = {
-            'user': user,
-            'date': date,
-            'superuser': superuser,
-            'file_form': file_form,
-        }
+            # Create a dictionary of data to be accessed on the page
+            context = {
+                'user': user,
+                'date': date,
+                'superuser': superuser,
+                'file_form': file_form,
+            }
 
         # login to te page with the data
         return render(request, self.template_name, context)
@@ -1129,8 +1135,6 @@ class PrintAttendanceSheetView(View):
         if person.is_staff:
             # Get user input
             course_code = request.POST.get('course').upper()
-
-            course_code = " ".join([course_code[:3], course_code[-3:]])
 
             try:
                 # Get the course using the course code
@@ -1296,7 +1300,7 @@ def upload_attendance_sheet(request):
     # Check if request method is POST
     if request.method == "POST":
         # Get the submitted form
-        form = UploadFileForm(request.POST)
+        form = UploadFileForm(request.POST, request.FILES)
         # Check if form is valid
         if form.is_valid():
             # Get user input
