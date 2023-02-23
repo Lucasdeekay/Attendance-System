@@ -151,14 +151,14 @@ def upload_staff(file):
         for j in i[0]:
             data2.append(j)
 
-        index, full_name, dep, email = data2
+        index, full_name, dep, email, post = data2
         if email == 'nan':
             email = ''
         staff_id = full_name.split()[-1]
         user = User.objects.create_user(username=staff_id.upper(), password="password")
         person = Person.objects.create(user=user, full_name=full_name.upper(), email=email, is_staff=True)
         department = get_object_or_404(Department, department_name=dep.upper())
-        staff = Staff.objects.create(person=person, staff_id=staff_id.upper(), department=department)
+        staff = Staff.objects.create(person=person, staff_id=staff_id.upper(), post=post, department=department)
         staff.save()
 
 
