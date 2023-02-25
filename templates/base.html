@@ -107,9 +107,9 @@
                     </li>
                     {% if superuser %}
                     <li>
-                        <a href="{% url 'Attendance:admin' %}">
+                        <a href="{% url 'Attendance:update_records' %}">
                             <div class="icon-w">
-                                <div class="os-icon os-icon-users"></div>
+                                <div class="os-icon os-icon-user-plus"></div>
                             </div>
                             <span>Update Records</span>
                         </a>
@@ -208,9 +208,9 @@
                 </li>
                 {% if superuser %}
                 <li>
-                    <a href="{% url 'Attendance:admin' %}">
+                    <a href="{% url 'Attendance:update_records' %}">
                         <div class="icon-w">
-                            <div class="os-icon os-icon-users"></div>
+                            <div class="os-icon os-icon-user-plus"></div>
                         </div>
                         <span>Update Records</span>
                     </a>

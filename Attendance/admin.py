@@ -20,7 +20,7 @@ class ProgrammeAdmin(admin.ModelAdmin):
 
 
 class StaffAdmin(admin.ModelAdmin):
-    list_display = ('id', 'person', 'staff_id', 'post', 'department')
+    list_display = ('person', 'staff_id', 'post', 'department')
 
 
 class StudentAdmin(admin.ModelAdmin):

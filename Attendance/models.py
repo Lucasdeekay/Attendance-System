@@ -61,7 +61,8 @@ class Course(models.Model):
     course_code = models.CharField(max_length=10, null=False, blank=False)
     course_unit = models.IntegerField()
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
-    lecturer = models.ForeignKey(Staff, on_delete=models.CASCADE)
+    lecturer = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name='lecturer')
+    others = models.ManyToManyField(Staff)
 
     def __str__(self):
         return self.course_code
@@ -92,6 +93,7 @@ class RegisteredStudent(models.Model):
 
 class StudentAttendance(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
     is_present = models.BooleanField(default=False)
     date = models.DateField()
     session = models.CharField(max_length=10, null=False, blank=False)
@@ -117,7 +119,7 @@ class Password(models.Model):
     is_active = models.BooleanField(null=False, default=True)
 
     def __str__(self):
-        return f"{self.clientele} -> {self.recovery_password}"
+        return f"{self.person} -> {self.recovery_password}"
 
     def expiry(self):
         if (timezone.now() - self.time) >= timezone.timedelta(hours=1):

@@ -132,7 +132,7 @@ def upload_attendance(file):
 
                     course = get_object_or_404(Course, course_code=course_code.upper())
 
-                    student_attendance = StudentAttendance.objects.create(student=student, is_present=attendance_status,
+                    student_attendance = StudentAttendance.objects.create(student=student, course=course, is_present=attendance_status,
                                                                           date=user_date)
 
                     try:
@@ -151,12 +151,16 @@ def upload_staff(file):
         for j in i[0]:
             data2.append(j)
 
-        index, full_name, dep, email, post = data2
-        if email == 'nan':
-            email = ''
+        index, full_name, gender, dep, email, post = data2
+
         staff_id = full_name.split()[-1]
         user = User.objects.create_user(username=staff_id.upper(), password="password")
-        person = Person.objects.create(user=user, full_name=full_name.upper(), email=email, is_staff=True)
+
+        if str(email) == 'nan':
+            person = Person.objects.create(user=user, full_name=full_name.upper(), gender=gender.upper().strip(), is_staff=True)
+        else:
+            person = Person.objects.create(user=user, full_name=full_name.upper(), gender=gender.upper().strip(), email=email, is_staff=True)
+
         department = get_object_or_404(Department, department_name=dep.upper())
         staff = Staff.objects.create(person=person, staff_id=staff_id.upper(), post=post, department=department)
         staff.save()
@@ -170,7 +174,7 @@ def upload_student(file):
         for j in i[0]:
             data2.append(j)
 
-        matric_no, full_name, moe, yoa, fac, dep, prog, gender = data2[:8]
+        matric_no, full_name, moe, yoa, fac, dep, prog, gender, email = data2[:8]
         if prog == 'CRIMINOLOGY AND SECURITY STUDIES':
             prog = "CRIMINOLOGY"
         elif prog == 'CYBERSECURITY':
@@ -182,8 +186,12 @@ def upload_student(file):
         except Exception:
             user = User.objects.create_user(username=matric_no.upper().strip(), password="password")
             programme = get_object_or_404(Programme, programme_name=prog.upper().strip())
-            person = Person.objects.create(user=user, full_name=full_name.upper().strip(),
-                                           gender=gender.upper().strip())
+
+            if str(email) == 'nan':
+                person = Person.objects.create(user=user, full_name=full_name.upper(), gender=gender.upper().strip())
+            else:
+                person = Person.objects.create(user=user, full_name=full_name.upper(), email=email, gender=gender.upper().strip())
+
             student = Student.objects.create(person=person, matric_no=matric_no.upper().strip(),
                                              programme=programme,
                                              year_of_entry=yoa.strip())
@@ -232,24 +240,38 @@ def upload_programme(file):
 
 
 def upload_course(file):
-    df = pd.read_excel(file)
-    data = zip(df.values.tolist())
-    for index, i in enumerate(data):
-        data2 = []
-        for j in i[0]:
-            data2.append(j)
+    excel_file = pd.ExcelFile(file)
+    for department in excel_file.sheet_names:
+        df = pd.read_excel(file, sheet_name=department)
+        data = zip(df.values.tolist())
+        for index, i in enumerate(data):
+            data2 = []
+            for j in i[0]:
+                data2.append(j)
 
-        course_code, course_title, course_unit, dep = data2
-        if dep == 'COMPUTER SCIENCE' or dep == 'CYBER SECURITY' or dep == 'SOFTWARE ENGINEERING':
-            department = get_object_or_404(Department, department_name="COMPUTER SCIENCES")
-        elif dep == 'CRIMINOLOGY AND SECURITY STUDIES':
-            department = get_object_or_404(Department, department_name="CRIMINOLOGY")
-        else:
-            department = get_object_or_404(Department, department_name=dep)
-        if Course.objects.filter(course_code=' '.join(course_code.upper().split())).count() < 1:
-            course = Course.objects.create(course_title=course_title.upper(), course_code=' '.join(course_code.upper().split()),
-                                           course_unit=int(course_unit), department=department)
-            course.save()
+            num, course_code, course_title, course_unit, status, lecturer, others = data2
+            department = get_object_or_404(Department, department_name=department)
+
+            lecturer = str(lecturer).upper().strip().split()[-1]
+            if Staff.objects.filter(staff_id=lecturer).count() == 1:
+                lecturer = get_object_or_404(Staff, staff_id=lecturer)
+                print(num, lecturer)
+            else:
+                lecturer = get_object_or_404(Staff, department=department, post="HOD")
+                print(num, lecturer)
+
+            if Course.objects.filter(course_code=' '.join(course_code.strip().upper().split())).count() < 1:
+                course = Course.objects.create(course_title=course_title.strip().upper(), course_code=' '.join(course_code.strip().upper().split()),
+                                               course_unit=course_unit, department=department, lecturer=lecturer)
+                print(others)
+                if str(others).strip() != "nan":
+                    others = others.strip().split("/")
+                    for x in others:
+                        lecturer = x.upper().split()[-1]
+                        if Staff.objects.filter(staff_id=lecturer).count() == 1:
+                            lecturer = get_object_or_404(Staff, staff_id=lecturer)
+                            course.others.add(lecturer)
+                course.save()
 
 
 def upload_registered_students(file):
@@ -284,3 +306,28 @@ def upload_registered_students(file):
                     else:
                         reg_students = RegisteredStudent.objects.create(course=course)
                     reg_students.students.add(student)
+
+
+def student_course_registration(file):
+    excel_file = pd.ExcelFile(file)
+    for sheet in excel_file.sheet_names:
+        df = pd.read_excel(file, sheet_name=sheet)
+        data = zip(df.values.tolist())
+        for index, i in enumerate(data):
+            data2 = []
+            for j in i[0]:
+                data2.append(j)
+
+            matric_no, course_code, session, semester = data2
+
+            if Student.objects.filter(matric_no=i).count() == 1 and i != 'Matric No':
+                student = Student.objects.get(matric_no=i)
+                if Course.objects.filter(course_code=course_code, department=student.programme.department).count() == 1:
+                    course = Course.objects.get(course_code=course_code, department=student.programme.department)
+                    if RegisteredStudent.objects.filter(course=course).count() == 1:
+                        reg_students = get_object_or_404(RegisteredStudent, course=course)
+                    else:
+                        reg_students = RegisteredStudent.objects.create(course=course)
+                    reg_students.students.add(student)
+
+                    reg_students.save()

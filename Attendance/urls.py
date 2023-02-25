@@ -4,7 +4,7 @@ from rest_framework import routers
 from Attendance import views
 from Attendance.views import DashboardView, AttendanceRegisterView, AttendanceSheetView, SettingsView, \
     PrintAttendanceSheetView, LoginView, LogoutView, ForgotPasswordView, UploadView, \
-    PasswordRetrievalView, UpdatePasswordView, TrackAttendanceView, AdminView
+    PasswordRetrievalView, UpdatePasswordView, TrackAttendanceView, UpdateRecordsView
 from Attendance.api_views import FacultyViewSet, DepartmentViewSet, StaffViewSet, StudentViewSet, CourseViewSet, \
     StudentAttendanceViewSet, CourseAttendanceViewSet, ProgrammeViewSet, RegisteredStudentViewSet, PersonViewSet, \
     PasswordViewSet
@@ -49,7 +49,7 @@ urlpatterns = [
     path('attendance/track_student/view_attendance', views.get_student_attendance, name="get_student_attendance"),
     path('attendance/print', PrintAttendanceSheetView.as_view(), name="print_attendance_sheet"),
     path('attendance/upload', views.upload_attendance_sheet, name="upload_attendance_sheet"),
-    path('attendance/admin', AdminView.as_view(), name="admin"),
+    path('attendance/update_records', UpdateRecordsView.as_view(), name="update_records"),
     path('attendance/admin/add_student', views.add_student, name="add_student"),
     path('attendance/admin/add_staff', views.add_staff, name="add_staff"),
     path('api/', include(router.urls))

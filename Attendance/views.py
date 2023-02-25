@@ -2,8 +2,6 @@ import datetime
 import io
 import string
 
-import pandas as pd
-import requests
 import xlsxwriter
 
 from django.contrib import messages
@@ -428,7 +426,7 @@ def submit_course(request):
             for std in student_records.students.values():
                 student = get_object_or_404(Student, matric_no=std['matric_no'])
                 # Create a student attendance for each student
-                student_attendance = StudentAttendance.objects.create(student=student, is_present=False, date=user_date)
+                student_attendance = StudentAttendance.objects.create(student=student, course=course, is_present=False, date=user_date)
                 # Add the individual student attendance to the course attendance
                 course_attendance.student_attendance.add(student_attendance)
 
@@ -922,19 +920,30 @@ class SettingsView(View):
         if person.is_staff:
             # Get the current logged in staff
             user = get_object_or_404(Staff, person=person)
+            #  Filter all the courses in staff department
+            courses = Course.objects.filter(lecturer=user)
+            # Create a dictionary of data to be accessed on the page
+            context = {
+                'user': user,
+                'date': date,
+                'form': form,
+                'courses': courses,
+                'superuser': superuser,
+                'image_form': image_form,
+            }
         # Otherwise
         else:
             # Get the current logged in staff
             user = get_object_or_404(Student, person=person)
 
-        # Create a dictionary of data to be accessed on the page
-        context = {
-            'user': user,
-            'date': date,
-            'form': form,
-            'superuser': superuser,
-            'image_form': image_form,
-        }
+            # Create a dictionary of data to be accessed on the page
+            context = {
+                'user': user,
+                'date': date,
+                'form': form,
+                'superuser': superuser,
+                'image_form': image_form,
+            }
         # login to te page with the data
         return render(request, self.template_name, context)
 
@@ -1313,9 +1322,9 @@ def upload_attendance_sheet(request):
 
 
 # Create a print attendance sheet view
-class AdminView(View):
+class UpdateRecordsView(View):
     # Add template name
-    template_name = 'admin.html'
+    template_name = 'update_records.html'
 
     # Add a method decorator to make sure user is logged in
     @method_decorator(login_required())
