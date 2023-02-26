@@ -12,8 +12,7 @@
     <meta content="Student Attendance Management System" name="description"/>
     <meta content="width=device-width,initial-scale=1" name="viewport"/>
     <!-- Bootstrap icon cdn -->
-    <!--    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">-->
-    <link rel="stylesheet" href="{% static 'node_modules/bootstrap-icons/font/bootstrap-icons.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
     <!-- Favicons -->
     <link rel="icon"
           href="https://dominionuniversity.edu.ng/wp-content/uploads/2020/07/cropped-DOMINIONLOGO_WHITE-192x192.jpg"
@@ -24,9 +23,8 @@
     <link href="{% static 'css/main5739.css' %}" rel="stylesheet"/>
     <link href="{% static 'css/chart.css' %}" rel="stylesheet"/>
 
-    <script src="{% static 'js/jquery/jquery-3.4.1.js' %}"></script>
     <!--  jQuer cdn  -->
-    <!--    <script src="https://code.jquery.com/jquery-3.6.3.min.js" integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>-->
+    <script src="https://code.jquery.com/jquery-3.6.3.min.js" integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
 </head>
 <body class="menu-position-side menu-side-left full-screen"
       style="height: 100%">
@@ -101,7 +99,7 @@
                             <span>Settings</span>
                         </a>
                         <ul class="sub-menu" id="admin-mobile-slide">
-                            <li><a href="{% url 'Attendance:print_attendance_sheet' %}">Print Attendance</a></li>
+                            <li><a href="{% url 'Attendance:print_attendance_sheet' %}">Print{% if user.person.is_staff %}/Upload{% endif %} Attendance Sheet</a></li>
                             <li><a href="{% url 'Attendance:settings' %}">Profile Settings</a></li>
                         </ul>
                     </li>
@@ -115,6 +113,7 @@
                         </a>
                     </li>
                     {% endif %}
+                    {% if staff %}
                     <li>
                     <a href="{% url 'admin:index' %}">
                         <div class="icon-w">
@@ -123,6 +122,7 @@
                         <span>Admin</span>
                     </a>
                 </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
@@ -200,7 +200,7 @@
                         <div class="sub-menu-icon"><i class="os-icon os-icon-database"></i></div>
                         <div class="sub-menu-i">
                             <ul class="sub-menu">
-                                <li><a href="{% url 'Attendance:print_attendance_sheet' %}">Print Attendance</a></li>
+                                <li><a href="{% url 'Attendance:print_attendance_sheet' %}">Print{% if user.person.is_staff %}/Upload{% endif %} Attendance Sheet</a></li>
                                 <li><a href="{% url 'Attendance:settings' %}">Profile Settings</a></li>
                             </ul>
                         </div>
@@ -216,6 +216,7 @@
                     </a>
                 </li>
                 {% endif %}
+                {% if staff %}
                 <li>
                     <a href="{% url 'admin:index' %}">
                         <div class="icon-w">
@@ -224,6 +225,7 @@
                         <span>Admin</span>
                     </a>
                 </li>
+                {% endif %}
             </ul>
         </div>
         <div class="content-w">

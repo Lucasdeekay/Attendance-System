@@ -237,8 +237,11 @@ class DashboardView(View):
         date = timezone.now().date().today()
 
         superuser = False
+        is_staff = False
         if request.user.is_superuser:
             superuser = True
+        if request.user.is_staff:
+            is_staff = True
 
         # Check if user is a staff
         if person.is_staff:
@@ -285,6 +288,7 @@ class DashboardView(View):
                 'courses': courses,
                 'date': date,
                 'superuser': superuser,
+                'staff': is_staff,
             }
         # Otherwise
         else:
@@ -336,6 +340,7 @@ class DashboardView(View):
                 'ineligible': len(no_of_ineligible_courses),
                 'date': date,
                 'superuser': superuser,
+                'staff': is_staff,
             }
         # Load te page with the data
         return render(request, self.template_name, context)
@@ -354,8 +359,11 @@ class AttendanceRegisterView(View):
         person = get_object_or_404(Person, user=request.user)
 
         superuser = False
+        is_staff = False
         if request.user.is_superuser:
             superuser = True
+        if request.user.is_staff:
+            is_staff = True
 
         # Check if user is a staff
         if person.is_staff:
@@ -371,6 +379,7 @@ class AttendanceRegisterView(View):
                 'date': date,
                 'courses': courses,
                 'superuser': superuser,
+                'staff': is_staff,
             }
             # login to te page with the data
             return render(request, self.template_name, context)
@@ -569,8 +578,11 @@ class AttendanceSheetView(View):
         person = get_object_or_404(Person, user=request.user)
 
         superuser = False
+        is_staff = False
         if request.user.is_superuser:
             superuser = True
+        if request.user.is_staff:
+            is_staff = True
 
         # Check if user is a staff
         if person.is_staff:
@@ -586,6 +598,7 @@ class AttendanceSheetView(View):
                 'date': date,
                 'courses': courses,
                 'superuser': superuser,
+                'staff': is_staff,
             }
             # login to te page with the data
             return render(request, self.template_name, context)
@@ -727,8 +740,11 @@ class TrackAttendanceView(View):
         person = get_object_or_404(Person, user=request.user)
 
         superuser = False
+        is_staff = False
         if request.user.is_superuser:
             superuser = True
+        if request.user.is_staff:
+            is_staff = True
 
         # Check if user is a staff
         if person.is_staff:
@@ -741,6 +757,7 @@ class TrackAttendanceView(View):
                 'user': current_staff,
                 'date': date,
                 'superuser': superuser,
+                'staff': is_staff,
             }
             # login to te page with the data
             return render(request, self.template_name, context)
@@ -913,8 +930,11 @@ class SettingsView(View):
         date = timezone.now().date().today()
 
         superuser = False
+        is_staff = False
         if request.user.is_superuser:
             superuser = True
+        if request.user.is_staff:
+            is_staff = True
 
         # Check if user is a staff
         if person.is_staff:
@@ -929,6 +949,7 @@ class SettingsView(View):
                 'form': form,
                 'courses': courses,
                 'superuser': superuser,
+                'staff': is_staff,
                 'image_form': image_form,
             }
         # Otherwise
@@ -942,6 +963,7 @@ class SettingsView(View):
                 'date': date,
                 'form': form,
                 'superuser': superuser,
+                'staff': is_staff,
                 'image_form': image_form,
             }
         # login to te page with the data
@@ -1098,8 +1120,11 @@ class PrintAttendanceSheetView(View):
         file_form = UploadFileForm()
 
         superuser = False
+        is_staff = False
         if request.user.is_superuser:
             superuser = True
+        if request.user.is_staff:
+            is_staff = True
 
         # Check if user is a staff
         if person.is_staff:
@@ -1115,6 +1140,7 @@ class PrintAttendanceSheetView(View):
                 'date': date,
                 'courses': courses,
                 'superuser': superuser,
+                'staff': is_staff,
                 'file_form': file_form,
             }
 
@@ -1128,6 +1154,7 @@ class PrintAttendanceSheetView(View):
                 'user': user,
                 'date': date,
                 'superuser': superuser,
+                'staff': is_staff,
                 'file_form': file_form,
             }
 
@@ -1291,7 +1318,7 @@ class PrintAttendanceSheetView(View):
                 'date': date,
             }
 
-            open('AttendanceSystem/templates/temp.html', "w").write(render_to_string('slip.html', context))
+            open('temp.html', "w").write(render_to_string('slip.html', context))
 
             # Converting the HTML template into a PDF file
             pdf = render_to_pdf('temp.html')
@@ -1340,8 +1367,11 @@ class UpdateRecordsView(View):
         student_form = StudentRegisterForm()
 
         superuser = False
+        is_staff = False
         if request.user.is_superuser:
             superuser = True
+        if request.user.is_staff:
+            is_staff = True
 
         # Check if user is a staff
         if person.is_staff:
@@ -1358,6 +1388,7 @@ class UpdateRecordsView(View):
             'date': date,
             'superuser': superuser,
             'staff_form': staff_form,
+            'staff': is_staff,
             'student_form': student_form,
         }
 

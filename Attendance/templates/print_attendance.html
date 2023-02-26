@@ -20,13 +20,23 @@ Attendance Slip
 </div>
 
 <div class="row" style="{% if not student_record %}height:450px{% endif %}">
-    <div class="col-sm-7">
+    <div class="col-sm-6">
         <div class="element-wrapper">
             <div class="element-box mb-3">
+                <div class="element-info">
+                        <div class="element-info-with-icon">
+                            <div class="element-info-icon">
+                                <div class="os-icon os-icon-ui-46"></div>
+                            </div>
+                            <div class="element-info-text">
+                                <h5 class="element-inner-header">Print Attendance Sheet</h5>
+                            </div>
+                        </div>
+                    </div>
                 <form id="attendanceSheetForm" method="post">
                     {% csrf_token %}
                     {% if user.person.is_staff %}
-                    <h6 class="text-primary">Choose your preferred course to print out attendance slip</h6>
+                    <h6 class="text-primary">Choose your preferred course</h6>
                     <div class="form-group col-8">
                         <select class="form-control form-control-sm rounded bright" name="course" id="course" required>
                             <option value="">Select Course..</option>
@@ -39,19 +49,30 @@ Attendance Slip
                     <h6 class="text-primary mb-3 pb-3">Click the button below to print out attendance slip</h6>
                     {% endif %}
                     <div class="form-buttons col-8" style="text-align:right">
-                        <button class="btn btn-primary" type="submit">Print Attendance Slip <i class="os-icon os-icon-download"></i></button>
+                        <button class="btn btn-primary" type="submit">Print Slip <i class="os-icon os-icon-download"></i></button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
     {% if user.person.is_staff %}
-    <div class="col-sm-5">
+    <div class="col-sm-6">
         <div class="element-wrapper">
-            <div class="element-box mb-3">
-                <form action="{% url 'Attendance:upload_attendance_sheet' %}" method="post" enctype="multipart/form-data">
+            <div class="element-box">
+                <div>
+                    <div class="element-info">
+                        <div class="element-info-with-icon">
+                            <div class="element-info-icon">
+                                <div class="os-icon os-icon-ui-46"></div>
+                            </div>
+                            <div class="element-info-text">
+                                <h5 class="element-inner-header">Upload Attendance Sheet</h5>
+                            </div>
+                        </div>
+                    </div>
+                    <form action="{% url 'Attendance:upload_attendance_sheet' %}" method="post" enctype="multipart/form-data">
                     {% csrf_token %}
-                    <h6 class="text-primary">Kindly choose your file to upload</h6>
+                    <h6 class="text-primary">Kindly upload attendance sheet</h6>
                     <div class="input-group input-group-sm mb-3">
                         {% include 'form2.html' with form=file_form %}
                         <div class="form-group col-12" style="text-align:right">
@@ -60,6 +81,7 @@ Attendance Slip
                         </div>
                     </div>
                 </form>
+                </div>
             </div>
         </div>
     </div>
