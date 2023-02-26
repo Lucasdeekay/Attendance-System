@@ -263,14 +263,19 @@ def upload_course(file):
             if Course.objects.filter(course_code=' '.join(course_code.strip().upper().split())).count() < 1:
                 course = Course.objects.create(course_title=course_title.strip().upper(), course_code=' '.join(course_code.strip().upper().split()),
                                                course_unit=course_unit, department=department, lecturer=lecturer)
-                print(others)
                 if str(others).strip() != "nan":
-                    others = others.strip().split("/")
-                    for x in others:
-                        lecturer = x.upper().split()[-1]
-                        if Staff.objects.filter(staff_id=lecturer).count() == 1:
-                            lecturer = get_object_or_404(Staff, staff_id=lecturer)
-                            course.others.add(lecturer)
+                    if others.strip().upper() == "ALL LECTURERS":
+                        all_lecturers = Staff.objects.filter(department=department)
+                        for lecturer in all_lecturers:
+                            if lecturer.post != "HOD":
+                                course.others.add(lecturer)
+                    else:
+                        others = others.strip().split("/")
+                        for x in others:
+                            lecturer = x.upper().split()[-1]
+                            if Staff.objects.filter(staff_id=lecturer).count() == 1:
+                                lecturer = get_object_or_404(Staff, staff_id=lecturer)
+                                course.others.add(lecturer)
                 course.save()
 
 
