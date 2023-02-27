@@ -243,7 +243,7 @@ class PasswordRetrievalForm(forms.Form):
             raise forms.ValidationError("Field cannot be empty")
 
 
-class UpdatePasswordForm(forms.Form):
+class ChangePasswordForm(forms.Form):
     password = forms.CharField(
         widget=forms.PasswordInput(
             attrs={
@@ -256,7 +256,44 @@ class UpdatePasswordForm(forms.Form):
     confirm_password = forms.CharField(
         widget=forms.PasswordInput(
             attrs={
-                'placeholder': 'Enter Password',
+                'placeholder': 'Confirm Password',
+                'required': '',
+                'class': 'input',
+            }
+        )
+    )
+
+    def clean(self):
+        cleaned_data = super(ChangePasswordForm, self).clean()
+        password = cleaned_data.get('password')
+        confirm_password = cleaned_data.get('confirm_password')
+        if not password or not confirm_password:
+            raise forms.ValidationError("Field cannot be empty")
+
+
+class UpdatePasswordForm(forms.Form):
+    old_password = forms.CharField(
+        widget=forms.PasswordInput(
+            attrs={
+                'placeholder': 'Enter Old Password',
+                'required': '',
+                'class': 'input',
+            }
+        )
+    )
+    password = forms.CharField(
+        widget=forms.PasswordInput(
+            attrs={
+                'placeholder': 'Enter New Password',
+                'required': '',
+                'class': 'input',
+            }
+        )
+    )
+    confirm_password = forms.CharField(
+        widget=forms.PasswordInput(
+            attrs={
+                'placeholder': 'Confirm New Password',
                 'required': '',
                 'class': 'input',
             }
@@ -265,9 +302,29 @@ class UpdatePasswordForm(forms.Form):
 
     def clean(self):
         cleaned_data = super(UpdatePasswordForm, self).clean()
+        old_password = cleaned_data.get('old_password')
         password = cleaned_data.get('password')
         confirm_password = cleaned_data.get('confirm_password')
-        if not password or not confirm_password:
+        if not old_password or not password or not confirm_password:
+            raise forms.ValidationError("Field cannot be empty")
+
+
+class UpdateEmailForm(forms.Form):
+    email = forms.EmailField(
+        max_length=30,
+        widget=forms.EmailInput(
+            attrs={
+                'placeholder': 'Email Address',
+                'class': 'form-control',
+                'required': '',
+            }
+        )
+    )
+
+    def clean(self):
+        cleaned_data = super(UpdateEmailForm, self).clean()
+        email = cleaned_data.get('email')
+        if not email:
             raise forms.ValidationError("Field cannot be empty")
 
 

@@ -34,6 +34,7 @@ urlpatterns = [
     path('dashboard', DashboardView.as_view(), name="dashboard"),
     path('profile/settings', SettingsView.as_view(), name="settings"),
     path('profile/settings/update_password', views.update_password, name="update_password"),
+    path('profile/settings/update_email', views.update_email, name="update_email"),
     path('profile/settings/update_image', views.update_image, name="update_image"),
     path('profile/settings/upload', views.upload_file, name="upload_file"),
     path('profile/settings/register_student', views.register_student, name="register_student"),

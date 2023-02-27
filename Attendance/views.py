@@ -18,7 +18,7 @@ from django.utils.decorators import method_decorator
 from django.views import View
 
 from Attendance.forms import LoginForm, UpdatePasswordForm, StaffRegisterForm, StudentRegisterForm, ForgotPasswordForm, \
-    PasswordRetrievalForm, UploadImageForm, UploadFileForm
+    PasswordRetrievalForm, UploadImageForm, UploadFileForm, ChangePasswordForm, UpdateEmailForm
 from Attendance.functions import get_number_of_course_attendance_absent, get_number_of_ineligible_students, \
     get_number_of_eligible_students, get_number_of_course_attendance_present, \
     get_number_of_course_attendance_percentage, upload_attendance, upload_student, upload_staff, upload_course, \
@@ -190,14 +190,14 @@ class UpdatePasswordView(View):
     template_name = 'update_password.html'
 
     def get(self, request, user_id):
-        form = UpdatePasswordForm()
+        form = ChangePasswordForm()
         user = get_object_or_404(User, id=user_id)
         context = {'user': user, 'user_id': user_id, 'form': form}
         return render(request, self.template_name, context)
 
     def post(self, request, user_id):
         if request.method == 'POST':
-            form = UpdatePasswordForm(request.POST)
+            form = ChangePasswordForm(request.POST)
             if form.is_valid():
                 password1 = form.cleaned_data['password'].strip()
                 password2 = form.cleaned_data['confirm_password'].strip()
@@ -924,6 +924,7 @@ class SettingsView(View):
     def get(self, request):
         form = UpdatePasswordForm()
         image_form = UploadImageForm()
+        email_form = UpdateEmailForm()
         # Get the current logged in staff
         person = get_object_or_404(Person, user=request.user)
         # Get the current date
@@ -951,6 +952,7 @@ class SettingsView(View):
                 'superuser': superuser,
                 'staff': is_staff,
                 'image_form': image_form,
+                'email_form': email_form,
             }
         # Otherwise
         else:
@@ -965,12 +967,13 @@ class SettingsView(View):
                 'superuser': superuser,
                 'staff': is_staff,
                 'image_form': image_form,
+                'email_form': email_form,
             }
         # login to te page with the data
         return render(request, self.template_name, context)
 
 
-# Create function view to process ajax request
+# Create function view to process request
 def update_password(request):
     # Check if request method is POST
     if request.method == "POST":
@@ -979,24 +982,51 @@ def update_password(request):
         # Check if form is valid
         if form.is_valid():
             # Get user input
+            old_password = form.cleaned_data['old_password'].strip()
             password = form.cleaned_data['password'].strip()
             confirm_password = form.cleaned_data['confirm_password'].strip()
-            # Check if both passwords match
-            if password == confirm_password:
-                # Update password
-                request.user.set_password(password)
-                # Save updated data
-                request.user.save()
-                # Create message report
-                messages.success(request, "Password successfully changed")
-                # return data back to page
-                return HttpResponseRedirect(reverse("Attendance:settings"))
-            # If passwords do not match
+            # Check if old password match
+            if request.user.check_password(old_password):
+                # Check if both passwords match
+                if password == confirm_password:
+                    # Update password
+                    request.user.set_password(password)
+                    # Save updated data
+                    request.user.save()
+                    # Create message report
+                    messages.success(request, "Password successfully changed")
+                    # return data back to page
+                    return HttpResponseRedirect(reverse("Attendance:settings"))
+                # If passwords do not match
+                else:
+                    # Create message report
+                    messages.error(request, "Password does not match")
+                    # return data back to page
+                    return HttpResponseRedirect(reverse("Attendance:settings"))
+            # Otherwise
             else:
-                # Create message report
-                messages.error(request, "Password does not match")
+                messages.error(request, "Old password entered does not match")
                 # return data back to page
                 return HttpResponseRedirect(reverse("Attendance:settings"))
+
+
+# Create function view to process request
+def update_email(request):
+    # Check if request method is POST
+    if request.method == "POST":
+        # Get the submitted form
+        form = UpdatePasswordForm(request.POST)
+        # Check if form is valid
+        if form.is_valid():
+            # Get user input
+            email = form.cleaned_data['email'].strip()
+
+            person = get_object_or_404(Person, user=request.user)
+            person.email = email
+            person.save()
+            messages.error(request, "Email address successfully updated")
+            # return data back to page
+            return HttpResponseRedirect(reverse("Attendance:settings"))
 
 
 # Create function view to process image update
