@@ -115,11 +115,10 @@ class ForgotPasswordView(View):
                     [random.choice(string.ascii_letters + string.digits) for i in range(12)])
                 subject = 'Password Recovery'
 
-                all_passwords = Password.objects.filter(is_active=True)
-                for password in all_passwords:
-                    if password.person == person and password.is_active:
-                        password.is_active = False
-                        break
+                if Password.objects.filter(is_active=True, person=person).count() > 0:
+                    all_passwords = Password.objects.filter(is_active=True, person=person)
+                    for password in all_passwords:
+                            password.is_active = False
 
                 Password.objects.create(person=person, recovery_password=recovery_password,
                                         time=timezone.now())
@@ -147,10 +146,6 @@ class PasswordRetrievalView(View):
     template_name = 'password_retrieval.html'
 
     def get(self, request, user_id):
-        all_passwords = Password.objects.filter(is_active=True)
-        for password in all_passwords:
-            password.expiry()
-
         form = PasswordRetrievalForm()
         user = get_object_or_404(User, id=user_id)
         context = {'user': user, 'user_id': user_id, 'form': form}
@@ -170,7 +165,7 @@ class PasswordRetrievalView(View):
                         passcode.expiry()
                         subject = 'Password Recovery Successful'
                         msg = "Account has been successfully recovered. Kindly proceed to update your password"
-                        context = {'subject': subject, 'msg': msg}
+                        context = {'title': subject, 'msg': msg}
                         html_message = render_to_string('email.html', context=context)
 
                         send_mail(subject, msg, EMAIL_HOST_USER, [person.email], html_message=html_message,
@@ -209,7 +204,7 @@ class UpdatePasswordView(View):
 
                     subject = 'Password Update Successful'
                     msg = "Account password has  been successfully changed"
-                    context = {'subject': subject, 'msg': msg}
+                    context = {'title': subject, 'msg': msg}
                     html_message = render_to_string('email.html', context=context)
 
                     send_mail(subject, msg, EMAIL_HOST_USER, [user.email], html_message=html_message,

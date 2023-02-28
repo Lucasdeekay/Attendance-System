@@ -123,6 +123,6 @@ class Password(models.Model):
 
     def expiry(self):
         if (timezone.now() - self.time) >= timezone.timedelta(hours=1):
-            self.delete()
+            self.is_active = False
         else:
             pass

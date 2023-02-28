@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'cloudinary',
     'widget_tweaks',
     'whitenoise.runserver_nostatic',
+    'django_q',
 ]
 
 MIDDLEWARE = [
@@ -229,3 +230,18 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 SESSION_SAVE_EVERY_REQUEST = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_AGE = 2 * 60
+
+# Configure your Q cluster
+# More details https://django-q.readthedocs.io/en/latest/configure.html
+Q_CLUSTER = {
+    "name": "AttendanceSystem",
+    'workers': 8,
+    'recycle': 500,
+    'timeout': 60,
+    'compress': True,
+    'cpu_affinity': 1,
+    'save_limit': 250,
+    'queue_limit': 500,
+    'label': 'Django Q',
+    "orm": "default",  # Use Django's ORM + database for broker
+}
