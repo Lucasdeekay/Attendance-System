@@ -361,23 +361,59 @@ def upload_course_attendance(file, session):
                 student = Student.objects.get(matric_no=matric_no)
 
                 for index, date in enumerate(dates):
-                    # split the date input and convert to datetime object
-                    user_date = date.split('/')
-                    user_date = datetime.date(int(user_date[0]), int(user_date[1]), int(user_date[2]))
 
-                    filter_val = {'course': course, 'date': user_date}
-                    if CourseAttendance.objects.filter(**filter_val).count() == 1:
-                        course_atendance = CourseAttendance.objects.get(course=course, date=user_date, session=session)
+                    if date.find("(") == -1:
+                        # split the date input and convert to datetime object
+                        user_date = date.strip().split('/')
+                        user_date = datetime.date(int(user_date[0]), int(user_date[1]), int(user_date[2]))
+
+                        filter_val = {'course': course, 'date': user_date}
+
+                        if CourseAttendance.objects.filter(**filter_val).count() > 0:
+                            course_atendance = CourseAttendance.objects.get(course=course, date=user_date,
+                                                                            session=session)
+                        else:
+                            time = datetime.datetime.now().strftime("%H:%M:%S")
+                            course_atendance = CourseAttendance.objects.create(course=course, date=user_date, time=time,
+                                                                               session=session)
+
+                        std_att = StudentAttendance.objects.create(student=student, course=course, date=user_date,
+                                                                   session=session)
+                        if attendance[index] == "Y":
+                            std_att.is_present = True
+
+                        course_atendance.student_attendance.add(std_att)
+                        course_atendance.student_attendance.save()
+
                     else:
-                        time = datetime.datetime.now().strftime("%H:%M:%S")
-                        course_atendance = CourseAttendance.objects.create(course=course, date=user_date, time=time, session=session)
+                        date = date[:date.find("(")]
+                        # split the date input and convert to datetime object
+                        user_date = date.strip().split('/')
+                        user_date = datetime.date(int(user_date[0]), int(user_date[1]), int(user_date[2]))
 
-                    std_att = StudentAttendance.objects.create(student=student, course=course, date=user_date, session=session)
-                    if attendance[index] == "Y":
-                        std_att.is_present = True
+                        filter_val = {'course': course, 'date': user_date}
 
-                    course_atendance.student_attendance.add(std_att)
-                    course_atendance.student_attendance.save()
+                        if CourseAttendance.objects.filter(**filter_val).count() > 1:
+                            course_atendances = CourseAttendance.objects.filter(**filter_val)
+                            greatest = 0
+                            for course_att in course_atendances:
+                                if course_att.id > greatest:
+                                    greatest = course_att.id
+
+                            course_atendance = CourseAttendance.objects.get(id=greatest)
+                        else:
+                            time = datetime.datetime.now().strftime("%H:%M:%S")
+                            course_atendance = CourseAttendance.objects.create(course=course, date=user_date, time=time,
+                                                                               session=session)
+
+                        std_att = StudentAttendance.objects.create(student=student, course=course, date=user_date,
+                                                                   session=session)
+                        if attendance[index] == "Y":
+                            std_att.is_present = True
+
+                        course_atendance.student_attendance.add(std_att)
+                        course_atendance.student_attendance.save()
+
 
 
 
