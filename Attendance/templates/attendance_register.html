@@ -23,6 +23,11 @@ Take Attendance
                         <div class="col-sm-12" id="formDiv">
                             <form class="form-inline justify-content-sm-end" method="post" id="courseForm">
                                 {% csrf_token %}
+                                <select class="form-control form-control-sm rounded bright" name="attrec" id="attrec" required>
+                                    <option value="">Select Attendance Record..</option>
+                                    <option value="new">New</option>
+                                    <option value="existing">Existing</option>
+                                </select>
                                 <select class="form-control form-control-sm rounded bright" name="course" id="course" required>
                                     <option value="">Select Course..</option>
                                     {% for course in courses %}
@@ -63,6 +68,16 @@ Take Attendance
 
 {% block ajax %}
 
+$("#course").hide();
+$("#date").hide();
+$("#attrec").show();
+
+$("#attrec").change(function(){
+    $("#course").show();
+    $("#date").show();
+    $("#attrec").hide();
+});
+
 $("#tbody").addClass("animation");
 
 $('#courseForm').submit(function(e) {
@@ -74,6 +89,125 @@ $('#courseForm').submit(function(e) {
         data:{
             course: $("#course").val(),
             date: $("#date").val(),
+            attrec: $("#attrec").val(),
+            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+        },
+        success: function(data){
+            $("#tbody").empty();
+             if (data.course_attendance){
+                $("#formDiv").empty();
+                temp = `<div class="form-inline justify-content-sm-end">
+                                {% csrf_token %}
+                                <select class="form-control form-control-sm rounded bright" name="time" id="time" required>
+                                    <option value="">Select Timestamp..</option>
+                                </select>
+                                <div class="form-group my-2">
+                                    <button type="submit" class="btn btn-primary" onclick="getAttendance(this)">Submit <i class="os-icon os-icon-send"></i></button>
+                                </div>
+                            </div>`;
+                $("#formDiv").append(temp);
+                for (var key in data.course_attendance){
+                    option = `<option value="${ data.course_attendance[key][0] }">${ data.course_attendance[key][1] }</option>`;
+                    $("#time").append(option);
+                }
+
+                tmp = `<tr>
+                            <td colspan="4"><h6>No record currently available</h6></td>
+                        </tr>`;
+                $("#tbody").append(tmp);
+                $("#tbody").addClass("animation");
+            }
+            else {
+                if (data.student_attendance.length == 0) {
+                    temp = `<tr>
+                                <td colspan="4"><h6>No record currently available</h6></td>
+                            </tr>`;
+                    $("#tbody").append(temp);
+                    $("#tbody").addClass("animation");
+
+                    $("#course").hide();
+                    $("#date").hide();
+                    $("#attrec").show();
+                }
+                else{
+                    for (var key in data.student_records){
+                        var temp = '';
+                        if (data.student_attendance[key][3]) {
+                            var temp = `<tr>
+                                    <td><h6>${ data.student_bio[key][0] }</h6></td>
+                                    <td><h6>${ data.student_bio[key][1] }</h6></td>
+                                    <td>
+                                        <form method="post">
+                                            {% csrf_token %}
+                                            <input class="form-control" type="checkbox"
+                                               id="${ data.student_attendance[key][0] }"
+                                               value="${ data.student_attendance[key][3] }"
+                                                   checked
+                                                onclick="validateCheckbox(this)">
+                                        </form>
+                                    </td>
+                                </tr>`;
+                        }
+                        else {
+                            var temp = `<tr>
+                                    <td><h6>${ data.student_bio[key][0] }</h6></td>
+                                    <td><h6>${ data.student_bio[key][1] }</h6></td>
+                                    <td>
+                                        <form method="post">
+                                            {% csrf_token %}
+                                            <input class="form-control" type="checkbox"
+                                               id="${ data.student_attendance[key][0] }"
+                                               value="${ data.student_attendance[key][3] }"
+                                                onclick="validateCheckbox(this)">
+                                        </form>
+                                    </td>
+                                </tr>`;
+                        }
+                        $("#tbody").append(temp);
+
+                        var form = `<div class="form-inline justify-content-sm-end">
+                                        {% csrf_token %}
+                                        <input type="hidden" id="course_att_id" value="${ data.course_att_id }">
+                                        <select class="form-control form-control-sm rounded bright" name="searchMethod" id="searchMethod" required>
+                                            <option value="">Search By..</option>
+                                            <option value="matric_no">Matric No</option>
+                                            <option value="name">Name</option>
+                                        </select>
+                                        <input class="form-control form-control-sm rounded bright"
+                                               type="text" name="text" id="text" required>
+                                        <div class="form-group my-2">
+                                            <button type="button" class="btn btn-primary" onclick="submitSearch(this)">Submit <i class="os-icon os-icon-send"></i></button>
+                                        </div>
+                                    </div>`;
+                        $("#formDiv").empty();
+                        $("#formDiv").append(form);
+                    }
+                }
+                $("#tbody").addClass("animation");
+            }
+        },
+        error: function(data){
+            $("#tbody").empty();
+            temp = `<tr>
+                        <td colspan="3"><h6>No record currently available</h6></td>
+                    </tr>`;
+            $("#tbody").append(temp);
+            $("#tbody").addClass("animation");
+        },
+    });
+});
+{% endblock ajax %}
+
+
+{% block javascript %}
+
+function getAttendance(e) {
+    $("#tbody").removeClass("animation");
+    $.ajax({
+        type: 'POST',
+        url: "{% url 'Attendance:submit_course_with_time' %}",
+        data:{
+            time: $("#time").val(),
             csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
         },
         success: function(data){
@@ -84,12 +218,15 @@ $('#courseForm').submit(function(e) {
                         </tr>`;
                 $("#tbody").append(temp);
                 $("#tbody").addClass("animation");
+
+                $("#course").hide();
+                $("#date").hide();
+                $("#attrec").show();
             }
             else{
                 for (var key in data.student_records){
                     var temp = '';
                     if (data.student_attendance[key][3]) {
-                        console.log(data.student_attendance[key]);
                         var temp = `<tr>
                                 <td><h6>${ data.student_bio[key][0] }</h6></td>
                                 <td><h6>${ data.student_bio[key][1] }</h6></td>
@@ -124,8 +261,7 @@ $('#courseForm').submit(function(e) {
 
                     var form = `<div class="form-inline justify-content-sm-end">
                                     {% csrf_token %}
-                                    <input type="hidden" id="courseReturn" value="${ data.course }">
-                                    <input type="hidden" id="dateReturn"  value="${ data.date }">
+                                    <input type="hidden" id="course_att_id" value="${ data.course_att_id }">
                                     <select class="form-control form-control-sm rounded bright" name="searchMethod" id="searchMethod" required>
                                         <option value="">Search By..</option>
                                         <option value="matric_no">Matric No</option>
@@ -152,19 +288,15 @@ $('#courseForm').submit(function(e) {
             $("#tbody").addClass("animation");
         },
     });
-});
-{% endblock ajax %}
+};
 
-
-{% block javascript %}
 function submitSearch(e) {
     $("#tbody").removeClass("animation");
     $.ajax({
         type: 'POST',
         url: "{% url 'Attendance:search_attendance_register' %}",
         data:{
-            course: $("#courseReturn").val(),
-            date: $("#dateReturn").val(),
+            course_att_id: $("#course_att_id").val(),
             text: $("#text").val(),
             searchMethod: $("#searchMethod").val(),
             csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
@@ -222,11 +354,10 @@ function validateCheckbox(e){
             csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
         },
         success: function(data){
-            console.log(data);
             var toast = `<div class="${ data.color }" role="alert"><strong>${ data.msg }</strong></div>`;
             $("#toast").html(toast);
-            $("#toast").fadeIn(3000);
-            $("#toast").fadeOut(3000);
+            $("#toast").fadeIn(2000);
+            $("#toast").fadeOut(1000);
         },
     });
 }

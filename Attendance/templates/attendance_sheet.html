@@ -75,52 +75,76 @@ $('#dateCourseForm').submit(function(e) {
         },
         success: function(data){
             $("#tbody").empty();
-            if (data.student_attendance_info.length == 0) {
-                temp = `<tr>
+            if (data.course_attendance){
+                $("#formDiv").empty();
+                temp = `<div class="form-inline justify-content-sm-end">
+                                {% csrf_token %}
+                                <select class="form-control form-control-sm rounded bright" name="time" id="time" required>
+                                    <option value="">Select Timestamp..</option>
+                                </select>
+                                <div class="form-group my-2">
+                                    <button type="submit" class="btn btn-primary" onclick="getAttendance(this)">Submit <i class="os-icon os-icon-send"></i></button>
+                                </div>
+                            </div>`;
+                $("#formDiv").append(temp);
+                for (var key in data.course_attendance){
+                    option = `<option value="${ data.course_attendance[key][0] }">${ data.course_attendance[key][1] }</option>`;
+                    $("#time").append(option);
+                }
+
+                tmp = `<tr>
                             <td colspan="4"><h6>No record currently available</h6></td>
                         </tr>`;
-                $("#tbody").append(temp);
+                $("#tbody").append(tmp);
                 $("#tbody").addClass("animation");
             }
-            else{
-                for (var key in data.student_attendance_info){
-                    var temp = '';
-                    if (data.student_attendance_status[key][0]){
-                        temp = `<tr>
-                                <td><h6>${ data.student_attendance_info[key][0] }</h6></td>
-                                <td><h6>${ data.student_attendance_info[key][1] }</h6></td>
-                                <td><i class="bi bi-check-circle-fill text-success"></i></td>
+            else {
+                if (data.student_attendance_info.length == 0) {
+                    temp = `<tr>
+                                <td colspan="4"><h6>No record currently available</h6></td>
                             </tr>`;
-                    }
-                    else {
-                        temp = `<tr>
-                                <td><h6>${ data.student_attendance_info[key][0] }</h6></td>
-                                <td><h6>${ data.student_attendance_info[key][1] }</h6></td>
-                                <td><i class="bi bi-x-circle-fill text-danger"></i></td>
-                            </tr>`;
-                    }
                     $("#tbody").append(temp);
-
-                    var form = `<div class="form-inline justify-content-sm-end">
-                                    {% csrf_token %}
-                                    <input type="hidden" id="courseReturn" value="${ data.course }">
-                                    <input type="hidden" id="dateReturn"  value="${ data.date }">
-                                    <select class="form-control form-control-sm rounded bright" name="searchMethod" id="searchMethod" required>
-                                        <option value="">Search By..</option>
-                                        <option value="matric_no">Matric No</option>
-                                        <option value="name">Name</option>
-                                    </select>
-                                    <input class="form-control form-control-sm rounded bright"
-                                           type="text" name="text" id="text" required>
-                                    <div class="form-group my-2">
-                                        <button type="button" class="btn btn-primary" onclick="submitSearch(this)">Submit <i class="os-icon os-icon-send"></i></button>
-                                    </div>
-                                </div>`;
-                    $("#formDiv").empty();
-                    $("#formDiv").append(form);
+                    $("#tbody").addClass("animation");
                 }
+                else{
+                    for (var key in data.student_attendance_info){
+                        var temp = '';
+                        if (data.student_attendance_status[key][0]){
+                            temp = `<tr>
+                                    <td><h6>${ data.student_attendance_info[key][0] }</h6></td>
+                                    <td><h6>${ data.student_attendance_info[key][1] }</h6></td>
+                                    <td><i class="bi bi-check-circle-fill text-success"></i></td>
+                                </tr>`;
+                        }
+                        else {
+                            temp = `<tr>
+                                    <td><h6>${ data.student_attendance_info[key][0] }</h6></td>
+                                    <td><h6>${ data.student_attendance_info[key][1] }</h6></td>
+                                    <td><i class="bi bi-x-circle-fill text-danger"></i></td>
+                                </tr>`;
+                        }
+                        $("#tbody").append(temp);
+
+                        var form = `<div class="form-inline justify-content-sm-end">
+                                        {% csrf_token %}
+                                        <input type="hidden" id="course_att_id" value="${ data.course_att_id }">
+                                        <select class="form-control form-control-sm rounded bright" name="searchMethod" id="searchMethod" required>
+                                            <option value="">Search By..</option>
+                                            <option value="matric_no">Matric No</option>
+                                            <option value="name">Name</option>
+                                        </select>
+                                        <input class="form-control form-control-sm rounded bright"
+                                               type="text" name="text" id="text" required>
+                                        <div class="form-group my-2">
+                                            <button type="button" class="btn btn-primary" onclick="submitSearch(this)">Submit <i class="os-icon os-icon-send"></i></button>
+                                        </div>
+                                    </div>`;
+                        $("#formDiv").empty();
+                        $("#formDiv").append(form);
+                    }
+                }
+                $("#tbody").addClass("animation");
             }
-            $("#tbody").addClass("animation");
         },
         error: function(data){
             $("#tbody").empty();
@@ -142,8 +166,7 @@ function submitSearch(e) {
         type: 'POST',
         url: "{% url 'Attendance:search_attendance_sheet' %}",
         data:{
-            course: $("#courseReturn").val(),
-            date: $("#dateReturn").val(),
+            course_att_id: $("#course_att_id").val(),
             text: $("#text").val(),
             searchMethod: $("#searchMethod").val(),
             csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
@@ -159,7 +182,7 @@ function submitSearch(e) {
             }
             else{
                 for (var key in data.student_attendance_info){
-                    if (data.student_attendance_status[key][0]){
+                    if (data.student_attendance_status[key]){
                         temp = `<tr>
                                 <td><h6>${ data.student_attendance_info[key][0] }</h6></td>
                                 <td><h6>${ data.student_attendance_info[key][1] }</h6></td>
@@ -189,4 +212,72 @@ function submitSearch(e) {
     });
 };
 
+
+function getAttendance(e) {
+    $("#tbody").removeClass("animation");
+    $.ajax({
+        type: 'POST',
+        url: "{% url 'Attendance:get_attendance_records_with_time' %}",
+        data:{
+            time: $("#time").val(),
+            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+        },
+        success: function(data){
+            $("#tbody").empty();
+            if (data.student_attendance_info.length == 0) {
+                temp = `<tr>
+                            <td colspan="4"><h6>No record currently available</h6></td>
+                        </tr>`;
+                $("#tbody").append(temp);
+                $("#tbody").addClass("animation");
+            }
+            else{
+                for (var key in data.student_attendance_info){
+                    var temp = '';
+                    if (data.student_attendance_status[key][0]){
+                        temp = `<tr>
+                                <td><h6>${ data.student_attendance_info[key][0] }</h6></td>
+                                <td><h6>${ data.student_attendance_info[key][1] }</h6></td>
+                                <td><i class="bi bi-check-circle-fill text-success"></i></td>
+                            </tr>`;
+                    }
+                    else {
+                        temp = `<tr>
+                                <td><h6>${ data.student_attendance_info[key][0] }</h6></td>
+                                <td><h6>${ data.student_attendance_info[key][1] }</h6></td>
+                                <td><i class="bi bi-x-circle-fill text-danger"></i></td>
+                            </tr>`;
+                    }
+                    $("#tbody").append(temp);
+
+                    var form = `<div class="form-inline justify-content-sm-end">
+                                    {% csrf_token %}
+                                    <input type="hidden" id="course_att_id" value="${ data.course_att_id }">
+                                    <select class="form-control form-control-sm rounded bright" name="searchMethod" id="searchMethod" required>
+                                        <option value="">Search By..</option>
+                                        <option value="matric_no">Matric No</option>
+                                        <option value="name">Name</option>
+                                    </select>
+                                    <input class="form-control form-control-sm rounded bright"
+                                           type="text" name="text" id="text" required>
+                                    <div class="form-group my-2">
+                                        <button type="button" class="btn btn-primary" onclick="submitSearch(this)">Submit <i class="os-icon os-icon-send"></i></button>
+                                    </div>
+                                </div>`;
+                    $("#formDiv").empty();
+                    $("#formDiv").append(form);
+                }
+            }
+            $("#tbody").addClass("animation");
+        },
+        error: function(data){
+            $("#tbody").empty();
+            temp = `<tr>
+                        <td colspan="3"><h6>No record currently available</h6></td>
+                    </tr>`;
+            $("#tbody").append(temp);
+            $("#tbody").addClass("animation");
+        },
+    });
+};
 {% endblock javascript %}

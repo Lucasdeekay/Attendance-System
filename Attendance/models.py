@@ -106,6 +106,7 @@ class CourseAttendance(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     student_attendance = models.ManyToManyField(StudentAttendance)
     date = models.DateField()
+    time = models.TimeField()
     session = models.CharField(max_length=10, null=False, blank=False)
 
     def __str__(self):

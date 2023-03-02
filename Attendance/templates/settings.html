@@ -28,8 +28,10 @@ Profile Settings
                 <div class="up-main-info">
                     <h4 class="up-header">{{ user.person.full_name }}</h4>
                     <h6 class="up-sub-header">
-                        {% if not user.person.is_staff %}
-                        MATRIC NO: {{ user.matric_no }}
+                        {% if user.person.is_staff %}
+                        {{ user.post }}
+                        {% else %}
+                        {{ user.matric_no }}
                         {% endif %}
                     </h6>
                 </div>
@@ -195,7 +197,8 @@ Profile Settings
                         </div>
                     </div>
                     <div class="form-group col-8">
-                        <select class="form-control form-control-sm rounded bright" name="searchMethod" id="searchMethod" required>
+                        <select class="form-control form-control-sm rounded bright" name="searchMethod"
+                                id="searchMethod" required>
                             <option value="">Choose Upload Mode..</option>
                             <option value="single_record">Single Record</option>
                             <option value="multi_record">Multiple Records</option>
@@ -204,14 +207,15 @@ Profile Settings
                     <form action="{% url 'Attendance:register_student' %}" method="post" id="single_record_tab">
                         {% csrf_token %}
                         <div class="form-group col-8">
-                        <label><label for="matric_no">Matric No:</label> </label>
-                        <input type="text" name="matric_no" placeholder="Matric No" required=""
-                               class="form-control form-control-sm rounded bright" id="matric_no">
-                    </div>
+                            <label><label for="matric_no">Matric No:</label> </label>
+                            <input type="text" name="matric_no" placeholder="Matric No" required=""
+                                   class="form-control form-control-sm rounded bright" id="matric_no">
+                        </div>
                         <div class="form-group col-8">
                             <label><label for="course">Course:</label> </label>
                             <div class="form-group col-8">
-                                <select class="form-control form-control-sm rounded bright" name="course" id="course" required>
+                                <select class="form-control form-control-sm rounded bright" name="course" id="course"
+                                        required>
                                     <option value="">Select Course..</option>
                                     {% for course in courses %}
                                     <option value="{{ course.course_code }}">{{ course.course_code }}</option>
@@ -221,7 +225,8 @@ Profile Settings
                         </div>
                         <div class="form-group col-8">
                             <label><label for="semester">Semester:</label> </label>
-                            <select class="form-control form-control-sm rounded bright" name="semester" id="semester" required>
+                            <select class="form-control form-control-sm rounded bright" name="semester" id="semester"
+                                    required>
                                 <option value="">Select Semester..</option>
                                 <option value="1st">1st Semester</option>
                                 <option value="2nd">2nd Semester</option>
@@ -270,13 +275,13 @@ $('#multi_record_tab').hide();
 
 
 $('#searchMethod').change(function(){
-    if ($('#searchMethod').val() == "single_record"){
-        $('#single_record_tab').slideDown(300);
-        $('#multi_record_tab').slideUp(300);
-    } else {
-        $('#single_record_tab').slideUp(300);
-        $('#multi_record_tab').slideDown(300);
-    }
+if ($('#searchMethod').val() == "single_record"){
+$('#single_record_tab').slideDown(300);
+$('#multi_record_tab').slideUp(300);
+} else {
+$('#single_record_tab').slideUp(300);
+$('#multi_record_tab').slideDown(300);
+}
 });
 
 {% endblock ajax %}

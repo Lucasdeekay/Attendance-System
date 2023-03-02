@@ -346,6 +346,26 @@ class UploadImageForm(forms.Form):
 
 
 class UploadFileForm(forms.Form):
+    session = forms.CharField(
+        max_length=30,
+        widget=forms.Select(
+            choices=[
+                ('', 'Select Session...'),
+                ('2022/2023', '2022/2023'),
+                ('2023/2024', '2023/2024'),
+                ('2024/2025', '2024/2025'),
+                ('2025/2026', '2025/2026'),
+                ('2026/2027', '2026/2027'),
+                ('2027/2028', '2027/2028'),
+                ('2028/2029', '2028/2029'),
+                ('2029/2030', '2029/2030'),
+            ],
+            attrs={
+                'required': '',
+                'class': 'form-control',
+            }
+        )
+    )
     file = forms.FileField(
         widget=forms.FileInput(
             attrs={
@@ -356,8 +376,9 @@ class UploadFileForm(forms.Form):
     )
 
     def clean(self):
-        cleaned_data = super(UploadImageForm, self).clean()
+        cleaned_data = super(UploadFileForm, self).clean()
+        session = cleaned_data.get('session')
         file = cleaned_data.get('file')
-        if not file:
+        if not file or not session:
             raise forms.ValidationError("Field cannot be empty")
 

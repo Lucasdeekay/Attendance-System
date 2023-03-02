@@ -18,11 +18,12 @@ from django.utils.decorators import method_decorator
 from django.views import View
 
 from Attendance.forms import LoginForm, UpdatePasswordForm, StaffRegisterForm, StudentRegisterForm, ForgotPasswordForm, \
-    PasswordRetrievalForm, UploadImageForm, UploadFileForm, ChangePasswordForm, UpdateEmailForm
+    PasswordRetrievalForm, UploadImageForm, ChangePasswordForm, UpdateEmailForm, UploadFileForm
 from Attendance.functions import get_number_of_course_attendance_absent, get_number_of_ineligible_students, \
     get_number_of_eligible_students, get_number_of_course_attendance_present, \
-    get_number_of_course_attendance_percentage, upload_attendance, upload_student, upload_staff, upload_course, \
-    upload_department, upload_registered_students, upload_programme, upload_faculty
+    get_number_of_course_attendance_percentage, upload_student, upload_staff, upload_course, \
+    upload_department, upload_programme, upload_faculty, upload_course_attendance, \
+    upload_student_course_registration
 from Attendance.models import Staff, Course, RegisteredStudent, CourseAttendance, Student, \
     StudentAttendance, Person, Programme, Password, Department
 from Attendance.utils import render_to_pdf
@@ -118,7 +119,7 @@ class ForgotPasswordView(View):
                 if Password.objects.filter(is_active=True, person=person).count() > 0:
                     all_passwords = Password.objects.filter(is_active=True, person=person)
                     for password in all_passwords:
-                            password.is_active = False
+                        password.is_active = False
 
                 Password.objects.create(person=person, recovery_password=recovery_password,
                                         time=timezone.now())
@@ -391,6 +392,7 @@ def submit_course(request):
         # Get the user input
         course_code = request.POST.get("course").upper()
         date_input = request.POST.get('date')
+        att_rec = request.POST.get('attrec')
 
         # Get the course using the course code
         course = get_object_or_404(Course, course_code=course_code)
@@ -400,37 +402,56 @@ def submit_course(request):
 
         # Get the registered students for the course
         student_records = get_object_or_404(RegisteredStudent, course=course)
-        # Use a try block
-        try:
-            # Get course attendance for the course for today
-            course_attendance = get_object_or_404(CourseAttendance, date=user_date, course=course)
-            # Get a list of all the ids of students in the course attendance
-            student_attendance_ids = course_attendance.student_attendance.values_list('student')
-            # Create a list 2d list containing each student name and matric no
-            student_bio = [
-                [get_object_or_404(Student, id=x[0]).person.full_name,
-                 get_object_or_404(Student, id=x[0]).matric_no] for x in student_attendance_ids
-            ]
-            # Create a dictionary of data containing the list of all registered student for the course
-            # and the list of individual attendance for the course
-            context = {
-                'student_records': list(student_records.students.all().values()),
-                'student_attendance': list(course_attendance.student_attendance.all().values_list()),
-                'student_bio': student_bio,
-                'date': date_input,
-                'course': course_code,
-            }
-            # return data back to the page
-            return JsonResponse(context)
+
+        filter_val = {"course": course, "date": user_date}
+
+        # If user wants an existing record
+        if att_rec == "existing":
+            # if course attendance does not exist
+            if CourseAttendance.objects.filter(**filter_val).count() > 1:
+                # Get the required course attendance using the course and converted date
+                fil_course_attendance = CourseAttendance.objects.filter(**filter_val)
+                fil_course_attendance = [
+                    [x.id, x.time] for x in fil_course_attendance
+                ]
+                # Create a dictionary of data to be returned to the page
+                context = {
+                    'course_attendance': list(fil_course_attendance),
+                }
+                # return data back to page
+                return JsonResponse(context)
+            else:
+                # Get course attendance for the course for today
+                course_attendance = get_object_or_404(CourseAttendance, date=user_date, course=course)
+                # Get a list of all the ids of students in the course attendance
+                student_attendance_ids = course_attendance.student_attendance.values_list('student')
+                # Create a list 2d list containing each student name and matric no
+                student_bio = [
+                    [get_object_or_404(Student, id=x[0]).person.full_name,
+                     get_object_or_404(Student, id=x[0]).matric_no] for x in student_attendance_ids
+                ]
+                # Create a dictionary of data containing the list of all registered student for the course
+                # and the list of individual attendance for the course
+                context = {
+                    'student_records': list(student_records.students.all().values()),
+                    'student_attendance': list(course_attendance.student_attendance.all().values_list()),
+                    'student_bio': student_bio,
+                    'course_att_id': course_attendance.id,
+                }
+                # return data back to the page
+                return JsonResponse(context)
         # If course attendance has not been created before
-        except Exception:
+        else:
+            # Get current time
+            current_time = datetime.datetime.now().strftime("%H:%M:%S")
             # Create course attendance for the course for today
-            course_attendance = CourseAttendance.objects.create(course=course, date=user_date)
+            course_attendance = CourseAttendance.objects.create(course=course, date=user_date, time=current_time)
             # Loop through all the registered students
             for std in student_records.students.values():
                 student = get_object_or_404(Student, matric_no=std['matric_no'])
                 # Create a student attendance for each student
-                student_attendance = StudentAttendance.objects.create(student=student, course=course, is_present=False, date=user_date)
+                student_attendance = StudentAttendance.objects.create(student=student, course=course, is_present=False,
+                                                                      date=user_date)
                 # Add the individual student attendance to the course attendance
                 course_attendance.student_attendance.add(student_attendance)
 
@@ -446,11 +467,41 @@ def submit_course(request):
                 'student_records': list(student_records.values()),
                 'student_attendance': list(course_attendance.student_attendance.all().values_list()),
                 'student_bio': student_bio,
-                'date': date_input,
-                'course': course_code,
+                'course_att_id': course_attendance.id,
             }
             # return data back to the page
             return JsonResponse(context)
+
+
+# Create function view to process ajax request
+def submit_course_with_time(request):
+    # Check if request method is POST
+    if request.method == "POST":
+        # Get user input
+        time = request.POST.get('time')
+
+        # Get the required course attendance using the course and converted date
+        course_attendance = get_object_or_404(CourseAttendance, id=int(time))
+
+        # Get the registered students for the course
+        student_records = get_object_or_404(RegisteredStudent, course=course_attendance.course)
+        # Get a list of all the ids of students in the course attendance
+        student_attendance_ids = course_attendance.student_attendance.values_list('student')
+        # Create a list 2d list containing each student name and matric no
+        student_bio = [
+            [get_object_or_404(Student, id=x[0]).person.full_name,
+             get_object_or_404(Student, id=x[0]).matric_no] for x in student_attendance_ids
+        ]
+        # Create a dictionary of data containing the list of all registered student for the course
+        # and the list of individual attendance for the course
+        context = {
+            'student_records': list(student_records.students.all().values()),
+            'student_attendance': list(course_attendance.student_attendance.all().values_list()),
+            'student_bio': student_bio,
+            'course_att_id': course_attendance.id,
+        }
+        # return data back to the page
+        return JsonResponse(context)
 
 
 # Create function view to process ajax request
@@ -458,22 +509,14 @@ def search_attendance_register(request):
     # Check if request method is POST
     if request.method == "POST":
         # Get user input
-        course_code = request.POST.get('course').upper()
-        date_input = request.POST.get('date')
+        course_att_id = request.POST.get('course_att_id')
         text = request.POST.get('text')
         mode = request.POST.get('searchMethod')
 
-        course_code = " ".join([course_code[:3], course_code[-3:]])
-
-        # Get the course using the course code
-        course = get_object_or_404(Course, course_code=course_code)
-        # split the date input and convert to datetime object
-        user_date = date_input.split('-')
-        user_date = datetime.date(int(user_date[0]), int(user_date[1]), int(user_date[2]))
+        # Get course attendance for the course for today
+        course_attendance = get_object_or_404(CourseAttendance, id=int(course_att_id))
         # Get the registered students for the course
-        registered_students = get_object_or_404(RegisteredStudent, course=course)
-        # Get the required course attendance using the course and converted date
-        course_attendance = get_object_or_404(CourseAttendance, course=course, date=user_date)
+        registered_students = get_object_or_404(RegisteredStudent, course=course_attendance.course)
 
         # Check mode
         if mode == 'matric_no':
@@ -495,6 +538,8 @@ def search_attendance_register(request):
                 context = {
                     'student_records': student_records,
                     'student_attendance': student_attendance,
+                    'course_att_id': course_attendance.id,
+                    'mode': mode,
                 }
                 # return data back to page
                 return JsonResponse(context)
@@ -524,6 +569,8 @@ def search_attendance_register(request):
                 context = {
                     'student_records': student_records,
                     'student_attendance': student_attendance,
+                    'course_att_id': course_attendance.id,
+                    'mode': mode,
                 }
                 # return data back to page
                 return JsonResponse(context)
@@ -549,7 +596,6 @@ def validate_checkbox(request):
 
         # Save the updated data
         student.save()
-        print(student)
 
         # Create a dictionary of data to be returned to the page
         context = {
@@ -617,8 +663,13 @@ def get_attendance_records(request):
         user_date = date_input.split('-')
         user_date = datetime.date(int(user_date[0]), int(user_date[1]), int(user_date[2]))
 
-        # use a try block
-        try:
+        filter_val = {"course": course, "date": user_date}
+
+        # if course attendance does not exist
+        if CourseAttendance.objects.filter(**filter_val).count() < 1:
+            return JsonResponse({'student_attendance_info': []})
+        # if course attendance exists and it's only one
+        elif CourseAttendance.objects.filter(**filter_val).count() == 1:
             # Get the required course attendance using the course and converted date
             course_attendance = get_object_or_404(CourseAttendance, course=course, date=user_date)
             # Get a list of all the ids of students in the course attendance
@@ -635,14 +686,53 @@ def get_attendance_records(request):
             context = {
                 'student_attendance_status': list(student_attendance_status),
                 'student_attendance_info': student_attendance_info,
-                'date': date_input,
-                'course': course_code,
+                'course_att_id': course_attendance.id,
             }
             # return data back to page
             return JsonResponse(context)
-        # if course attendance does not exist
-        except Exception:
-            return JsonResponse({'student_attendance_info': []})
+        # if course attendance exists and it's more than one
+        else:
+            # Get the required course attendance using the course and converted date
+            fil_course_attendance = CourseAttendance.objects.filter(**filter_val)
+            fil_course_attendance = [
+               [x.id, x.time] for x in fil_course_attendance
+            ]
+            # Create a dictionary of data to be returned to the page
+            context = {
+                'course_attendance': list(fil_course_attendance),
+            }
+            # return data back to page
+            return JsonResponse(context)
+
+
+# Create function view to process ajax request
+def get_attendance_records_with_time(request):
+    # Check if request method is POST
+    if request.method == "POST":
+        # Get user input
+        time = request.POST.get('time')
+
+        # Get the required course attendance using the course and converted date
+        course_attendance = get_object_or_404(CourseAttendance, id=int(time))
+
+        # Get a list of all the ids of students in the course attendance
+        student_attendance_ids = course_attendance.student_attendance.values_list('student')
+        # Get a list of the current attendance status of all the students offering the course
+        student_attendance_status = course_attendance.student_attendance.values_list('is_present')
+        # Create a list 2d list containing each student name and matric no
+        student_attendance_info = [
+            [get_object_or_404(Student, id=x[0]).person.full_name,
+             get_object_or_404(Student, id=x[0]).matric_no] for x in student_attendance_ids
+        ]
+
+        # Create a dictionary of data to be returned to the page
+        context = {
+            'student_attendance_status': list(student_attendance_status),
+            'student_attendance_info': student_attendance_info,
+            'course_att_id': course_attendance.id,
+        }
+        # return data back to page
+        return JsonResponse(context)
 
 
 # Create function view to process ajax request
@@ -650,20 +740,14 @@ def search_attendance_sheet(request):
     # Check if request method is POST
     if request.method == "POST":
         # Get user input
-        course_code = request.POST.get('course').upper()
-        date_input = request.POST.get('date')
+        course_att_id = request.POST.get('course_att_id').upper()
         text = request.POST.get('text')
         mode = request.POST.get('searchMethod')
 
-        # Get the course using the course code
-        course = get_object_or_404(Course, course_code=course_code)
-        # split the date input and convert to datetime object
-        user_date = date_input.split('-')
-        user_date = datetime.date(int(user_date[0]), int(user_date[1]), int(user_date[2]))
-        # Get the registered students for the course
-        registered_students = get_object_or_404(RegisteredStudent, course=course)
         # Get the required course attendance using the course and converted date
-        course_attendance = get_object_or_404(CourseAttendance, course=course, date=user_date)
+        course_attendance = get_object_or_404(CourseAttendance, id=int(course_att_id))
+        # Get the registered students for the course
+        registered_students = get_object_or_404(RegisteredStudent, course=course_attendance.course)
 
         # Check mode
         if mode == 'matric_no':
@@ -899,7 +983,7 @@ class UploadView(View):
                     return HttpResponseRedirect(reverse("Attendance:upload"))
             elif file_type == "reg_student":
                 try:
-                    upload_registered_students(file)
+                    upload_student_course_registration(file)
                 except Exception:
                     messages.error(request, "Error uploading file")
                     return HttpResponseRedirect(reverse("Attendance:upload"))
@@ -1089,7 +1173,7 @@ def upload_file(request):
                 return HttpResponseRedirect(reverse("Attendance:settings"))
         elif file_type == "reg_student":
             try:
-                upload_registered_students(file)
+                upload_student_course_registration(file)
             except Exception:
                 messages.error(request, "Error uploading file")
                 return HttpResponseRedirect(reverse("Attendance:settings"))
@@ -1365,8 +1449,9 @@ def upload_attendance_sheet(request):
         # Check if form is valid
         if form.is_valid():
             # Get user input
+            session = form.cleaned_data["session"]
             file = form.cleaned_data['file']
-            upload_attendance(file)
+            upload_course_attendance(file, session)
 
             messages.success(request, "File upload successful")
             # return data back to page
