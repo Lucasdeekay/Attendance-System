@@ -80,6 +80,22 @@ Profile Settings
                                 </div>
                             </div>
                         </div>
+                        <div class="os-progress-bar primary">
+                            <div class="bar-labels">
+                                <div class="bar-label-left">
+                                    <span>Email</span>
+                                </div>
+                                <div class="bar-label-right">
+                                    <h6 class="info">
+                                        {% if user.person.email == '' %}
+                                        Email not available
+                                        {% else %}
+                                        {{ user.person.email }}
+                                        {% endif %}
+                                    </h6>
+                                </div>
+                            </div>
+                        </div>
                         {% if not user.person.is_staff %}
                         <div class="os-progress-bar primary">
                             <div class="bar-labels">

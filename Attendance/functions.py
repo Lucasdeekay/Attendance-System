@@ -155,18 +155,20 @@ def upload_staff(file):
         full_name, gender, dep, email, post = data2
 
         staff_id = full_name.split()[-1]
-        user = User.objects.create_user(username=staff_id.upper(), password="password")
 
-        if str(email) == 'nan':
-            person = Person.objects.create(user=user, full_name=full_name.upper(), gender=gender.upper().strip(),
-                                           is_staff=True)
-        else:
-            person = Person.objects.create(user=user, full_name=full_name.upper(), gender=gender.upper().strip(),
-                                           email=email, is_staff=True)
+        if User.objects.filter(username=staff_id.upper().strip()).count() < 1:
+            user = User.objects.create_user(username=staff_id.upper(), password="password")
 
-        department = get_object_or_404(Department, department_name=dep.upper())
-        staff = Staff.objects.create(person=person, staff_id=staff_id.upper(), post=post, department=department)
-        staff.save()
+            if str(email) == 'nan':
+                person = Person.objects.create(user=user, full_name=full_name.upper(), gender=gender.upper().strip(),
+                                               is_staff=True)
+            else:
+                person = Person.objects.create(user=user, full_name=full_name.upper(), gender=gender.upper().strip(),
+                                               email=email, is_staff=True)
+
+            department = get_object_or_404(Department, department_name=dep.upper())
+            staff = Staff.objects.create(person=person, staff_id=staff_id.upper(), post=post, department=department)
+            staff.save()
 
 
 def upload_student(file):
@@ -182,11 +184,7 @@ def upload_student(file):
             prog = "CRIMINOLOGY"
         elif prog == 'CYBERSECURITY':
             prog = "CYBER SECURITY"
-        try:
-            user = get_object_or_404(User, username=matric_no.upper().strip())
-            if user:
-                pass
-        except Exception:
+        if User.objects.filter(username=matric_no.upper().strip()).count() < 1:
             user = User.objects.create_user(username=matric_no.upper().strip(), password="password")
             programme = get_object_or_404(Programme, programme_name=prog.upper().strip())
 
@@ -211,8 +209,9 @@ def upload_faculty(file):
             data2.append(j)
 
         fac = data2[0]
-        faculty = Faculty.objects.create(faculty_name=fac.upper())
-        faculty.save()
+        if Faculty.objects.filter(faculty_name=fac.upper()).count() < 1:
+            faculty = Faculty.objects.create(faculty_name=fac.upper())
+            faculty.save()
 
 
 def upload_department(file):
@@ -225,8 +224,9 @@ def upload_department(file):
 
         fac, dep_name = data2
         faculty = get_object_or_404(Faculty, faculty_name=fac.upper())
-        department = Department.objects.create(faculty=faculty, department_name=dep_name.upper())
-        department.save()
+        if Department.objects.filter(department_name=dep_name.upper()).count() < 1:
+            department = Department.objects.create(faculty=faculty, department_name=dep_name.upper())
+            department.save()
 
 
 def upload_programme(file):
@@ -239,8 +239,9 @@ def upload_programme(file):
 
         dep, prog_name = data2
         department = get_object_or_404(Department, department_name=dep.upper())
-        programme = Programme.objects.create(department=department, programme_name=prog_name.upper())
-        programme.save()
+        if Programme.objects.filter(programme_name=prog_name.upper()).count() < 1:
+            programme = Programme.objects.create(department=department, programme_name=prog_name.upper())
+            programme.save()
 
 
 def upload_course(file):
@@ -328,7 +329,7 @@ def upload_student_course_registration(file):
 
             matric_no, session, semester = data2
 
-            if Student.objects.filter(matric_no=matric_no).count() == 1 and matric_no != 'Matric No':
+            if Student.objects.filter(matric_no=matric_no).count() == 1:
                 student = Student.objects.get(matric_no=matric_no)
                 filter_val = {'course_code': course_code, 'department': student.programme.department}
                 if Course.objects.filter(**filter_val).count() == 1:
