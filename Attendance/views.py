@@ -23,7 +23,7 @@ from Attendance.functions import get_number_of_course_attendance_absent, get_num
     get_number_of_eligible_students, get_number_of_course_attendance_present, \
     get_number_of_course_attendance_percentage, upload_student, upload_staff, upload_course, \
     upload_department, upload_programme, upload_faculty, upload_course_attendance, \
-    upload_student_course_registration
+    upload_student_course_registration, get_spreadsheed_data_as_list
 from Attendance.models import Staff, Course, RegisteredStudent, CourseAttendance, Student, \
     StudentAttendance, Person, Programme, Password, Department
 from Attendance.utils import render_to_pdf
@@ -245,34 +245,31 @@ class DashboardView(View):
             staff = get_object_or_404(Staff, person=person)
             #  Filter all the courses in staff department
             courses = Course.objects.filter(lecturer=staff)
+
             # Get all the course codes
-            course_codes = [
-                x.course_code for x in courses
-            ]
+            course_codes = []
             # Get the total number of students for each course
-            course_total_students = [
-                len(RegisteredStudent.objects.get(course=x).students.all()) for x in courses if
-                RegisteredStudent.objects.filter(course=x).count() > 0
-            ]
-            # Get the number of programs offering each course
+            course_total_students = []
+            eligible_status = []
+            ineligible_status = []
             course_total_programs = []
             for course in courses:
+                course_codes.append(course.course_code)
                 if RegisteredStudent.objects.filter(course=course).count() > 0:
+                    course_total_students.append(len(RegisteredStudent.objects.get(course=course).students.all()))
+                    eligible_status.append(get_number_of_eligible_students(course))
+                    ineligible_status.append(get_number_of_ineligible_students(course))
+
                     students = RegisteredStudent.objects.get(course=course).students.all()
                     program_list = []
                     for student in students:
                         program_list.append(student.programme)
                     course_total_programs.append(len(set(program_list)))
-
-            eligible_status = [
-                get_number_of_eligible_students(x) for x in courses if
-                RegisteredStudent.objects.filter(course=x).count() > 0
-            ]
-
-            ineligible_status = [
-                get_number_of_ineligible_students(x) for x in courses if
-                RegisteredStudent.objects.filter(course=x).count() > 0
-            ]
+                else:
+                    course_total_students.append(0)
+                    eligible_status.append(0)
+                    ineligible_status.append(0)
+                    course_total_programs.append(0)
 
             zipped = zip(course_codes, course_total_students, course_total_programs, eligible_status, ineligible_status)
             # Create a dictionary of data to be accessed on the page
@@ -293,32 +290,28 @@ class DashboardView(View):
             try:
                 # Get all the registered courses by the student
                 reg_students = RegisteredStudent.objects.all()
-                # Get all the courses taken by the student
-                courses = [
-                    x.course for x in reg_students if student in x.students.all()
-                ]
-                # Get all the course codes
-                course_codes = [
-                    x.course_code for x in courses
-                ]
-                # Get the number of times present for each course
-                course_attendance_present = [
-                    get_number_of_course_attendance_present(x, student) for x in courses
-                ]
-                # Get the number of times absent for each course
-                course_attendance_absent = [
-                    get_number_of_course_attendance_absent(x, student) for x in courses
-                ]
-                # Get the percentage of attendance for each course
-                course_attendance_percentage = [
-                    get_number_of_course_attendance_percentage(x, student) for x in courses
-                ]
-                no_of_eligible_courses = [
-                    x for x in course_attendance_percentage if x >= 75
-                ]
-                no_of_ineligible_courses = [
-                    x for x in course_attendance_percentage if x < 75
-                ]
+
+                courses = []
+                course_codes = []
+                course_attendance_present = []
+                course_attendance_absent = []
+                course_attendance_percentage = []
+                no_of_eligible_courses = []
+                no_of_ineligible_courses = []
+                for reg_std in reg_students:
+                    if student in reg_std.students.all():
+                        courses.append(reg_std.course)
+                        course_codes.append(reg_std.course.course_code)
+                        course_attendance_present.append(get_number_of_course_attendance_present(reg_std.course, student))
+                        course_attendance_absent.append(get_number_of_course_attendance_absent(reg_std.course, student))
+
+                        percentage = get_number_of_course_attendance_percentage(reg_std.course, student)
+                        course_attendance_percentage.append(percentage)
+                        if percentage >= 75:
+                            no_of_eligible_courses.append(percentage)
+                        else:
+                            no_of_ineligible_courses.append(percentage)
+
                 zipped = zip(course_codes, course_attendance_present, course_attendance_absent,
                              course_attendance_percentage)
             except Exception:
@@ -1066,22 +1059,28 @@ def update_password(request):
             confirm_password = form.cleaned_data['confirm_password'].strip()
             # Check if old password match
             if request.user.check_password(old_password):
-                # Check if both passwords match
-                if password == confirm_password:
-                    # Update password
-                    request.user.set_password(password)
-                    # Save updated data
-                    request.user.save()
+                if password == old_password:
                     # Create message report
-                    messages.success(request, "Password successfully changed")
+                    messages.error(request, "Previous password cannot be used")
                     # return data back to page
                     return HttpResponseRedirect(reverse("Attendance:settings"))
-                # If passwords do not match
                 else:
-                    # Create message report
-                    messages.error(request, "Password does not match")
-                    # return data back to page
-                    return HttpResponseRedirect(reverse("Attendance:settings"))
+                    # Check if both passwords match
+                    if password == confirm_password:
+                        # Update password
+                        request.user.set_password(password)
+                        # Save updated data
+                        request.user.save()
+                        # Create message report
+                        messages.success(request, "Password successfully changed")
+                        # return data back to page
+                        return HttpResponseRedirect(reverse("Attendance:settings"))
+                    # If passwords do not match
+                    else:
+                        # Create message report
+                        messages.error(request, "Password does not match")
+                        # return data back to page
+                        return HttpResponseRedirect(reverse("Attendance:settings"))
             # Otherwise
             else:
                 messages.error(request, "Old password entered does not match")
@@ -1294,9 +1293,6 @@ class PrintAttendanceSheetView(View):
             try:
                 # Get course attendance for the course for specified date
                 course_attendance = CourseAttendance.objects.filter(course=course).order_by("date")
-                # Get all course attendance dates
-                course_attendance_dates = CourseAttendance.objects.filter(course=course).order_by("date").values_list(
-                    'date')
                 # Get list of students offering course
                 reg_students = RegisteredStudent.objects.get(course=course)
                 reg_students = reg_students.students.all().order_by('matric_no')
@@ -1314,6 +1310,7 @@ class PrintAttendanceSheetView(View):
                 # Redirect back to the current page
                 return HttpResponseRedirect(reverse('Attendance:print_attendance_sheet'))
 
+
             # Create an in-memory output file for the workbook
             output = io.BytesIO()
 
@@ -1329,52 +1326,14 @@ class PrintAttendanceSheetView(View):
             # Instantiate the rows and columns
             row = col = 0
 
-            # Create row headers
-            attendance_sheet.write(row, col, "Full Name")
-            attendance_sheet.write(row, col + 1, "Matric No")
+            students_records = get_spreadsheed_data_as_list(course, reg_students, course_attendance)
 
-            # Fill in the respective dates
-            for index, date in enumerate(course_attendance_dates):
-                date_col = 2
-                attendance_sheet.write(row, date_col + index, date[0].strftime("%d/%m/%Y"))
-
-            attendance_sheet.write(row, len(course_attendance_dates) + 2, "Eligiblity (%)")
-            attendance_sheet.write(row, len(course_attendance_dates) + 3, "Eligible")
-
-            # Fill in the names and matric_no
-            for student in reg_students:
-                attendance_sheet.write(row + 1, col, student.person.full_name)
-                attendance_sheet.write(row + 1, col + 1, student.matric_no)
-
+            for record in students_records:
+                for data in record:
+                    attendance_sheet.write(row, col, data)
+                    col += 1
                 row += 1
-
-            date_col = 2
-            # Loop through all attendance
-            for att in course_attendance:
-                date_row = 1
-                # Loop through registered student for the course
-                for student in reg_students:
-                    try:
-                        # Get current student attendance
-                        std_att = att.student_attendance.get(student=student)
-                        attendance_sheet.write(date_row, date_col, std_att.is_present)
-                        date_row += 1
-                    except Exception:
-                        pass
-
-                date_col += 1
-
-            std_row = 1
-            # Loop through registered student for the course
-            for student in reg_students:
-                present = get_number_of_course_attendance_percentage(course, student)
-                attendance_sheet.write(std_row, len(course_attendance_dates) + 2, f"{present} %")
-                if present < 75:
-                    attendance_sheet.write(std_row, len(course_attendance_dates) + 3, "No")
-                else:
-                    attendance_sheet.write(std_row, len(course_attendance_dates) + 3, "Yes")
-
-                std_row += 1
+                col = 0
 
             # Close workbook
             attendance_book.close()

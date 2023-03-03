@@ -1,11 +1,100 @@
 import datetime
+import io
 
 import pandas as pd
+import xlsxwriter
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 
 from Attendance.models import CourseAttendance, RegisteredStudent, Student, Course, StudentAttendance, Person, Staff, \
     Faculty, Department, Programme
+
+
+# function checks date instance and if it includes a bracket
+def take_attendance(date, course, session, student, attendance, index):
+    if date.find("(") == -1:
+        # split the date input and convert to datetime object
+        user_date = date.strip().split('/')
+        user_date = datetime.date(int(user_date[2]), int(user_date[1]), int(user_date[0]))
+
+        filter_val = {'course': course, 'date': user_date}
+
+        if CourseAttendance.objects.filter(**filter_val).count() > 0:
+            course_atendance = CourseAttendance.objects.get(course=course, date=user_date,
+                                                            session=session)
+        else:
+            time = datetime.datetime.now().strftime("%H:%M:%S")
+            course_atendance = CourseAttendance.objects.create(course=course, date=user_date, time=time,
+                                                               session=session)
+
+        std_att = StudentAttendance.objects.create(student=student, course=course, date=user_date,
+                                                   session=session)
+        if attendance[index] == "Y":
+            std_att.is_present = True
+
+        std_att.save()
+        course_atendance.student_attendance.add(std_att)
+        course_atendance.save()
+    else:
+        date = date[:date.find("(")]
+        # split the date input and convert to datetime object
+        user_date = date.strip().split('/')
+        user_date = datetime.date(int(user_date[0]), int(user_date[1]), int(user_date[2]))
+        filter_val = {'course': course, 'date': user_date}
+
+        if CourseAttendance.objects.filter(**filter_val).count() > 1:
+            course_atendances = CourseAttendance.objects.filter(**filter_val)
+            greatest = 0
+            for course_att in course_atendances:
+                if course_att.id > greatest:
+                    greatest = course_att.id
+
+            course_atendance = CourseAttendance.objects.get(id=greatest)
+        else:
+            time = datetime.datetime.now().strftime("%H:%M:%S")
+            course_atendance = CourseAttendance.objects.create(course=course, date=user_date, time=time,
+                                                               session=session)
+
+        std_att = StudentAttendance.objects.create(student=student, course=course, date=user_date,
+                                                   session=session)
+        if attendance[index] == "Y":
+            std_att.is_present = True
+
+        std_att.save()
+        course_atendance.student_attendance.add(std_att)
+        course_atendance.save()
+
+
+# function gets students record list
+def get_spreadsheed_data_as_list(course, reg_students, course_attendance):
+    std_record = []
+
+    headings = ["Full Name", "Matric No"]
+    for att in course_attendance:
+        headings.append(f"{att.date}")
+    headings.append("Eligibility (%)")
+    headings.append("Eligible")
+
+    std_record.append(headings)
+
+    for std in reg_students:
+        std_list = [std.person.full_name, std.matric_no]
+        for att in course_attendance:
+            try:
+                course_att = att.student_attendance.get(student=std)
+                std_list.append(course_att.is_present)
+            except Exception:
+                std_list.append(False)
+
+        present = get_number_of_course_attendance_percentage(course, std)
+        std_list.append(present)
+        if present < 75:
+            std_list.append("No")
+        else:
+            std_list.append("Yes")
+
+        std_record.append(std_list)
+    return std_record
 
 
 # function returns the total amount of times a student is present for a course
@@ -76,72 +165,6 @@ def get_number_of_ineligible_students(course):
         if eligibilty_percentage < 75:
             ineligible += 1
     return ineligible
-
-
-# def upload_attendance(file):
-#     excel_file = pd.ExcelFile(file)
-#     for course_code in excel_file.sheet_names:
-#         df = pd.read_excel(file, sheet_name=course_code)
-#
-#         for index, value in enumerate(df.values):
-#             if 'NAME OF STUDENTS' in value:
-#                 df = pd.DataFrame(df.values[index + 1:])
-#                 break
-#
-#         for index, value in enumerate(df.values):
-#             new_list = set(value)
-#             if len(new_list) <= 2:
-#                 df.drop(index, inplace=True)
-#
-#         headings = df.values[0]
-#         headings[0] = 'index'
-#         headings[1] = 'Name Of Students'
-#         headings[2] = 'Matric No'
-#         headings[-1] = 'Eligibility Status'
-#         headings[-2] = 'Attendance (%)'
-#         headings[-3] = 'Number Of Times Absent'
-#         headings[-4] = 'Total Attendance'
-#
-#         df = df.T.dropna().T
-#         headings = df.values[0]
-#         df.columns = headings.tolist()
-#         df.drop(0, inplace=True)
-#         df.drop(columns=['index', 'Name Of Students'], inplace=True)
-#
-#         data = zip(df.values.tolist())
-#         for index, value in enumerate(data):
-#             data2 = []
-#             for tup in zip(df.columns, value[0]):
-#                 data2.append(tup)
-#
-#             matric_no = ''
-#             for val in data2:
-#                 if val[0] == 'Matric No':
-#                     matric_no = val[1]
-#                 else:
-#                     date = val[0].split(' ')[0]
-#                     status = val[1]
-#
-#                     user_date = date.split('/')
-#                     user_date = datetime.date(int(user_date[2]), int(user_date[1]), int(user_date[0]))
-#
-#                     student = get_object_or_404(Student, matric_no=matric_no.upper())
-#                     attendance_status = False
-#                     if status == 'Y':
-#                         attendance_status = True
-#
-#                     course = get_object_or_404(Course, course_code=course_code.upper())
-#
-#                     student_attendance = StudentAttendance.objects.create(student=student, course=course,
-#                                                                           is_present=attendance_status,
-#                                                                           date=user_date)
-#
-#                     try:
-#                         course_attendance = get_object_or_404(CourseAttendance, course=course)
-#                     except Exception:
-#                         course_attendance = CourseAttendance.objects.create(course=course, date=user_date)
-#                     finally:
-#                         course_attendance.student_attendance.add(student_attendance)
 
 
 def upload_staff(file):
@@ -283,40 +306,6 @@ def upload_course(file):
                 course.save()
 
 
-# def upload_registered_students(file):
-#     excel_file = pd.ExcelFile(file)
-#     for course_code in excel_file.sheet_names:
-#         df = pd.read_excel(file, sheet_name=course_code)
-#
-#         for index, value in enumerate(df.values):
-#             if 'NAME OF STUDENTS' in value:
-#                 df = pd.DataFrame(df.values[index + 1:])
-#                 break
-#
-#         for index, value in enumerate(df.values):
-#             new_list = set(value)
-#             if len(new_list) <= 2:
-#                 df.drop(index, inplace=True)
-#
-#         headings = df.values[0]
-#         headings[0] = 'index'
-#         headings[1] = 'Name Of Students'
-#         headings[2] = 'Matric No'
-#         df.columns = headings.tolist()
-#         df = df['Matric No']
-#
-#         for i in df:
-#             if Student.objects.filter(matric_no=i).count() == 1 and i != 'Matric No':
-#                 student = Student.objects.get(matric_no=i)
-#                 if Course.objects.filter(course_code=course_code, department=student.programme.department).count() == 1:
-#                     course = Course.objects.get(course_code=course_code, department=student.programme.department)
-#                     if RegisteredStudent.objects.filter(course=course).count() == 1:
-#                         reg_students = get_object_or_404(RegisteredStudent, course=course)
-#                     else:
-#                         reg_students = RegisteredStudent.objects.create(course=course)
-#                     reg_students.students.add(student)
-
-
 def upload_student_course_registration(file):
     excel_file = pd.ExcelFile(file)
     for course_code in excel_file.sheet_names:
@@ -362,58 +351,76 @@ def upload_course_attendance(file, session):
 
                 for index, date in enumerate(dates):
 
-                    if date.find("(") == -1:
-                        # split the date input and convert to datetime object
-                        user_date = date.strip().split('/')
-                        user_date = datetime.date(int(user_date[0]), int(user_date[1]), int(user_date[2]))
-
-                        filter_val = {'course': course, 'date': user_date}
-
-                        if CourseAttendance.objects.filter(**filter_val).count() > 0:
-                            course_atendance = CourseAttendance.objects.get(course=course, date=user_date,
-                                                                            session=session)
-                        else:
-                            time = datetime.datetime.now().strftime("%H:%M:%S")
-                            course_atendance = CourseAttendance.objects.create(course=course, date=user_date, time=time,
-                                                                               session=session)
-
-                        std_att = StudentAttendance.objects.create(student=student, course=course, date=user_date,
-                                                                   session=session)
-                        if attendance[index] == "Y":
-                            std_att.is_present = True
-
-                        course_atendance.student_attendance.add(std_att)
-                        course_atendance.student_attendance.save()
-
+                    if isinstance(date, datetime.datetime):
+                        date = str(date.date()).split("-")
+                        date = '/'.join([date[2], date[1], date[0]])
+                        take_attendance(date, course, session, student, attendance, index)
                     else:
-                        date = date[:date.find("(")]
-                        # split the date input and convert to datetime object
-                        user_date = date.strip().split('/')
-                        user_date = datetime.date(int(user_date[0]), int(user_date[1]), int(user_date[2]))
-
-                        filter_val = {'course': course, 'date': user_date}
-
-                        if CourseAttendance.objects.filter(**filter_val).count() > 1:
-                            course_atendances = CourseAttendance.objects.filter(**filter_val)
-                            greatest = 0
-                            for course_att in course_atendances:
-                                if course_att.id > greatest:
-                                    greatest = course_att.id
-
-                            course_atendance = CourseAttendance.objects.get(id=greatest)
-                        else:
-                            time = datetime.datetime.now().strftime("%H:%M:%S")
-                            course_atendance = CourseAttendance.objects.create(course=course, date=user_date, time=time,
-                                                                               session=session)
-
-                        std_att = StudentAttendance.objects.create(student=student, course=course, date=user_date,
-                                                                   session=session)
-                        if attendance[index] == "Y":
-                            std_att.is_present = True
-
-                        course_atendance.student_attendance.add(std_att)
-                        course_atendance.student_attendance.save()
+                        take_attendance(date, course, session, student, attendance, index)
 
 
-
-
+# def get_student_attendance_list():
+#     current_day = datetime.datetime.today()
+#     days = []
+#     if current_day.weekday() == 5:
+#         for i in range(5):
+#             day = current_day - datetime.timedelta(days=i+1)
+#             days.append(day.date())
+#
+#     # Create an in-memory output file for the workbook
+#     output = io.BytesIO()
+#
+#     # Create an excel spreadsheet workbook
+#     attendance_book = xlsxwriter.Workbook(output)
+#
+#     # Give the file created a name
+#     filename = f"Attendance For The Week.xlsx"
+#
+#     # Add a worksheet
+#     attendance_sheet = attendance_book.add_worksheet()
+#
+#     # Instantiate the rows and columns
+#     row = col = 0
+#
+#     # Create row headers
+#     attendance_sheet.write(row, col, "Full Name")
+#     attendance_sheet.write(row, col + 1, "Matric No")
+#
+#     all_students = Student.objects.all()
+#
+#     # Fill in the names and matric_no
+#     for student in all_students:
+#         reg_students = RegisteredStudent.objects.all()
+#         reg_courses = [
+#             reg_std for reg_std in reg_students if student in reg_std.students.all()
+#         ]
+#
+#         reg_courses_weekly = []
+#         for day in days:
+#             courses = [
+#                 CourseAttendance.objects.filter(course=reg.course, date=day) for reg in reg_courses
+#             ]
+#             reg_courses_weekly += courses
+#
+#         att_percentage = [
+#             get_number_of_course_attendance_percentage(reg.course, student) for reg in reg_courses
+#         ]
+#         std_percentage = sum(att_percentage) / len(att_percentage)
+#
+#         attendance_sheet.write(row + 1, col, student.person.full_name)
+#         attendance_sheet.write(row + 1, col + 1, f"{std_percentage}%")
+#
+#         row += 1
+#
+#     # Close workbook
+#     attendance_book.close()
+#
+#     # Rewind the buffer
+#     output.seek(0)
+#
+#     # Set up the Http response informing the browser that this is xlsx file and not html file
+#     response = HttpResponse(
+#         output,
+#         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+#     )
+#     response['Content-Disposition'] = f'attachment; filename={filename}'
