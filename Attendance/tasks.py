@@ -7,8 +7,10 @@ from AttendanceSystem.settings import EMAIL_HOST_USER
 
 def send_email():
     subject = 'Weekly Attendance Report'
-    msg = "Report coming in"
-    context = {'title': subject, 'msg': msg}
+    msg = "This is the weekly report of students who have 50% or less attendance for this week. The link for " \
+          "downloading a document containing more detailed information concerning the students is attached below. " \
+          "Kindly click on the link below to download"
+    context = {'title': subject, 'msg': msg, 'url': True}
     html_message = render_to_string('email.html', context=context)
 
     send_mail(subject, msg, EMAIL_HOST_USER, ['lucasdeekay98@gmail.com'], html_message=html_message,

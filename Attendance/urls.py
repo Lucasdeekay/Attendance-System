@@ -52,8 +52,10 @@ urlpatterns = [
     path('attendance/track_student/view_attendance', views.get_student_attendance, name="get_student_attendance"),
     path('attendance/print', PrintAttendanceSheetView.as_view(), name="print_attendance_sheet"),
     path('attendance/upload', views.upload_attendance_sheet, name="upload_attendance_sheet"),
+    path('attendance/mail_admin', views.mail_admin, name="mail_admin"),
     path('attendance/update_records', UpdateRecordsView.as_view(), name="update_records"),
     path('attendance/admin/add_student', views.add_student, name="add_student"),
     path('attendance/admin/add_staff', views.add_staff, name="add_staff"),
+    path('attendance/weekly_report', views.get_attendance_weekly_report, name="get_attendance_weekly_report"),
     path('api/', include(router.urls))
 ]

@@ -20,19 +20,20 @@ Attendance Slip
 </div>
 
 <div class="row" style="{% if not student_record %}height:450px{% endif %}">
-    <div class="col-sm-6">
+    <div class="col-sm-4">
         <div class="element-wrapper">
             <div class="element-box mb-3">
                 <div class="element-info">
-                        <div class="element-info-with-icon">
-                            <div class="element-info-icon">
-                                <div class="os-icon os-icon-ui-46"></div>
-                            </div>
-                            <div class="element-info-text">
-                                <h5 class="element-inner-header">Print{% if user.person.is_staff %}/Upload{% endif %} Attendance Sheet</h5>
-                            </div>
+                    <div class="element-info-with-icon">
+                        <div class="element-info-icon">
+                            <div class="os-icon os-icon-ui-46"></div>
+                        </div>
+                        <div class="element-info-text">
+                            <h5 class="element-inner-header">Print{% if user.person.is_staff %}/Upload{% endif %}
+                                Attendance Sheet</h5>
                         </div>
                     </div>
+                </div>
                 <form id="attendanceSheetForm" method="post">
                     {% csrf_token %}
                     {% if user.person.is_staff %}
@@ -49,14 +50,15 @@ Attendance Slip
                     <h6 class="text-primary mb-3 pb-3">Click the button below to print out attendance slip</h6>
                     {% endif %}
                     <div class="form-buttons col-8" style="text-align:right">
-                        <button class="btn btn-primary" type="submit">Print Slip <i class="os-icon os-icon-download"></i></button>
+                        <button class="btn btn-primary" type="submit">Print Slip <i
+                                class="os-icon os-icon-download"></i></button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
     {% if user.person.is_staff %}
-    <div class="col-sm-6">
+    <div class="col-sm-4">
         <div class="element-wrapper">
             <div class="element-box">
                 <div>
@@ -70,18 +72,40 @@ Attendance Slip
                             </div>
                         </div>
                     </div>
-                    <form action="{% url 'Attendance:upload_attendance_sheet' %}" method="post" enctype="multipart/form-data">
+                    <form action="{% url 'Attendance:upload_attendance_sheet' %}" method="post"
+                          enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <h6 class="text-primary">Kindly upload attendance sheet</h6>
+                        <div class="input-group input-group-sm mb-3">
+                            {% include 'form2.html' with form=file_form %}
+                            <div class="form-group col-12" style="text-align:right">
+                                <button class="btn btn-sm btn-primary" type="submit">Upload Spreadsheet<i
+                                        class="os-icon os-icon-upload"></i></button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="element-wrapper">
+            <div class="element-box mb-3">
+                <form action="{% url 'Attendance:mail_admin' %}" method="post">
                     {% csrf_token %}
-                    <h6 class="text-primary">Kindly upload attendance sheet</h6>
+                    <h6 class="text-primary">For issues regarding attendance upload, kindly send a mail to the
+                        admin</h6>
                     <div class="input-group input-group-sm mb-3">
-                        {% include 'form2.html' with form=file_form %}
+                        <div class="form-group col-12">
+                            <textarea class="form-control form-control-sm rounded bright" name="text" id="text"
+                                      cols="30" rows="5" placeholder="Enter message" wrap="hard"></textarea>
+                        </div>
                         <div class="form-group col-12" style="text-align:right">
-                            <button class="btn btn-sm btn-primary" type="submit">Upload Spreadsheet<i
-                                    class="os-icon os-icon-upload"></i></button>
+                            <button class="btn btn-sm btn-primary" type="submit">Send<i
+                                    class="os-icon os-icon-send"></i></button>
                         </div>
                     </div>
                 </form>
-                </div>
             </div>
         </div>
     </div>

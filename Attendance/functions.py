@@ -65,6 +65,25 @@ def take_attendance(date, course, session, student, attendance, index):
         course_atendance.save()
 
 
+# function returns the percentage a student is present for a course
+def get_weekly_course_attendance_percentage(course_attendance, student):
+    present = 0
+    absent = 0
+    for att in course_attendance:
+        try:
+            student_att = att.student_attendance.get(student=student)
+            if student_att.is_present:
+                present += 1
+            else:
+                absent += 1
+        except Exception:
+            pass
+    if absent == 0:
+        return 0
+    else:
+        return round((present / (present + absent)) * 100, 2)
+
+
 # function gets students record list
 def get_spreadsheed_data_as_list(course, reg_students, course_attendance):
     std_record = []
@@ -97,6 +116,30 @@ def get_spreadsheed_data_as_list(course, reg_students, course_attendance):
     return std_record
 
 
+# function gets students record list
+def get_spreadsheed_data_as_list_weekly_attendance(days):
+    std_record = []
+
+    headings = ["Full Name", "Matric No", "Programme", "Attendance (%)"]
+    std_record.append(headings)
+
+    for std in Student.objects.all():
+        std_list = [std.person.full_name, std.matric_no, std.programme.programme_name]
+
+        course_attendance = []
+        for day in days:
+            course_atts = CourseAttendance.objects.filter(date=day)
+            for att in course_atts:
+                if att.student_attendance.filter(student=std).count() > 0:
+                    course_attendance.append(att)
+
+        percentage = get_weekly_course_attendance_percentage(course_attendance, std)
+        std_list.append(percentage)
+        std_record.append(std_list)
+
+    return std_record
+
+
 # function returns the total amount of times a student is present for a course
 def get_number_of_course_attendance_present(course, student):
     all_attendance = CourseAttendance.objects.filter(course=course)
@@ -125,7 +168,7 @@ def get_number_of_course_attendance_absent(course, student):
     return absent
 
 
-# function returns the total amount of times a student is present for a course
+# function returns the percentage a student is present for a course
 def get_number_of_course_attendance_percentage(course, student):
     all_attendance = CourseAttendance.objects.filter(course=course)
     present = 0
@@ -358,69 +401,3 @@ def upload_course_attendance(file, session):
                     else:
                         take_attendance(date, course, session, student, attendance, index)
 
-
-# def get_student_attendance_list():
-#     current_day = datetime.datetime.today()
-#     days = []
-#     if current_day.weekday() == 5:
-#         for i in range(5):
-#             day = current_day - datetime.timedelta(days=i+1)
-#             days.append(day.date())
-#
-#     # Create an in-memory output file for the workbook
-#     output = io.BytesIO()
-#
-#     # Create an excel spreadsheet workbook
-#     attendance_book = xlsxwriter.Workbook(output)
-#
-#     # Give the file created a name
-#     filename = f"Attendance For The Week.xlsx"
-#
-#     # Add a worksheet
-#     attendance_sheet = attendance_book.add_worksheet()
-#
-#     # Instantiate the rows and columns
-#     row = col = 0
-#
-#     # Create row headers
-#     attendance_sheet.write(row, col, "Full Name")
-#     attendance_sheet.write(row, col + 1, "Matric No")
-#
-#     all_students = Student.objects.all()
-#
-#     # Fill in the names and matric_no
-#     for student in all_students:
-#         reg_students = RegisteredStudent.objects.all()
-#         reg_courses = [
-#             reg_std for reg_std in reg_students if student in reg_std.students.all()
-#         ]
-#
-#         reg_courses_weekly = []
-#         for day in days:
-#             courses = [
-#                 CourseAttendance.objects.filter(course=reg.course, date=day) for reg in reg_courses
-#             ]
-#             reg_courses_weekly += courses
-#
-#         att_percentage = [
-#             get_number_of_course_attendance_percentage(reg.course, student) for reg in reg_courses
-#         ]
-#         std_percentage = sum(att_percentage) / len(att_percentage)
-#
-#         attendance_sheet.write(row + 1, col, student.person.full_name)
-#         attendance_sheet.write(row + 1, col + 1, f"{std_percentage}%")
-#
-#         row += 1
-#
-#     # Close workbook
-#     attendance_book.close()
-#
-#     # Rewind the buffer
-#     output.seek(0)
-#
-#     # Set up the Http response informing the browser that this is xlsx file and not html file
-#     response = HttpResponse(
-#         output,
-#         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-#     )
-#     response['Content-Disposition'] = f'attachment; filename={filename}'
