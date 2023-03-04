@@ -4,7 +4,7 @@ from rest_framework import routers
 from Attendance import views
 from Attendance.views import DashboardView, AttendanceRegisterView, AttendanceSheetView, SettingsView, \
     PrintAttendanceSheetView, LoginView, LogoutView, ForgotPasswordView, UploadView, \
-    PasswordRetrievalView, UpdatePasswordView, TrackAttendanceView, UpdateRecordsView
+    PasswordRetrievalView, UpdatePasswordView, TrackAttendanceView, UpdateRecordsView, ContactView
 from Attendance.api_views import FacultyViewSet, DepartmentViewSet, StaffViewSet, StudentViewSet, CourseViewSet, \
     StudentAttendanceViewSet, CourseAttendanceViewSet, ProgrammeViewSet, RegisteredStudentViewSet, PersonViewSet, \
     PasswordViewSet
@@ -32,6 +32,7 @@ urlpatterns = [
     path('logout', LogoutView.as_view(), name="logout"),
     path('upload', UploadView.as_view(), name="upload"),
     path('dashboard', DashboardView.as_view(), name="dashboard"),
+    path('contact_us', ContactView.as_view(), name="contact"),
     path('profile/settings', SettingsView.as_view(), name="settings"),
     path('profile/settings/update_password', views.update_password, name="update_password"),
     path('profile/settings/update_email', views.update_email, name="update_email"),
@@ -52,10 +53,8 @@ urlpatterns = [
     path('attendance/track_student/view_attendance', views.get_student_attendance, name="get_student_attendance"),
     path('attendance/print', PrintAttendanceSheetView.as_view(), name="print_attendance_sheet"),
     path('attendance/upload', views.upload_attendance_sheet, name="upload_attendance_sheet"),
-    path('attendance/mail_admin', views.mail_admin, name="mail_admin"),
     path('attendance/update_records', UpdateRecordsView.as_view(), name="update_records"),
     path('attendance/admin/add_student', views.add_student, name="add_student"),
     path('attendance/admin/add_staff', views.add_staff, name="add_staff"),
-    path('attendance/weekly_report', views.get_attendance_weekly_report, name="get_attendance_weekly_report"),
     path('api/', include(router.urls))
 ]

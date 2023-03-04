@@ -311,7 +311,7 @@ class UpdatePasswordForm(forms.Form):
 
 class UpdateEmailForm(forms.Form):
     email = forms.EmailField(
-        max_length=30,
+        max_length=100,
         widget=forms.EmailInput(
             attrs={
                 'placeholder': 'Email Address',

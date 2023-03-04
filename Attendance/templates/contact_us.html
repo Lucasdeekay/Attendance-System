@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}
+Attendance Slip
+{% endblock title %}
+
+{% block page_title %}
+Attendance Slip
+{% endblock page_title %}
+
+{% block date %}
+{{ date }}
+{% endblock date %}
+
+{% block content %}
+<div id="toast">
+    {% for message in messages %}
+    <div class="alert alert-info" role="alert">{{ message }}</div>
+    {% endfor %}
+</div>
+
+<div class="row" style="{% if not student_record %}height:450px{% endif %}">
+    <div class="col-sm-6">
+        <div class="element-wrapper">
+            <div class="element-box mb-3">
+                <form action="" method="post">
+                    {% csrf_token %}
+                    <h6 class="text-primary">For issues regarding attendance upload, kindly send a mail to the
+                        admin</h6>
+                    <div class="input-group input-group-sm mb-3">
+                        <div class="form-group col-12">
+                            <textarea class="form-control form-control-sm rounded bright" name="text" id="text"
+                                      cols="30" rows="5" placeholder="Enter message" wrap="hard"></textarea>
+                        </div>
+                        <div class="form-group col-12" style="text-align:right">
+                            <button class="btn btn-sm btn-primary" type="submit">Send<i
+                                    class="os-icon os-icon-send"></i></button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+
+{% block ajax %}
+$("#toast").fadeIn(3000);
+$("#toast").fadeOut(3000);
+{% endblock ajax %}

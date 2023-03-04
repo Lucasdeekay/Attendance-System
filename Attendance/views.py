@@ -23,7 +23,7 @@ from Attendance.functions import get_number_of_course_attendance_absent, get_num
     get_number_of_eligible_students, get_number_of_course_attendance_present, \
     get_number_of_course_attendance_percentage, upload_student, upload_staff, upload_course, \
     upload_department, upload_programme, upload_faculty, upload_course_attendance, \
-    upload_student_course_registration, get_spreadsheed_data_as_list, get_spreadsheed_data_as_list_weekly_attendance
+    upload_student_course_registration, get_spreadsheed_data_as_list
 from Attendance.models import Staff, Course, RegisteredStudent, CourseAttendance, Student, \
     StudentAttendance, Person, Programme, Password, Department
 from Attendance.utils import render_to_pdf
@@ -333,6 +333,77 @@ class DashboardView(View):
             }
         # Load te page with the data
         return render(request, self.template_name, context)
+
+
+# Create a contact us view
+class ContactView(View):
+    # Add template name
+    template_name = 'contact_us.html'
+
+    # Add a method decorator to make sure user is logged in
+    @method_decorator(login_required())
+    # Create get function
+    def get(self, request):
+        # Get the current person logged in
+        person = get_object_or_404(Person, user=request.user)
+        # Get today's date
+        date = timezone.now().date().today()
+
+        superuser = False
+        is_staff = False
+        if request.user.is_superuser:
+            superuser = True
+        if request.user.is_staff:
+            is_staff = True
+
+        # Check if user is a staff
+        if person.is_staff:
+            # Get the current logged in staff
+            staff = get_object_or_404(Staff, person=person)
+
+            # Create a dictionary of data to be accessed on the page
+            context = {
+                'user': staff,
+                'date': date,
+                'superuser': superuser,
+                'staff': is_staff,
+            }
+        # Otherwise
+        else:
+            # Get the current logged in student
+            student = get_object_or_404(Student, person=person)
+            # Create a dictionary of data to be accessed on the page
+            context = {
+                'user': student,
+                'date': date,
+                'superuser': superuser,
+                'staff': is_staff,
+            }
+        # Load te page with the data
+        return render(request, self.template_name, context)
+
+    @method_decorator(login_required())
+    # Create post function
+    def post(self, request):
+        person = Person.objects.get(user=request.user)
+        admins = User.objects.filter(is_superuser=True)
+        admin_mails = [
+            Person.objects.get(user=user).email for user in admins if Person.objects.filter(user=user).count() > 0
+        ]
+        # Check if request method is POST
+        if request.method == "POST":
+            # Get user input
+            msg = request.POST.get("text")
+            title = f"MAIL TICKET FROM {person.full_name}"
+            context = {'title': title, 'msg': msg}
+            html_message = render_to_string('email.html', context=context)
+
+            send_mail(title, msg, EMAIL_HOST_USER, admin_mails, html_message=html_message,
+                      fail_silently=False)
+
+            messages.success(request,
+                             'Account has been successfully recovered. Kindly update your password')
+            return HttpResponseRedirect(reverse('Attendance:contact_us'))
 
 
 # Create a attendance register view
@@ -1417,29 +1488,6 @@ def upload_attendance_sheet(request):
             return HttpResponseRedirect(reverse("Attendance:print_attendance_sheet"))
 
 
-# create function to mail admin
-def mail_admin(request):
-    person = Person.objects.get(user=request.user)
-    admins = User.objects.filter(is_superuser=True)
-    admin_mails = [
-        Person.objects.get(user=user).email for user in admins if Person.objects.filter(user=user).count() > 0
-    ]
-    # Check if request method is POST
-    if request.method == "POST":
-        # Get user input
-        msg = request.POST.get("text")
-        title = f"MAIL TICKET FROM {person.full_name}"
-        context = {'title': title, 'msg': msg}
-        html_message = render_to_string('email.html', context=context)
-
-        send_mail(title, msg, EMAIL_HOST_USER, admin_mails, html_message=html_message,
-                  fail_silently=False)
-
-        messages.success(request,
-                         'Account has been successfully recovered. Kindly update your password')
-        return HttpResponseRedirect(reverse('Attendance:print_attendance_sheet'))
-
-
 # Create a print attendance sheet view
 class UpdateRecordsView(View):
     # Add template name
@@ -1513,7 +1561,7 @@ def add_student(request):
             student.save()
 
             messages.success(request, "Student successfully added")
-            return HttpResponseRedirect(reverse('Attendance:admin'))
+            return HttpResponseRedirect(reverse('Attendance:update_records'))
 
 
 def add_staff(request):
@@ -1537,7 +1585,7 @@ def add_staff(request):
             staff.save()
 
             messages.success(request, "Staff successfully added")
-            return HttpResponseRedirect(reverse('Attendance:admin'))
+            return HttpResponseRedirect(reverse('Attendance:update_records'))
 
 
 # Create a logout view
@@ -1560,49 +1608,3 @@ def error_404(request, exception):
 def error_500(request):
     return render(request, 'error_400.html')
 
-
-# function allows user to get a weekly report as spreadsheet
-def get_attendance_weekly_report(request):
-    current_day = datetime.datetime.today()
-    days = []
-    # if current_day.weekday() == 5:
-    for i in range(5):
-        day = current_day - datetime.timedelta(days=i)
-        days.append(day.date())
-
-    # Create an in-memory output file for the workbook
-    output = io.BytesIO()
-
-    # Create an excel spreadsheet workbook
-    attendance_book = xlsxwriter.Workbook(output)
-
-    # Give the file created a name
-    filename = f"Attendance For The Week ({days[-1]} - {days[0]}).xlsx"
-
-    # Add a worksheet
-    attendance_sheet = attendance_book.add_worksheet()
-
-    # Instantiate the rows and columns
-    row = col = 0
-
-    students_records = get_spreadsheed_data_as_list_weekly_attendance(days)
-
-    for record in students_records:
-        for data in record:
-            attendance_sheet.write(row, col, data)
-            col += 1
-        row += 1
-        col = 0
-
-    # Close workbook
-    attendance_book.close()
-
-    # Rewind the buffer
-    output.seek(0)
-
-    # Set up the Http response informing the browser that this is xlsx file and not html file
-    response = HttpResponse(
-        output,
-        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    )
-    response['Content-Disposition'] = f'attachment; filename={filename}'
