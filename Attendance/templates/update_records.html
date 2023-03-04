@@ -63,6 +63,52 @@ Attendance Admin
         </div>
         <div class="element-wrapper">
             <div class="element-box">
+                <form action="{% url 'Attendance:add_student' %}" method="post">
+                    {% csrf_token %}
+                    <div class="element-info">
+                        <div class="element-info-with-icon">
+                            <div class="element-info-icon">
+                                <div class="os-icon os-icon-user-plus"></div>
+                            </div>
+                            <div class="element-info-text">
+                                <h5 class="element-inner-header">Add New Student</h5>
+                            </div>
+                        </div>
+                    </div>
+                    {% include 'form2.html' with form=student_form %}
+                    <div class="form-group col-8" style="text-align:right">
+                        <button class="btn btn-primary" type="submit">Submit <i class="os-icon os-icon-send"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <div class="element-wrapper">
+            <div class="element-box">
+                <form action="{% url 'Attendance:add_staff' %}" method="post">
+                    {% csrf_token %}
+                    <div class="element-info">
+                        <div class="element-info-with-icon">
+                            <div class="element-info-icon">
+                                <div class="os-icon os-icon-user-plus"></div>
+                            </div>
+                            <div class="element-info-text">
+                                <h5 class="element-inner-header">Add New Staff</h5>
+                            </div>
+                        </div>
+                    </div>
+                    {% include 'form2.html' with form=staff_form %}
+                    <div class="form-group col-12" style="text-align:right">
+                        <button class="btn btn-primary" type="submit">Submit <i class="os-icon os-icon-send"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="element-wrapper">
+            <div class="element-box">
                 <div>
                     <div class="element-info">
                         <div class="element-info-with-icon">
@@ -137,52 +183,6 @@ Attendance Admin
             </div>
         </div>
     </div>
-    <div class="col-sm-6">
-        <div class="element-wrapper">
-            <div class="element-box">
-                <form action="{% url 'Attendance:add_student' %}" method="post">
-                    {% csrf_token %}
-                    <div class="element-info">
-                        <div class="element-info-with-icon">
-                            <div class="element-info-icon">
-                                <div class="os-icon os-icon-user-plus"></div>
-                            </div>
-                            <div class="element-info-text">
-                                <h5 class="element-inner-header">Add New Student</h5>
-                            </div>
-                        </div>
-                    </div>
-                    {% include 'form2.html' with form=student_form %}
-                    <div class="form-group col-8" style="text-align:right">
-                        <button class="btn btn-primary" type="submit">Submit <i class="os-icon os-icon-send"></i>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-        <div class="element-wrapper">
-            <div class="element-box">
-                <form action="{% url 'Attendance:add_staff' %}" method="post">
-                    {% csrf_token %}
-                    <div class="element-info">
-                        <div class="element-info-with-icon">
-                            <div class="element-info-icon">
-                                <div class="os-icon os-icon-user-plus"></div>
-                            </div>
-                            <div class="element-info-text">
-                                <h5 class="element-inner-header">Add New Staff</h5>
-                            </div>
-                        </div>
-                    </div>
-                    {% include 'form2.html' with form=staff_form %}
-                    <div class="form-group col-12" style="text-align:right">
-                        <button class="btn btn-primary" type="submit">Submit <i class="os-icon os-icon-send"></i>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
 
 </div>
 {% endblock content %}
@@ -191,4 +191,18 @@ Attendance Admin
 {% block ajax %}
 $("#toast").fadeIn(3000);
 $("#toast").fadeOut(3000);
+
+$('#single_record_tab').hide();
+$('#multi_record_tab').hide();
+
+
+$('#searchMethod').change(function(){
+if ($('#searchMethod').val() == "single_record"){
+$('#single_record_tab').slideDown(300);
+$('#multi_record_tab').slideUp(300);
+} else {
+$('#single_record_tab').slideUp(300);
+$('#multi_record_tab').slideDown(300);
+}
+});
 {% endblock ajax %}

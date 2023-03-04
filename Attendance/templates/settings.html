@@ -208,19 +208,4 @@ $("#toast").hide();
 $("#toast").fadeIn(3000);
 $("#toast").fadeOut(3000);
 
-
-$('#single_record_tab').hide();
-$('#multi_record_tab').hide();
-
-
-$('#searchMethod').change(function(){
-if ($('#searchMethod').val() == "single_record"){
-$('#single_record_tab').slideDown(300);
-$('#multi_record_tab').slideUp(300);
-} else {
-$('#single_record_tab').slideUp(300);
-$('#multi_record_tab').slideDown(300);
-}
-});
-
 {% endblock ajax %}
