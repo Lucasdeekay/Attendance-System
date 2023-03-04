@@ -19,9 +19,8 @@ Attendance Admin
     {% endfor %}
 </div>
 
-<div class="row" style="{% if not student_record %}height:730px{% endif %}">
+<div class="row" style="height:100%">
     <div class="col-sm-6">
-        {% if staff %}
         <div class="element-wrapper">
             <div class="element-box mb-3">
                 <form action="{% url 'Attendance:upload_file' %}" method="post" enctype="multipart/form-data">
@@ -62,7 +61,6 @@ Attendance Admin
                 </form>
             </div>
         </div>
-        {% endif %}
         <div class="element-wrapper">
             <div class="element-box">
                 <div>
@@ -139,7 +137,6 @@ Attendance Admin
             </div>
         </div>
     </div>
-    {% if staff %}
     <div class="col-sm-6">
         <div class="element-wrapper">
             <div class="element-box">
@@ -186,7 +183,7 @@ Attendance Admin
             </div>
         </div>
     </div>
-    {% endif %}
+
 </div>
 {% endblock content %}
 
