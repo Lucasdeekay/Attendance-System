@@ -161,7 +161,7 @@ Attendance Admin
                             </button>
                         </div>
                     </form>
-                    <form action="{% url 'Attendance:upload_file' %}" method="post" id="multi_record_tab">
+                    <form action="{% url 'Attendance:upload_file' %}" method="post" id="multi_record_tab" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="input-group input-group-sm mb-3">
                             <div class="custom-file col-10">
