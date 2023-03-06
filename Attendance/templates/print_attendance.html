@@ -19,7 +19,7 @@ Attendance Slip
     {% endfor %}
 </div>
 
-<div class="row" style="height:100%">
+<div class="row" style="{% if user.person.is_staff %}height:100%{% else %}height:450px{% endif %}">
     <div class="col-sm-6">
         <div class="element-wrapper">
             <div class="element-box mb-3">

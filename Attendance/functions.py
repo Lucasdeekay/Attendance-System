@@ -134,8 +134,37 @@ def get_spreadsheed_data_as_list_weekly_attendance(days):
                     course_attendance.append(att)
 
         percentage = get_weekly_course_attendance_percentage(course_attendance, std)
-        std_list.append(percentage)
+        if percentage <= 50:
+            std_list.append(percentage)
         std_record.append(std_list)
+
+    return std_record
+
+
+# function gets students record list
+def get_spreadsheed_data_as_list_weekly_attendance_per_department(days, department):
+    std_record = []
+
+    headings = ["Full Name", "Matric No", "Programme", "Attendance (%)"]
+    std_record.append(headings)
+
+    for std in Student.objects.all():
+        if std.programme in Programme.objects.filter(department=department):
+            std_list = [std.person.full_name, std.matric_no, std.programme.programme_name]
+
+            course_attendance = []
+            for day in days:
+                courses = Course.objects.filter(department=department)
+                for course in courses:
+                    course_atts = CourseAttendance.objects.filter(course=course, date=day)
+                    for att in course_atts:
+                        if att.student_attendance.filter(student=std).count() > 0:
+                            course_attendance.append(att)
+
+            percentage = get_weekly_course_attendance_percentage(course_attendance, std)
+            if percentage <= 50:
+                std_list.append(percentage)
+            std_record.append(std_list)
 
     return std_record
 
@@ -274,9 +303,10 @@ def upload_faculty(file):
         for j in i[0]:
             data2.append(j)
 
-        fac = data2
+        fac = data2[0]
         if Faculty.objects.filter(faculty_name=fac.upper()).count() < 1:
             faculty = Faculty.objects.create(faculty_name=fac.upper())
+
             faculty.save()
 
 
@@ -321,18 +351,20 @@ def upload_course(file):
                 data2.append(j)
 
             course_code, course_title, course_unit, status, lecturer, others = data2
+
             department = get_object_or_404(Department, department_name=department.upper())
 
             lecturer = str(lecturer).upper().strip().split()[-1]
             if Staff.objects.filter(staff_id=lecturer).count() == 1:
                 lecturer = get_object_or_404(Staff, staff_id=lecturer)
             else:
-                lecturer = get_object_or_404(Staff, department=department.upper(), post="HOD")
+                lecturer = get_object_or_404(Staff, department=department, post="HOD")
 
-            if Course.objects.filter(course_code=' '.join(course_code.strip().upper().split())).count() < 1:
+            if Course.objects.filter(course_code=course_code.strip().upper()).count() < 1:
                 course = Course.objects.create(course_title=course_title.strip().upper(),
-                                               course_code=' '.join(course_code.strip().upper().split()),
-                                               course_unit=course_unit, department=department.upper(), lecturer=lecturer)
+                                               course_code=course_code.strip().upper(),
+                                               course_unit=course_unit, department=department, lecturer=lecturer)
+
                 if str(others).strip() != "nan":
                     if others.strip().upper() == "ALL LECTURERS" or others.strip().upper() == "ALL":
                         all_lecturers = Staff.objects.filter(department=department.upper())

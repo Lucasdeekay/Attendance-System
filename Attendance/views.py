@@ -1197,61 +1197,6 @@ def update_image(request):
             return HttpResponseRedirect(reverse("Attendance:settings"))
 
 
-# Create post function to process the form on submission
-def upload_file(request):
-    # Check if request method is POST
-    if request.method == "POST":
-        # Get user input
-        file = request.FILES.get('file')
-        file_type = request.POST.get('type')
-
-        if file_type == "student":
-            try:
-                upload_student(file)
-            except Exception:
-                messages.error(request, "Error uploading file")
-                return HttpResponseRedirect(reverse("Attendance:update_records"))
-        elif file_type == "staff":
-            try:
-                upload_staff(file)
-            except Exception:
-                messages.error(request, "Error uploading file")
-                return HttpResponseRedirect(reverse("Attendance:update_records"))
-        elif file_type == "course":
-            try:
-                upload_course(file)
-            except Exception:
-                messages.error(request, "Error uploading file")
-                return HttpResponseRedirect(reverse("Attendance:update_records"))
-        elif file_type == "programme":
-            try:
-                upload_programme(file)
-            except Exception:
-                messages.error(request, "Error uploading file")
-                return HttpResponseRedirect(reverse("Attendance:update_records"))
-        elif file_type == "department":
-            try:
-                upload_department(file)
-            except Exception:
-                messages.error(request, "Error uploading file")
-                return HttpResponseRedirect(reverse("Attendance:update_records"))
-        elif file_type == "faculty":
-            try:
-                upload_faculty(file)
-            except Exception:
-                messages.error(request, "Error uploading file")
-                return HttpResponseRedirect(reverse("Attendance:update_records"))
-        elif file_type == "reg_student":
-            try:
-                upload_student_course_registration(file)
-            except Exception:
-                messages.error(request, "Error uploading file")
-                return HttpResponseRedirect(reverse("Attendance:update_records"))
-
-        messages.success(request, "File upload successful")
-        return HttpResponseRedirect(reverse("Attendance:update_records"))
-
-
 # Create function view to process ajax request
 def register_student(request):
     # Check if request method is POST
@@ -1429,35 +1374,27 @@ class PrintAttendanceSheetView(View):
             student = get_object_or_404(Student, person=person)
             # Get today's date
             date = timezone.now().date().today()
-            try:
-                # Get all the registered courses by the student
-                reg_students = RegisteredStudent.objects.all()
-                # Get all the courses taken by the student
-                courses = [
-                    x.course for x in reg_students if student in x.students.all()
-                ]
-                # Get all the course codes
-                course_codes = [
-                    x.course_code for x in courses
-                ]
-                # Get the percentage of attendance for each course
-                course_attendance_percentage = [
-                    get_number_of_course_attendance_percentage(x, student) for x in courses
-                ]
-                zipped = zip(course_codes, course_attendance_percentage)
-            except Exception:
-                courses = {}
-                zipped = []
+            # Get all the registered courses by the student
+            reg_students = RegisteredStudent.objects.all()
+            # Get all the course codes
+            course_codes = []
+            # Get the percentage of attendance for each course
+            course_attendance_percentage = []
+            for reg_std in reg_students:
+                if student in reg_std.students.all():
+                    course_codes.append(reg_std.course.course_code)
+                    course_attendance_percentage.append(get_number_of_course_attendance_percentage(reg_std.course, student))
+
+            zipped = zip(course_codes, course_attendance_percentage)
 
             # Create a dictionary of data to be accessed on the page
             context = {
                 'user': student,
                 'zipped': zipped,
-                'courses': courses,
                 'date': date,
             }
 
-            open('temp.html', "w").write(render_to_string('slip.html', context))
+            open('templates/temp.html', "w").write(render_to_string('slip.html', context))
 
             # Converting the HTML template into a PDF file
             pdf = render_to_pdf('temp.html')
@@ -1534,6 +1471,61 @@ class UpdateRecordsView(View):
 
         # login to te page with the data
         return render(request, self.template_name, context)
+
+
+# Create post function to process the form on submission
+def upload_file(request):
+    # Check if request method is POST
+    if request.method == "POST":
+        # Get user input
+        file = request.FILES.get('file')
+        file_type = request.POST.get('type')
+
+        if file_type == "student":
+            try:
+                upload_student(file)
+            except Exception:
+                messages.error(request, "Error uploading file")
+                return HttpResponseRedirect(reverse("Attendance:update_records"))
+        elif file_type == "staff":
+            try:
+                upload_staff(file)
+            except Exception:
+                messages.error(request, "Error uploading file")
+                return HttpResponseRedirect(reverse("Attendance:update_records"))
+        elif file_type == "course":
+            try:
+                upload_course(file)
+            except Exception:
+                messages.error(request, "Error uploading file")
+                return HttpResponseRedirect(reverse("Attendance:update_records"))
+        elif file_type == "programme":
+            try:
+                upload_programme(file)
+            except Exception:
+                messages.error(request, "Error uploading file")
+                return HttpResponseRedirect(reverse("Attendance:update_records"))
+        elif file_type == "department":
+            try:
+                upload_department(file)
+            except Exception:
+                messages.error(request, "Error uploading file")
+                return HttpResponseRedirect(reverse("Attendance:update_records"))
+        elif file_type == "faculty":
+            try:
+                upload_faculty(file)
+            except Exception:
+                messages.error(request, "Error uploading file")
+                return HttpResponseRedirect(reverse("Attendance:update_records"))
+        elif file_type == "reg_student":
+            try:
+                upload_student_course_registration(file)
+            except Exception:
+                messages.error(request, "Error uploading file")
+                return HttpResponseRedirect(reverse("Attendance:update_records"))
+
+        messages.success(request, "File upload successful")
+        return HttpResponseRedirect(reverse("Attendance:update_records"))
 
 
 def add_student(request):

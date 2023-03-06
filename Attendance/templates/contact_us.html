@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
 {% block title %}
-Attendance Slip
+Contact Us
 {% endblock title %}
 
 {% block page_title %}
-Attendance Slip
+Contact Us
 {% endblock page_title %}
 
 {% block date %}
@@ -25,8 +25,7 @@ Attendance Slip
             <div class="element-box mb-3">
                 <form action="" method="post">
                     {% csrf_token %}
-                    <h6 class="text-primary">For issues regarding attendance upload, kindly send a mail to the
-                        admin</h6>
+                    <h6 class="text-primary">For issues regarding the use of the system, kindly send a mail to the admin</h6>
                     <div class="input-group input-group-sm mb-3">
                         <div class="form-group col-12">
                             <textarea class="form-control form-control-sm rounded bright" name="text" id="text"
