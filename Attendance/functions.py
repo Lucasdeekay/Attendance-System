@@ -233,7 +233,7 @@ def upload_staff(file):
                                                email=email, is_staff=True)
 
             department = get_object_or_404(Department, department_name=dep.upper())
-            staff = Staff.objects.create(person=person, staff_id=staff_id.upper(), post=post, department=department)
+            staff = Staff.objects.create(person=person, staff_id=staff_id.upper(), post=post.upper(), department=department)
             staff.save()
 
 
@@ -274,7 +274,7 @@ def upload_faculty(file):
         for j in i[0]:
             data2.append(j)
 
-        fac = data2[0]
+        fac = data2
         if Faculty.objects.filter(faculty_name=fac.upper()).count() < 1:
             faculty = Faculty.objects.create(faculty_name=fac.upper())
             faculty.save()
