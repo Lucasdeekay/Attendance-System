@@ -66,10 +66,16 @@ class LoginView(View):
             user = authenticate(request, username=username, password=password)
             # Check if user exists
             if user is not None:
-                # Log in the user
-                login(request, user)
-                # Redirect to dashboard page
-                return HttpResponseRedirect(reverse('Attendance:dashboard'))
+                if user.check_password("password"):
+                    # Create an error message
+                    messages.error(request, "Kindly update your default password to enhance security")
+                    # Redirect back to the login page
+                    return HttpResponseRedirect(reverse('Attendance:forgot_password'))
+                else:
+                    # Log in the user
+                    login(request, user)
+                    # Redirect to dashboard page
+                    return HttpResponseRedirect(reverse('Attendance:dashboard'))
             # If user does not exist
             else:
                 # Create an error message
@@ -198,24 +204,29 @@ class UpdatePasswordView(View):
                 password1 = form.cleaned_data['password'].strip()
                 password2 = form.cleaned_data['confirm_password'].strip()
 
-                if password1 == password2:
-                    user = User.objects.get(id=user_id)
-                    user.set_password(password1)
-                    user.save()
-
-                    subject = 'Password Update Successful'
-                    msg = "Account password has  been successfully changed"
-                    context = {'title': subject, 'msg': msg}
-                    html_message = render_to_string('email.html', context=context)
-
-                    send_mail(subject, msg, EMAIL_HOST_USER, [user.email], html_message=html_message,
-                              fail_silently=False)
-
-                    messages.success(request, 'Password successfully changed')
-                    return HttpResponseRedirect(reverse('Attendance:login'))
-                else:
-                    messages.error(request, "Password does not match")
+                if password1 == "password":
+                    messages.error(request, "Password cannot be 'password'")
                     return HttpResponseRedirect(reverse('Attendance:update_password', args=(user_id,)))
+
+                else:
+                    if password1 == password2:
+                        user = User.objects.get(id=user_id)
+                        user.set_password(password1)
+                        user.save()
+
+                        subject = 'Password Update Successful'
+                        msg = "Account password has  been successfully changed"
+                        context = {'title': subject, 'msg': msg}
+                        html_message = render_to_string('email.html', context=context)
+
+                        send_mail(subject, msg, EMAIL_HOST_USER, [user.email], html_message=html_message,
+                                  fail_silently=False)
+
+                        messages.success(request, 'Password successfully changed')
+                        return HttpResponseRedirect(reverse('Attendance:login'))
+                    else:
+                        messages.error(request, "Password does not match")
+                        return HttpResponseRedirect(reverse('Attendance:update_password', args=(user_id,)))
 
 
 # Create a dashboard view
@@ -1133,6 +1144,11 @@ def update_password(request):
                 if password == old_password:
                     # Create message report
                     messages.error(request, "Previous password cannot be used")
+                    # return data back to page
+                    return HttpResponseRedirect(reverse("Attendance:settings"))
+                elif password == "password":
+                    # Create message report
+                    messages.error(request, "Password cannot be 'password'")
                     # return data back to page
                     return HttpResponseRedirect(reverse("Attendance:settings"))
                 else:
