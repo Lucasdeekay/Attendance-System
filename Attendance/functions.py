@@ -223,7 +223,7 @@ def upload_staff(file):
         staff_id = full_name.split()[-1]
 
         if User.objects.filter(username=staff_id.upper().strip()).count() < 1:
-            user = User.objects.create_user(username=staff_id.upper(), password="password")
+            user = User.objects.create_user(username=staff_id.upper(), password="password", email=email)
 
             if str(email) == 'nan':
                 person = Person.objects.create(user=user, full_name=full_name.upper(), gender=gender.upper().strip(),
@@ -245,13 +245,13 @@ def upload_student(file):
         for j in i[0]:
             data2.append(j)
 
-        matric_no, full_name, moe, yoa, fac, dep, prog, gender, email = data2[:8]
+        matric_no, full_name, moe, yoa, fac, dep, prog, gender, email = data2
         if prog == 'CRIMINOLOGY AND SECURITY STUDIES':
             prog = "CRIMINOLOGY"
         elif prog == 'CYBERSECURITY':
             prog = "CYBER SECURITY"
         if User.objects.filter(username=matric_no.upper().strip()).count() < 1:
-            user = User.objects.create_user(username=matric_no.upper().strip(), password="password")
+            user = User.objects.create_user(username=matric_no.upper().strip(), password="password", email=email)
             programme = get_object_or_404(Programme, programme_name=prog.upper().strip())
 
             if str(email) == 'nan':
@@ -321,21 +321,21 @@ def upload_course(file):
                 data2.append(j)
 
             course_code, course_title, course_unit, status, lecturer, others = data2
-            department = get_object_or_404(Department, department_name=department)
+            department = get_object_or_404(Department, department_name=department.upper())
 
             lecturer = str(lecturer).upper().strip().split()[-1]
             if Staff.objects.filter(staff_id=lecturer).count() == 1:
                 lecturer = get_object_or_404(Staff, staff_id=lecturer)
             else:
-                lecturer = get_object_or_404(Staff, department=department, post="HOD")
+                lecturer = get_object_or_404(Staff, department=department.upper(), post="HOD")
 
             if Course.objects.filter(course_code=' '.join(course_code.strip().upper().split())).count() < 1:
                 course = Course.objects.create(course_title=course_title.strip().upper(),
                                                course_code=' '.join(course_code.strip().upper().split()),
-                                               course_unit=course_unit, department=department, lecturer=lecturer)
+                                               course_unit=course_unit, department=department.upper(), lecturer=lecturer)
                 if str(others).strip() != "nan":
-                    if others.strip().upper() == "ALL LECTURERS":
-                        all_lecturers = Staff.objects.filter(department=department)
+                    if others.strip().upper() == "ALL LECTURERS" or others.strip().upper() == "ALL":
+                        all_lecturers = Staff.objects.filter(department=department.upper())
                         for lecturer in all_lecturers:
                             if lecturer.post != "HOD":
                                 course.others.add(lecturer)

@@ -19,7 +19,8 @@ Attendance Admin
     {% endfor %}
 </div>
 
-<div class="row" style="height:100%">
+<div class="row" style="{% if not superuser %}height:450px{% else %}height:100%{% endif %}">
+    {% if superuser %}
     <div class="col-sm-6">
         <div class="element-wrapper">
             <div class="element-box mb-3">
@@ -84,7 +85,9 @@ Attendance Admin
             </div>
         </div>
     </div>
+    {% endif %}
     <div class="col-sm-6">
+        {% if superuser %}
         <div class="element-wrapper">
             <div class="element-box">
                 <form action="{% url 'Attendance:add_staff' %}" method="post">
@@ -107,6 +110,7 @@ Attendance Admin
                 </form>
             </div>
         </div>
+        {% endif %}
         <div class="element-wrapper">
             <div class="element-box">
                 <div>
