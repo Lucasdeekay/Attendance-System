@@ -343,6 +343,7 @@ class DashboardView(View):
                     eligible_status.append(0)
                     ineligible_status.append(0)
                     course_total_programs.append(0)
+                    course_total_programs_list.append('None')
 
             zipped = zip(course_codes, course_total_students, course_total_programs, course_total_programs_list, eligible_status, ineligible_status)
             # Create a dictionary of data to be accessed on the page
