@@ -70,7 +70,7 @@ class LoginView(View):
                     # Create an error message
                     messages.error(request, "Kindly update your default password to enhance security")
                     # Redirect back to the login page
-                    return HttpResponseRedirect(reverse('Attendance:forgot_password'))
+                    return HttpResponseRedirect(reverse('Attendance:password_update_before_login', args=(user.username,)))
                 else:
                     # Log in the user
                     login(request, user)
@@ -146,6 +146,66 @@ class ForgotPasswordView(View):
 
                 # Redirect back to page
                 return HttpResponseRedirect(reverse('Attendance:forgot_password'))
+
+
+# Create a forgot password view
+class LoginPasswordUpdateView(View):
+    # Add template name
+    template_name = 'password_update_before_login.html'
+
+    # Create get function
+    def get(self, request, username):
+        form = UpdatePasswordForm()
+        # load the page with the form
+        return render(request, self.template_name, {'form': form})
+
+    # Create post function to process the form on submission
+    def post(self, request, username):
+        # Check if request method is POST
+        if request.method == "POST":
+            user = User.objects.get(username=username)
+            # Get the submitted form
+            form = UpdatePasswordForm(request.POST)
+            # Check if form is valid
+            if form.is_valid():
+                # Get user input
+                old_password = form.cleaned_data['old_password'].strip()
+                password = form.cleaned_data['password'].strip()
+                confirm_password = form.cleaned_data['confirm_password'].strip()
+                # Check if old password match
+                if user.check_password(old_password):
+                    if password == old_password:
+                        # Create message report
+                        messages.error(request, "Previous password cannot be used")
+                        # return data back to page
+                        return HttpResponseRedirect(reverse('Attendance:password_update_before_login', args=(user.username,)))
+                    elif password == "password":
+                        # Create message report
+                        messages.error(request, "Password cannot be 'password'")
+                        # return data back to page
+                        return HttpResponseRedirect(reverse('Attendance:password_update_before_login', args=(user.username,)))
+                    else:
+                        # Check if both passwords match
+                        if password == confirm_password:
+                            # Update password
+                            user.set_password(password)
+                            # Save updated data
+                            user.save()
+                            # Create message report
+                            messages.success(request, "Password successfully changed")
+                            # return data back to page
+                            return HttpResponseRedirect(reverse("Attendance:login"))
+                        # If passwords do not match
+                        else:
+                            # Create message report
+                            messages.error(request, "New password does not match")
+                            # return data back to page
+                            return HttpResponseRedirect(reverse('Attendance:password_update_before_login', args=(user.username,)))
+                # Otherwise
+                else:
+                    messages.error(request, "Old password entered does not match")
+                    # return data back to page
+                    return HttpResponseRedirect(reverse('Attendance:password_update_before_login', args=(user.username,)))
 
 
 # Create a password retrieval view
@@ -1165,7 +1225,7 @@ def update_password(request):
                     # If passwords do not match
                     else:
                         # Create message report
-                        messages.error(request, "Password does not match")
+                        messages.error(request, "New password does not match")
                         # return data back to page
                         return HttpResponseRedirect(reverse("Attendance:settings"))
             # Otherwise

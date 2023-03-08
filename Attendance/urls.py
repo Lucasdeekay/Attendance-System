@@ -4,7 +4,8 @@ from rest_framework import routers
 from Attendance import views
 from Attendance.views import DashboardView, AttendanceRegisterView, AttendanceSheetView, SettingsView, \
     PrintAttendanceSheetView, LoginView, LogoutView, ForgotPasswordView, UploadView, \
-    PasswordRetrievalView, UpdatePasswordView, TrackAttendanceView, UpdateRecordsView, ContactView
+    PasswordRetrievalView, UpdatePasswordView, TrackAttendanceView, UpdateRecordsView, ContactView, \
+    LoginPasswordUpdateView
 from Attendance.api_views import FacultyViewSet, DepartmentViewSet, StaffViewSet, StudentViewSet, CourseViewSet, \
     StudentAttendanceViewSet, CourseAttendanceViewSet, ProgrammeViewSet, RegisteredStudentViewSet, PersonViewSet, \
     PasswordViewSet
@@ -26,6 +27,7 @@ router.register('password', PasswordViewSet)
 
 urlpatterns = [
     path('', LoginView.as_view(), name="login"),
+    path('update-password/<str:username>', LoginPasswordUpdateView.as_view(), name='password_update_before_login'),
     path('forgot-password', ForgotPasswordView.as_view(), name='forgot_password'),
     path('forgot-password/<int:user_id>/retrieve-password', PasswordRetrievalView.as_view(), name='password_retrieval'),
     path('forgot-password/<int:user_id>/retrieve-password/update-password', UpdatePasswordView.as_view(), name='update_password'),
