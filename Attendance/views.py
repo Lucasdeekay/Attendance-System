@@ -23,7 +23,7 @@ from Attendance.functions import get_number_of_course_attendance_absent, get_num
     get_number_of_eligible_students, get_number_of_course_attendance_present, \
     get_number_of_course_attendance_percentage, upload_student, upload_staff, upload_course, \
     upload_department, upload_programme, upload_faculty, upload_course_attendance, \
-    upload_student_course_registration, get_spreadsheed_data_as_list
+    upload_student_course_registration, get_spreadsheed_data_as_list, get_programme_short_code
 from Attendance.models import Staff, Course, RegisteredStudent, CourseAttendance, Student, \
     StudentAttendance, Person, Programme, Password, Department
 from Attendance.utils import render_to_pdf
@@ -324,6 +324,7 @@ class DashboardView(View):
             eligible_status = []
             ineligible_status = []
             course_total_programs = []
+            course_total_programs_list = []
             for course in courses:
                 course_codes.append(course.course_code)
                 if RegisteredStudent.objects.filter(course=course).count() > 0:
@@ -334,15 +335,16 @@ class DashboardView(View):
                     students = RegisteredStudent.objects.get(course=course).students.all()
                     program_list = []
                     for student in students:
-                        program_list.append(student.programme)
+                        program_list.append(get_programme_short_code(student.programme.programme_name))
                     course_total_programs.append(len(set(program_list)))
+                    course_total_programs_list.append(", ".join(set(program_list)))
                 else:
                     course_total_students.append(0)
                     eligible_status.append(0)
                     ineligible_status.append(0)
                     course_total_programs.append(0)
 
-            zipped = zip(course_codes, course_total_students, course_total_programs, eligible_status, ineligible_status)
+            zipped = zip(course_codes, course_total_students, course_total_programs, course_total_programs_list, eligible_status, ineligible_status)
             # Create a dictionary of data to be accessed on the page
             context = {
                 'user': staff,

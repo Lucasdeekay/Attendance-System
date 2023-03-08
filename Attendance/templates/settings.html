@@ -29,7 +29,7 @@ Profile Settings
                     <h4 class="up-header">{{ user.person.full_name }}</h4>
                     <h6 class="up-sub-header">
                         {% if user.person.is_staff %}
-                        {{ user.post }}
+                        {{ user.designation }}
                         {% else %}
                         {{ user.matric_no }}
                         {% endif %}
@@ -63,7 +63,7 @@ Profile Settings
                                 <div class="bar-label-left">
                                     <span>
                                         {% if user.person.is_staff %}
-                                        Post
+                                        Designation
                                         {% else %}
                                         Matric No
                                         {% endif %}
@@ -72,7 +72,7 @@ Profile Settings
                                 <div class="bar-label-right">
                                     <h6 class="info">
                                         {% if user.person.is_staff %}
-                                        {{ user.post }}
+                                        {{ user.designation }}
                                         {% else %}
                                         {{ user.matric_no }}
                                         {% endif %}
@@ -80,6 +80,24 @@ Profile Settings
                                 </div>
                             </div>
                         </div>
+                        {% if user.person.is_staff %}
+                        {% if user.post != "" %}
+                        <div class="os-progress-bar primary">
+                            <div class="bar-labels">
+                                <div class="bar-label-left">
+                                    <span>
+                                        Post
+                                    </span>
+                                </div>
+                                <div class="bar-label-right">
+                                    <h6 class="info">
+                                        {{ user.post }}
+                                    </h6>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endif %}
                         <div class="os-progress-bar primary">
                             <div class="bar-labels">
                                 <div class="bar-label-left">

@@ -200,7 +200,7 @@ class ForgotPasswordForm(forms.Form):
         max_length=30,
         widget=forms.TextInput(
             attrs={
-                'placeholder': 'Enter Matric No/Staff No',
+                'placeholder': 'Enter Matric No/Staff Username',
                 'required': '',
                 'class': 'input',
             }

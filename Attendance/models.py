@@ -49,6 +49,7 @@ class Programme(models.Model):
 class Staff(models.Model):
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
     staff_id = models.CharField(max_length=25, null=False, blank=False)
+    designation = models.CharField(max_length=25)
     post = models.CharField(max_length=25)
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
 

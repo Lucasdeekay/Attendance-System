@@ -10,6 +10,34 @@ from Attendance.models import CourseAttendance, RegisteredStudent, Student, Cour
     Faculty, Department, Programme
 
 
+# function gets short code for programmes
+def get_programme_short_code(prog_names):
+    if prog_names == "CYBER SECURITY":
+        return "CYB"
+    elif prog_names == "COMPUTER SCIENCE":
+        return "CSC"
+    elif prog_names == "SOFTWARE ENGINEERING":
+        return "SEN"
+    elif prog_names == "MICROBIOLOGY":
+        return "MCB"
+    elif prog_names == "INDUSTRIAL CHEMISTRY":
+        return "ICH"
+    elif prog_names == "BIOCHEMISTRY":
+        return "BCH"
+    elif prog_names == "BUSINESS ADMINISTRATION":
+        return "BUS"
+    elif prog_names == "ECONOMICS":
+        return "ECO"
+    elif prog_names == "ACCOUNTING":
+        return "ACC"
+    elif prog_names == "MASS COMMUNICATION":
+        return "MAS"
+    elif prog_names == "CRIMINOLOGY":
+        return "CRM"
+    else:
+        return prog_names
+
+
 # function checks date instance and if it includes a bracket
 def take_attendance(date, course, session, student, attendance, index):
     if date.find("(") == -1:
@@ -247,7 +275,7 @@ def upload_staff(file):
         for j in i[0]:
             data2.append(j)
 
-        full_name, gender, dep, email, post = data2
+        full_name, gender, dep, email, desig, post = data2
 
         staff_id = full_name.split()[-1]
 
@@ -262,7 +290,7 @@ def upload_staff(file):
                                                email=email, is_staff=True)
 
             department = get_object_or_404(Department, department_name=dep.upper())
-            staff = Staff.objects.create(person=person, staff_id=staff_id.upper(), post=post.upper(), department=department)
+            staff = Staff.objects.create(person=person, staff_id=staff_id.upper(), designation=desig.upper(), post=post.upper(), department=department)
             staff.save()
 
 
@@ -432,4 +460,3 @@ def upload_course_attendance(file, session):
                         take_attendance(date, course, session, student, attendance, index)
                     else:
                         take_attendance(date, course, session, student, attendance, index)
-

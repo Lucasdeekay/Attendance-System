@@ -27,7 +27,7 @@ Dashboard
                                     <h2 class="up-header">{{ user.person.full_name }}</h2>
                                     <h6 class="up-sub-header">
                                         {% if user.person.is_staff %}
-                                        {{ user.post }}
+                                        {{ user.designation }}
                                         {% else %}
                                         {{ user.matric_no }}
                                         {% endif %}
@@ -77,16 +77,18 @@ Dashboard
                             <th>Course</th>
                             <th>No Of Students</th>
                             <th class="text-center">No of Programs</th>
+                            <th class="text-center">List of Programs</th>
                             <th class="text-right">Eligible Students</th>
                             <th class="text-right">Non-Eligible Students</th>
                         </tr>
                         </thead>
                         <tbody>
-                        {% for code, students, programs, eligible, ineligible in zipped %}
+                        {% for code, students, no_of_programs, programs_list, eligible, ineligible in zipped %}
                         <tr>
                             <td><h6>{{ code }}</h6></td>
                             <td class="text-center text-info">{{ students }}</td>
-                            <td class="text-center text-primary">{{ programs }}</td>
+                            <td class="text-center text-primary">{{ no_of_programs }}</td>
+                            <td class="text-center text-dark"><small>{{ programs_list }}</small></td>
                             <td class="text-center text-success">{{ eligible }}</td>
                             <td class="text-center text-danger">{{ ineligible }}</td>
                         </tr>
