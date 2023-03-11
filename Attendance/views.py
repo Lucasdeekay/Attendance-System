@@ -23,9 +23,9 @@ from Attendance.functions import get_number_of_course_attendance_absent, get_num
     get_number_of_eligible_students, get_number_of_course_attendance_present, \
     get_number_of_course_attendance_percentage, upload_student, upload_staff, upload_course, \
     upload_department, upload_programme, upload_faculty, upload_course_attendance, \
-    upload_student_course_registration, get_spreadsheed_data_as_list, get_programme_short_code
+    upload_student_course_registration, get_spreadsheed_data_as_list, get_programme_short_code, get_all_selected_status
 from Attendance.models import Staff, Course, RegisteredStudent, CourseAttendance, Student, \
-    StudentAttendance, Person, Programme, Password, Department
+    StudentAttendance, Person, Programme, Password, Department, CourseAllocation
 from Attendance.utils import render_to_pdf
 
 from AttendanceSystem.settings import EMAIL_HOST_USER
@@ -315,7 +315,10 @@ class DashboardView(View):
             # Get the current logged in staff
             staff = get_object_or_404(Staff, person=person)
             #  Filter all the courses in staff department
-            courses = Course.objects.filter(lecturer=staff)
+            course_allocation = CourseAllocation.objects.filter(lecturer=staff)
+            courses = [
+                course_all.course for course_all in course_allocation
+            ]
 
             # Get all the course codes
             course_codes = []
@@ -472,11 +475,9 @@ class ContactView(View):
             context = {'title': title, 'msg': msg}
             html_message = render_to_string('email.html', context=context)
 
-            send_mail(title, msg, EMAIL_HOST_USER, admin_mails, html_message=html_message,
-                      fail_silently=False)
+            send_mail(title, msg, EMAIL_HOST_USER, admin_mails, html_message=html_message, fail_silently=False)
 
-            messages.success(request,
-                             'Account has been successfully recovered. Kindly update your password')
+            messages.success(request, 'Mail has been successfully sent')
             return HttpResponseRedirect(reverse('Attendance:contact_us'))
 
 
@@ -504,7 +505,10 @@ class AttendanceRegisterView(View):
             # Get the current logged in staff
             current_staff = get_object_or_404(Staff, person=person)
             #  Filter all the courses in staff department
-            courses = Course.objects.filter(lecturer=current_staff)
+            course_allocation = CourseAllocation.objects.filter(lecturer=current_staff)
+            courses = [
+                course_all.course for course_all in course_allocation
+            ]
             # Get the current date
             date = timezone.now().date().today()
             # Create a dictionary of data to be accessed on the page
@@ -563,6 +567,10 @@ def submit_course(request):
                 course_attendance = get_object_or_404(CourseAttendance, date=user_date, course=course)
                 # Get a list of all the ids of students in the course attendance
                 student_attendance_ids = course_attendance.student_attendance.values_list('student')
+                # Get a list of all the ids of students in the course attendance
+                student_attendance_status = course_attendance.student_attendance.values('is_present')
+                # Know if all atendance are true or not
+                all_selected = get_all_selected_status(student_attendance_status)
                 # Create a list 2d list containing each student name and matric no
                 student_bio = [
                     [get_object_or_404(Student, id=x[0]).person.full_name,
@@ -575,6 +583,7 @@ def submit_course(request):
                     'student_attendance': list(course_attendance.student_attendance.all().values_list()),
                     'student_bio': student_bio,
                     'course_att_id': course_attendance.id,
+                    'all_selected': all_selected
                 }
                 # return data back to the page
                 return JsonResponse(context)
@@ -606,6 +615,7 @@ def submit_course(request):
                 'student_attendance': list(course_attendance.student_attendance.all().values_list()),
                 'student_bio': student_bio,
                 'course_att_id': course_attendance.id,
+                'all_selected': 'no',
             }
             # return data back to the page
             return JsonResponse(context)
@@ -625,6 +635,10 @@ def submit_course_with_time(request):
         student_records = get_object_or_404(RegisteredStudent, course=course_attendance.course)
         # Get a list of all the ids of students in the course attendance
         student_attendance_ids = course_attendance.student_attendance.values_list('student')
+        # Get a list of all the ids of students in the course attendance
+        student_attendance_status = course_attendance.student_attendance.values('is_present')
+        # Know if all atendance are true or not
+        all_selected = get_all_selected_status(student_attendance_status)
         # Create a list 2d list containing each student name and matric no
         student_bio = [
             [get_object_or_404(Student, id=x[0]).person.full_name,
@@ -637,6 +651,7 @@ def submit_course_with_time(request):
             'student_attendance': list(course_attendance.student_attendance.all().values_list()),
             'student_bio': student_bio,
             'course_att_id': course_attendance.id,
+            'all_selected': all_selected,
         }
         # return data back to the page
         return JsonResponse(context)
@@ -744,6 +759,72 @@ def validate_checkbox(request):
         return JsonResponse(context)
 
 
+# Create function view to process ajax request
+def select_all_checkboxes(request):
+    # check if request method is POST
+    if request.method == 'POST':
+        # Get user input
+        course_att_id = request.POST.get('course_att_id')
+        is_present = request.POST.get('value')
+        # Get attendance details of current student
+        course_attendance = get_object_or_404(CourseAttendance, id=course_att_id)
+
+        # Toggle and update the student attendance in response to clicking on the checkbox
+        if is_present == 'true':
+            for student_attendance in course_attendance.student_attendance.all():
+                student_attendance.is_present = False
+                student_attendance.save()
+
+            # Create a dictionary of data to be returned to the page
+            output = {
+                'msg': f"All attendance status has been deselected",
+                'color': 'alert alert-success',
+                'selected': 'false',
+            }
+        else:
+            for student_attendance in course_attendance.student_attendance.all():
+                student_attendance.is_present = True
+                student_attendance.save()
+
+            # Create a dictionary of data to be returned to the page
+            output = {
+                'msg': f"All attendance status has been selected",
+                'color': 'alert alert-success',
+                'selected': 'true',
+            }
+
+        course_attendance.save()
+
+        # Get the registered students for the course
+        student_records = get_object_or_404(RegisteredStudent, course=course_attendance.course)
+
+        # Get a list of all the ids of students in the course attendance
+        student_attendance_ids = course_attendance.student_attendance.values_list('student')
+        # Get a list of all the ids of students in the course attendance
+        student_attendance_status = course_attendance.student_attendance.values('is_present')
+        # Know if all atendance are true or not
+        all_selected = get_all_selected_status(student_attendance_status)
+        # Create a list 2d list containing each student name and matric no
+        student_bio = [
+            [get_object_or_404(Student, id=x[0]).person.full_name,
+             get_object_or_404(Student, id=x[0]).matric_no] for x in student_attendance_ids
+        ]
+        # Create a dictionary of data containing the list of all registered student for the course
+        # and the list of individual attendance for the course
+        context = {
+            'student_records': list(student_records.students.all().values()),
+            'student_attendance': list(course_attendance.student_attendance.all().values_list()),
+            'student_bio': student_bio,
+            'course_att_id': course_attendance.id,
+            'msg': output['msg'],
+            'color': output['color'],
+            'selected': output['selected'],
+            'all_selected': all_selected,
+        }
+        # return data back to the page
+        return JsonResponse(context)
+
+
 # Create an attendance sheet view
 class AttendanceSheetView(View):
     # Add template name
@@ -768,7 +849,10 @@ class AttendanceSheetView(View):
             # Get the current logged in staff
             current_staff = get_object_or_404(Staff, person=person)
             #  Filter all the courses in staff department
-            courses = Course.objects.filter(lecturer=current_staff)
+            course_allocation = CourseAllocation.objects.filter(lecturer=current_staff)
+            courses = [
+                course_all.course for course_all in course_allocation
+            ]
             # Get the current date
             date = timezone.now().date().today()
             # Create a dictionary of data to be accessed on the page
@@ -1159,7 +1243,10 @@ class SettingsView(View):
             # Get the current logged in staff
             user = get_object_or_404(Staff, person=person)
             #  Filter all the courses in staff department
-            courses = Course.objects.filter(lecturer=user)
+            course_allocation = CourseAllocation.objects.filter(lecturer=user)
+            courses = [
+                course_all.course for course_all in course_allocation
+            ]
             # Create a dictionary of data to be accessed on the page
             context = {
                 'user': user,
@@ -1336,7 +1423,10 @@ class PrintAttendanceSheetView(View):
             # Get the current logged in staff
             current_staff = get_object_or_404(Staff, person=person)
             #  Filter all the courses in staff department
-            courses = Course.objects.filter(lecturer=current_staff)
+            course_allocation = CourseAllocation.objects.filter(lecturer=current_staff)
+            courses = [
+                course_all.course for course_all in course_allocation
+            ]
             # Create a dictionary of data to be accessed on the page
             context = {
                 'user': user,

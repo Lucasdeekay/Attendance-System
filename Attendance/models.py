@@ -62,11 +62,19 @@ class Course(models.Model):
     course_code = models.CharField(max_length=10, null=False, blank=False)
     course_unit = models.IntegerField()
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
+
+
+    def __str__(self):
+        return self.course_code
+
+
+class CourseAllocation(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
     lecturer = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name='lecturer')
     others = models.ManyToManyField(Staff)
 
     def __str__(self):
-        return self.course_code
+        return f"{self.course}"
 
 
 class Student(models.Model):

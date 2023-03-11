@@ -7,7 +7,21 @@ from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 
 from Attendance.models import CourseAttendance, RegisteredStudent, Student, Course, StudentAttendance, Person, Staff, \
-    Faculty, Department, Programme
+    Faculty, Department, Programme, CourseAllocation
+
+
+def get_all_selected_status(student_attendance_status):
+    all_selected = [
+        x['is_present'] for x in student_attendance_status
+    ]
+    all_selected_status = list(set(all_selected))
+    if len(all_selected_status) > 1:
+        all_selected_status = "no"
+    else:
+        if all_selected_status[0] == True:
+            all_selected_status = "yes"
+        else:
+            all_selected_status = "no"
 
 
 # function gets short code for programmes
@@ -378,35 +392,68 @@ def upload_course(file):
             for j in i[0]:
                 data2.append(j)
 
-            course_code, course_title, course_unit, status, lecturer, others = data2
+            index, course_code, course_title, course_unit, status, lecturer, others = data2
 
-            department = get_object_or_404(Department, department_name=department.upper())
+            department = get_object_or_404(Department, department_name=str(department).upper())
 
             lecturer = str(lecturer).upper().strip().split()[-1]
-            if Staff.objects.filter(staff_id=lecturer).count() == 1:
-                lecturer = get_object_or_404(Staff, staff_id=lecturer)
-            else:
-                lecturer = get_object_or_404(Staff, department=department, post="HOD")
+            if str(course_code).strip() != "nan":
+                if Staff.objects.filter(staff_id=lecturer).count() == 1:
+                    lecturer = get_object_or_404(Staff, staff_id=lecturer)
+                elif lecturer == "HOD":
+                    lecturer = get_object_or_404(Staff, department=department, post="HOD")
+                else:
+                    lecturer = get_object_or_404(Staff, department=department, post="HOD")
 
-            if Course.objects.filter(course_code=course_code.strip().upper()).count() < 1:
-                course = Course.objects.create(course_title=course_title.strip().upper(),
-                                               course_code=course_code.strip().upper(),
-                                               course_unit=course_unit, department=department, lecturer=lecturer)
+                if Course.objects.filter(course_code=course_code.strip().upper()).count() < 1:
+                    course = Course.objects.create(course_title=course_title.strip().upper(),
+                                                   course_code=course_code.strip().upper(),
+                                                   course_unit=course_unit, department=department)
+                    course.save()
 
-                if str(others).strip() != "nan":
-                    if others.strip().upper() == "ALL LECTURERS" or others.strip().upper() == "ALL":
-                        all_lecturers = Staff.objects.filter(department=department.upper())
-                        for lecturer in all_lecturers:
-                            if lecturer.post != "HOD":
-                                course.others.add(lecturer)
-                    else:
-                        others = others.strip().split("/")
-                        for x in others:
-                            lecturer = x.upper().split()[-1]
-                            if Staff.objects.filter(staff_id=lecturer).count() == 1:
-                                lecturer = get_object_or_404(Staff, staff_id=lecturer)
-                                course.others.add(lecturer)
-                course.save()
+                else:
+                    course = get_object_or_404(Course, course_code=course_code.strip().upper())
+
+                if CourseAllocation.objects.filter(course=course).count() < 1:
+                    course_allocation = CourseAllocation.objects.create(course=course, lecturer=lecturer)
+
+                    if str(others).strip() != "nan":
+                        if others.strip().split(" ")[0].upper() == "ALL":
+                            all_lecturers = Staff.objects.filter(department=department)
+                            for lecturer in all_lecturers:
+                                if lecturer.post != "HOD":
+                                    course_allocation.others.add(lecturer)
+                        else:
+                            others = others.strip().split("/")
+                            for x in others:
+                                lecturer = x.upper().split()[-1]
+                                if Staff.objects.filter(staff_id=lecturer).count() == 1:
+                                    lecturer = get_object_or_404(Staff, staff_id=lecturer)
+                                    course_allocation.others.add(lecturer)
+
+                else:
+                    course_allocation = get_object_or_404(CourseAllocation, course=course)
+                    course_allocation.lecturer = lecturer
+
+                    if len(course_allocation.others.all()) > 0:
+                        for lecturer in course_allocation.others.all():
+                            course_allocation.others.remove(lecturer)
+
+                    if str(others).strip() != "nan":
+                        if others.strip().split(" ")[0].upper() == "ALL":
+                            all_lecturers = Staff.objects.filter(department=department)
+                            for lecturer in all_lecturers:
+                                if lecturer.post != "HOD":
+                                    course_allocation.others.add(lecturer)
+                        else:
+                            others = others.strip().split("/")
+                            for x in others:
+                                lecturer = x.upper().split()[-1]
+                                if Staff.objects.filter(staff_id=lecturer).count() == 1:
+                                    lecturer = get_object_or_404(Staff, staff_id=lecturer)
+                                    course_allocation.others.add(lecturer)
+
+                course_allocation.save()
 
 
 def upload_student_course_registration(file):
@@ -422,15 +469,17 @@ def upload_student_course_registration(file):
             matric_no, session, semester = data2
 
             if Student.objects.filter(matric_no=matric_no).count() == 1:
-                student = Student.objects.get(matric_no=matric_no)
-                filter_val = {'course_code': course_code, 'department': student.programme.department}
-                if Course.objects.filter(**filter_val).count() == 1:
-                    course = Course.objects.get(course_code=course_code, department=student.programme.department)
+                student = Student.objects.get(matric_no=matric_no.strip().upper())
+                if Course.objects.filter(course_code=course_code.strip().upper()).count() == 1:
+                    course = Course.objects.get(course_code=course_code.strip().upper())
                     if RegisteredStudent.objects.filter(course=course).count() == 1:
                         reg_students = get_object_or_404(RegisteredStudent, course=course)
                     else:
-                        reg_students = RegisteredStudent.objects.create(course=course)
-                    reg_students.students.add(student)
+                        reg_students = RegisteredStudent.objects.create(course=course, semester=semester.lower(),
+                                                                        session=session.strip())
+
+                    if student not in reg_students.students.all():
+                        reg_students.students.add(student)
 
                     reg_students.save()
 

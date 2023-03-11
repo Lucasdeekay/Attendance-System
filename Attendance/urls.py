@@ -8,7 +8,7 @@ from Attendance.views import DashboardView, AttendanceRegisterView, AttendanceSh
     LoginPasswordUpdateView
 from Attendance.api_views import FacultyViewSet, DepartmentViewSet, StaffViewSet, StudentViewSet, CourseViewSet, \
     StudentAttendanceViewSet, CourseAttendanceViewSet, ProgrammeViewSet, RegisteredStudentViewSet, PersonViewSet, \
-    PasswordViewSet
+    PasswordViewSet, CourseAllocationViewSet
 
 app_name = 'Attendance'
 
@@ -20,6 +20,7 @@ router.register('programme', ProgrammeViewSet)
 router.register('staff', StaffViewSet)
 router.register('student', StudentViewSet)
 router.register('course', CourseViewSet)
+router.register('course_allocation', CourseAllocationViewSet)
 router.register('registered_student', RegisteredStudentViewSet)
 router.register('student_attendance', StudentAttendanceViewSet)
 router.register('course_attendance', CourseAttendanceViewSet)
@@ -44,6 +45,7 @@ urlpatterns = [
     path('attendance', AttendanceRegisterView.as_view(), name="attendance_register"),
     path('attendance/search', views.search_attendance_register, name="search_attendance_register"),
     path('attendance/validate', views.validate_checkbox, name="validate_checkbox"),
+    path('attendance/select_all_checkboxes', views.select_all_checkboxes, name="select_all_checkboxes"),
     path('attendance/get_attendance_records', views.get_attendance_records, name="get_attendance_records"),
     path('attendance/get_attendance_records_with_time', views.get_attendance_records_with_time, name="get_attendance_records_with_time"),
     path('attendance/submit_course', views.submit_course, name="submit_course"),

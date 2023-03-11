@@ -44,6 +44,8 @@ Take Attendance
                         </div>
                     </div>
                 </div>
+                <div class="form-group my-2 text-right" id="selectAllBtnDiv">
+                </div>
                 <div class="table-responsive" style="max-height: 360px; overflow-y: auto;">
                     <table class="table table-striped table-hover">
                         <thead>
@@ -183,6 +185,18 @@ $('#courseForm').submit(function(e) {
                         $("#formDiv").append(form);
                     }
                 }
+                if (data.all_selected == "no") {
+                    var btnDiv = `<button type="button" id="selectAllBtn" value="true" onclick="selectAllAttendance(this)"
+                                          class="btn btn-dark rounded">
+                                            Deselect All
+                                    <i class="bi bi-check-circle-fill text-danger"></i></button>`;
+                } else {
+                    var btnDiv = `<button type="button" id="selectAllBtn" value="false" onclick="selectAllAttendance(this)"
+                                      class="btn btn-dark rounded">
+                                        Select All
+                                <i class="bi bi-check-circle-fill text-success"></i></button>`;
+                }
+                $("#selectAllBtnDiv").append(btnDiv);
                 $("#tbody").addClass("animation");
             }
         },
@@ -277,6 +291,19 @@ function getAttendance(e) {
                     $("#formDiv").append(form);
                 }
             }
+            if (data.all_selected == "no") {
+                var btnDiv = `<button type="button" id="selectAllBtn" value="false" onclick="selectAllAttendance(this)"
+                                      class="btn btn-dark rounded">
+                                        Select All
+                                <i class="bi bi-check-circle-fill text-success"></i></button>`;
+            } else {
+                var btnDiv = `<button type="button" id="selectAllBtn" value="true" onclick="selectAllAttendance(this)"
+                                  class="btn btn-dark rounded">
+                                    Deselect All
+                            <i class="bi bi-check-circle-fill text-danger"></i></button>`;
+            }
+
+            $("#selectAllBtnDiv").append(btnDiv);
             $("#tbody").addClass("animation");
         },
         error: function(data){
@@ -331,6 +358,7 @@ function submitSearch(e) {
                     }
                 }
             }
+            $("#selectAllBtnDiv").empty();
             $("#tbody").addClass("animation");
         },
         error: function(data){
@@ -361,4 +389,107 @@ function validateCheckbox(e){
         },
     });
 }
+
+function selectAllAttendance(e) {
+    $("#tbody").empty();
+    $("#tbody").removeClass("animation");
+    $.ajax({
+        type: 'POST',
+        url: "{% url 'Attendance:select_all_checkboxes' %}",
+        data:{
+            course_att_id: $("#course_att_id").val(),
+            value: e.value,
+            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+        },
+        success: function(data){
+            if (data.student_attendance.length == 0) {
+                temp = `<tr>
+                            <td colspan="4"><h6>No record currently available</h6></td>
+                        </tr>`;
+                $("#tbody").append(temp);
+                $("#tbody").addClass("animation");
+
+                $("#course").hide();
+                $("#date").hide();
+                $("#attrec").show();
+            }
+            else{
+                for (var key in data.student_records){
+                    var temp = '';
+                    if (data.student_attendance[key][3]) {
+                        var temp = `<tr>
+                                <td><h6>${ data.student_bio[key][0] }</h6></td>
+                                <td><h6>${ data.student_bio[key][1] }</h6></td>
+                                <td>
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        <input class="form-control" type="checkbox"
+                                           id="${ data.student_attendance[key][0] }"
+                                           value="${ data.student_attendance[key][3] }"
+                                               checked
+                                            onclick="validateCheckbox(this)">
+                                    </form>
+                                </td>
+                            </tr>`;
+                    }
+                    else {
+                        var temp = `<tr>
+                                <td><h6>${ data.student_bio[key][0] }</h6></td>
+                                <td><h6>${ data.student_bio[key][1] }</h6></td>
+                                <td>
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        <input class="form-control" type="checkbox"
+                                           id="${ data.student_attendance[key][0] }"
+                                           value="${ data.student_attendance[key][3] }"
+                                            onclick="validateCheckbox(this)">
+                                    </form>
+                                </td>
+                            </tr>`;
+                    }
+                    $("#tbody").append(temp);
+
+                    var form = `<div class="form-inline justify-content-sm-end">
+                                    {% csrf_token %}
+                                    <input type="hidden" id="course_att_id" value="${ data.course_att_id }">
+                                    <select class="form-control form-control-sm rounded bright" name="searchMethod" id="searchMethod" required>
+                                        <option value="">Search By..</option>
+                                        <option value="matric_no">Matric No</option>
+                                        <option value="name">Name</option>
+                                    </select>
+                                    <input class="form-control form-control-sm rounded bright"
+                                           type="text" name="text" id="text" required>
+                                    <div class="form-group my-2">
+                                        <button type="button" class="btn btn-primary" onclick="submitSearch(this)">Submit <i class="os-icon os-icon-send"></i></button>
+                                    </div>
+                                </div>`;
+                    $("#formDiv").empty();
+                    $("#formDiv").append(form);
+                }
+            }
+            $("#tbody").addClass("animation");
+
+            var toast = `<div class="${ data.color }" role="alert"><strong>${ data.msg }</strong></div>`;
+            $("#selectAllBtnDiv").empty();
+            if (data.selected == 'true'){
+                var btnDiv = `<button type="button" id="selectAllBtn" value="true" onclick="selectAllAttendance(this)"
+                                          class="btn btn-dark rounded">
+                                            Deselect All
+                                    <i class="bi bi-check-circle-fill text-danger"></i></button>`;
+
+                    $("#selectAllBtnDiv").append(btnDiv);
+            } else {
+                var btnDiv = `<button type="button" id="selectAllBtn" value="false" onclick="selectAllAttendance(this)"
+                                          class="btn btn-dark rounded">
+                                            Select All
+                                    <i class="bi bi-check-circle-fill text-success"></i></button>`;
+
+                    $("#selectAllBtnDiv").append(btnDiv);
+            }
+            $("#toast").html(toast);
+            $("#toast").fadeIn(2000);
+            $("#toast").fadeOut(1000);
+        },
+    });
+};
 {% endblock javascript %}
