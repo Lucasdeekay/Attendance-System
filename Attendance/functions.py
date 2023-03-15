@@ -57,11 +57,11 @@ def take_attendance(date, course, session, student, attendance, index):
     if date.find("(") == -1:
         # split the date input and convert to datetime object
         user_date = date.strip().split('/')
-        user_date = datetime.date(int(user_date[2]), int(user_date[1]), int(user_date[0]))
+        user_date = datetime.date(int(user_date[2][:4]), int(user_date[1][:2]), int(user_date[0][:2]))
 
         filter_val = {'course': course, 'date': user_date}
 
-        if CourseAttendance.objects.filter(**filter_val).count() > 0:
+        if CourseAttendance.objects.filter(**filter_val).count() == 1:
             course_atendance = CourseAttendance.objects.get(course=course, date=user_date,
                                                             session=session)
         else:
@@ -81,21 +81,11 @@ def take_attendance(date, course, session, student, attendance, index):
         date = date[:date.find("(")]
         # split the date input and convert to datetime object
         user_date = date.strip().split('/')
-        user_date = datetime.date(int(user_date[0]), int(user_date[1]), int(user_date[2]))
-        filter_val = {'course': course, 'date': user_date}
+        user_date = datetime.date(int(user_date[2][:4]), int(user_date[1][:2]), int(user_date[0][:2]))
 
-        if CourseAttendance.objects.filter(**filter_val).count() > 1:
-            course_atendances = CourseAttendance.objects.filter(**filter_val)
-            greatest = 0
-            for course_att in course_atendances:
-                if course_att.id > greatest:
-                    greatest = course_att.id
-
-            course_atendance = CourseAttendance.objects.get(id=greatest)
-        else:
-            time = datetime.datetime.now().strftime("%H:%M:%S")
-            course_atendance = CourseAttendance.objects.create(course=course, date=user_date, time=time,
-                                                               session=session)
+        time = datetime.datetime.now().strftime("%H:%M:%S")
+        course_atendance = CourseAttendance.objects.create(course=course, date=user_date, time=time,
+                                                           session=session)
 
         std_att = StudentAttendance.objects.create(student=student, course=course, date=user_date,
                                                    session=session)
@@ -506,6 +496,10 @@ def upload_course_attendance(file, session):
                     if isinstance(date, datetime.datetime):
                         date = str(date.date()).split("-")
                         date = '/'.join([date[2], date[1], date[0]])
+                        print(date)
+                        take_attendance(date, course, session, student, attendance, index)
+                        break
+                    elif date.find("/") != -1:
                         take_attendance(date, course, session, student, attendance, index)
                     else:
-                        take_attendance(date, course, session, student, attendance, index)
+                        pass
