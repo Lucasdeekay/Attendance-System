@@ -1,9 +1,11 @@
 from django.contrib.auth.models import User
 from django.db import models
-from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
 from Attendance.extra import ContentTypeRestrictedFileField
+
+
+session = '2022/2023'
 
 
 class Person(models.Model):
@@ -72,6 +74,7 @@ class CourseAllocation(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     lecturer = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name='lecturer')
     others = models.ManyToManyField(Staff)
+    session = models.CharField(max_length=10, default=session)
 
     def __str__(self):
         return f"{self.course}"
@@ -94,7 +97,7 @@ class RegisteredStudent(models.Model):
         ('1st', '1st'),
         ('2nd', '2nd'),
     ])
-    session = models.CharField(max_length=10, default='2022/2023')
+    session = models.CharField(max_length=10, default=session)
 
     def __str__(self):
         return f'{self.course}'
@@ -105,7 +108,7 @@ class StudentAttendance(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     is_present = models.BooleanField(default=False)
     date = models.DateField()
-    session = models.CharField(max_length=10, null=False, blank=False)
+    session = models.CharField(max_length=10, default=session)
 
     def __str__(self):
         return f'{self.student} - {self.is_present}'
@@ -116,7 +119,7 @@ class CourseAttendance(models.Model):
     student_attendance = models.ManyToManyField(StudentAttendance)
     date = models.DateField()
     time = models.TimeField()
-    session = models.CharField(max_length=10, null=False, blank=False)
+    session = models.CharField(max_length=10, default=session)
 
     def __str__(self):
         return f'{self.course} - {self.date}'

@@ -23,7 +23,8 @@ from Attendance.functions import get_number_of_course_attendance_absent, get_num
     get_number_of_eligible_students, get_number_of_course_attendance_present, \
     get_number_of_course_attendance_percentage, upload_student, upload_staff, upload_course, \
     upload_department, upload_programme, upload_faculty, upload_course_attendance, \
-    upload_student_course_registration, get_spreadsheed_data_as_list, get_programme_short_code, get_all_selected_status
+    upload_student_course_registration, get_spreadsheed_data_as_list, get_all_selected_status, \
+    get_number_of_unique_programs, get_list_of_unique_programs, get_total_number_of_students, allocate_courses
 from Attendance.models import Staff, Course, RegisteredStudent, CourseAttendance, Student, \
     StudentAttendance, Person, Programme, Password, Department, CourseAllocation
 from Attendance.utils import render_to_pdf
@@ -34,6 +35,7 @@ import random
 
 random = random.Random()
 
+session = '2022/2023'
 
 # Create a login view
 class LoginView(View):
@@ -70,7 +72,8 @@ class LoginView(View):
                     # Create an error message
                     messages.error(request, "Kindly update your default password to enhance security")
                     # Redirect back to the login page
-                    return HttpResponseRedirect(reverse('Attendance:password_update_before_login', args=(user.username,)))
+                    return HttpResponseRedirect(
+                        reverse('Attendance:password_update_before_login', args=(user.username,)))
                 else:
                     # Log in the user
                     login(request, user)
@@ -178,12 +181,14 @@ class LoginPasswordUpdateView(View):
                         # Create message report
                         messages.error(request, "Previous password cannot be used")
                         # return data back to page
-                        return HttpResponseRedirect(reverse('Attendance:password_update_before_login', args=(user.username,)))
+                        return HttpResponseRedirect(
+                            reverse('Attendance:password_update_before_login', args=(user.username,)))
                     elif password == "password":
                         # Create message report
                         messages.error(request, "Password cannot be 'password'")
                         # return data back to page
-                        return HttpResponseRedirect(reverse('Attendance:password_update_before_login', args=(user.username,)))
+                        return HttpResponseRedirect(
+                            reverse('Attendance:password_update_before_login', args=(user.username,)))
                     else:
                         # Check if both passwords match
                         if password == confirm_password:
@@ -200,12 +205,14 @@ class LoginPasswordUpdateView(View):
                             # Create message report
                             messages.error(request, "New password does not match")
                             # return data back to page
-                            return HttpResponseRedirect(reverse('Attendance:password_update_before_login', args=(user.username,)))
+                            return HttpResponseRedirect(
+                                reverse('Attendance:password_update_before_login', args=(user.username,)))
                 # Otherwise
                 else:
                     messages.error(request, "Old password entered does not match")
                     # return data back to page
-                    return HttpResponseRedirect(reverse('Attendance:password_update_before_login', args=(user.username,)))
+                    return HttpResponseRedirect(
+                        reverse('Attendance:password_update_before_login', args=(user.username,)))
 
 
 # Create a password retrieval view
@@ -315,40 +322,34 @@ class DashboardView(View):
             # Get the current logged in staff
             staff = get_object_or_404(Staff, person=person)
             #  Filter all the courses in staff department
-            course_allocation = CourseAllocation.objects.filter(lecturer=staff)
+            course_allocation = CourseAllocation.objects.filter(lecturer=staff, session=session)
             courses = [
                 course_all.course for course_all in course_allocation
             ]
 
             # Get all the course codes
-            course_codes = []
+            course_codes = [
+                course.course_code for course in courses
+            ]
             # Get the total number of students for each course
-            course_total_students = []
-            eligible_status = []
-            ineligible_status = []
-            course_total_programs = []
-            course_total_programs_list = []
-            for course in courses:
-                course_codes.append(course.course_code)
-                if RegisteredStudent.objects.filter(course=course).count() > 0:
-                    course_total_students.append(len(RegisteredStudent.objects.get(course=course).students.all()))
-                    eligible_status.append(get_number_of_eligible_students(course))
-                    ineligible_status.append(get_number_of_ineligible_students(course))
+            course_total_students = [
+                get_total_number_of_students(course) for course in courses
+            ]
+            eligible_status = [
+                get_number_of_eligible_students(course) for course in courses
+            ]
+            ineligible_status = [
+                get_number_of_ineligible_students(course) for course in courses
+            ]
+            course_total_programs = [
+                get_number_of_unique_programs(course) for course in courses
+            ]
+            course_total_programs_list = [
+                get_list_of_unique_programs(course) for course in courses
+            ]
 
-                    students = RegisteredStudent.objects.get(course=course).students.all()
-                    program_list = []
-                    for student in students:
-                        program_list.append(get_programme_short_code(student.programme.programme_name))
-                    course_total_programs.append(len(set(program_list)))
-                    course_total_programs_list.append(", ".join(set(program_list)))
-                else:
-                    course_total_students.append(0)
-                    eligible_status.append(0)
-                    ineligible_status.append(0)
-                    course_total_programs.append(0)
-                    course_total_programs_list.append('None')
-
-            zipped = zip(course_codes, course_total_students, course_total_programs, course_total_programs_list, eligible_status, ineligible_status)
+            zipped = zip(course_codes, course_total_students, course_total_programs, course_total_programs_list,
+                         eligible_status, ineligible_status)
             # Create a dictionary of data to be accessed on the page
             context = {
                 'user': staff,
@@ -366,28 +367,33 @@ class DashboardView(View):
             student = get_object_or_404(Student, person=person)
             try:
                 # Get all the registered courses by the student
-                reg_students = RegisteredStudent.objects.all()
+                reg_students = RegisteredStudent.objects.filter(session=session)
 
-                courses = []
-                course_codes = []
-                course_attendance_present = []
-                course_attendance_absent = []
-                course_attendance_percentage = []
+                courses = [
+                    reg_std.course for reg_std in reg_students if student in reg_std.students.all()
+                ]
+                course_codes = [
+                    reg_std.course.course_code for reg_std in reg_students if student in reg_std.students.all()
+                ]
+                course_attendance_present = [
+                    get_number_of_course_attendance_present(reg_std.course, student) for reg_std in reg_students if
+                    student in reg_std.students.all()
+                ]
+                course_attendance_absent = [
+                    get_number_of_course_attendance_absent(reg_std.course, student) for reg_std in reg_students if
+                    student in reg_std.students.all()
+                ]
+                course_attendance_percentage = [
+                    get_number_of_course_attendance_percentage(reg_std.course, student) for reg_std in reg_students if
+                    student in reg_std.students.all()
+                ]
                 no_of_eligible_courses = []
                 no_of_ineligible_courses = []
-                for reg_std in reg_students:
-                    if student in reg_std.students.all():
-                        courses.append(reg_std.course)
-                        course_codes.append(reg_std.course.course_code)
-                        course_attendance_present.append(get_number_of_course_attendance_present(reg_std.course, student))
-                        course_attendance_absent.append(get_number_of_course_attendance_absent(reg_std.course, student))
-
-                        percentage = get_number_of_course_attendance_percentage(reg_std.course, student)
-                        course_attendance_percentage.append(percentage)
-                        if percentage >= 75:
-                            no_of_eligible_courses.append(percentage)
-                        else:
-                            no_of_ineligible_courses.append(percentage)
+                for percentage in course_attendance_percentage:
+                    if percentage >= 75:
+                        no_of_eligible_courses.append(percentage)
+                    else:
+                        no_of_ineligible_courses.append(percentage)
 
                 zipped = zip(course_codes, course_attendance_present, course_attendance_absent,
                              course_attendance_percentage)
@@ -505,7 +511,7 @@ class AttendanceRegisterView(View):
             # Get the current logged in staff
             current_staff = get_object_or_404(Staff, person=person)
             #  Filter all the courses in staff department
-            course_allocation = CourseAllocation.objects.filter(lecturer=current_staff)
+            course_allocation = CourseAllocation.objects.filter(lecturer=current_staff, session=session)
             courses = [
                 course_all.course for course_all in course_allocation
             ]
@@ -543,7 +549,7 @@ def submit_course(request):
         user_date = datetime.date(int(user_date[0]), int(user_date[1]), int(user_date[2]))
 
         # Get the registered students for the course
-        student_records = get_object_or_404(RegisteredStudent, course=course)
+        student_records = get_object_or_404(RegisteredStudent, course=course, session=session)
 
         filter_val = {"course": course, "date": user_date}
 
@@ -598,7 +604,7 @@ def submit_course(request):
                 student = get_object_or_404(Student, matric_no=std['matric_no'])
                 # Create a student attendance for each student
                 student_attendance = StudentAttendance.objects.create(student=student, course=course, is_present=False,
-                                                                      date=user_date)
+                                                                      date=user_date, session=session)
                 # Add the individual student attendance to the course attendance
                 course_attendance.student_attendance.add(student_attendance)
 
@@ -632,7 +638,7 @@ def submit_course_with_time(request):
         course_attendance = get_object_or_404(CourseAttendance, id=int(time))
 
         # Get the registered students for the course
-        student_records = get_object_or_404(RegisteredStudent, course=course_attendance.course)
+        student_records = get_object_or_404(RegisteredStudent, course=course_attendance.course, session=session)
         # Get a list of all the ids of students in the course attendance
         student_attendance_ids = course_attendance.student_attendance.values_list('student')
         # Get a list of all the ids of students in the course attendance
@@ -669,7 +675,7 @@ def search_attendance_register(request):
         # Get course attendance for the course for today
         course_attendance = get_object_or_404(CourseAttendance, id=int(course_att_id))
         # Get the registered students for the course
-        registered_students = get_object_or_404(RegisteredStudent, course=course_attendance.course)
+        registered_students = get_object_or_404(RegisteredStudent, course=course_attendance.course, session=session)
 
         # Check mode
         if mode == 'matric_no':
@@ -796,7 +802,7 @@ def select_all_checkboxes(request):
         course_attendance.save()
 
         # Get the registered students for the course
-        student_records = get_object_or_404(RegisteredStudent, course=course_attendance.course)
+        student_records = get_object_or_404(RegisteredStudent, course=course_attendance.course, session=session)
 
         # Get a list of all the ids of students in the course attendance
         student_attendance_ids = course_attendance.student_attendance.values_list('student')
@@ -849,7 +855,7 @@ class AttendanceSheetView(View):
             # Get the current logged in staff
             current_staff = get_object_or_404(Staff, person=person)
             #  Filter all the courses in staff department
-            course_allocation = CourseAllocation.objects.filter(lecturer=current_staff)
+            course_allocation = CourseAllocation.objects.filter(lecturer=current_staff, session=session)
             courses = [
                 course_all.course for course_all in course_allocation
             ]
@@ -917,7 +923,7 @@ def get_attendance_records(request):
             # Get the required course attendance using the course and converted date
             fil_course_attendance = CourseAttendance.objects.filter(**filter_val)
             fil_course_attendance = [
-               [x.id, x.time] for x in fil_course_attendance
+                [x.id, x.time] for x in fil_course_attendance
             ]
             # Create a dictionary of data to be returned to the page
             context = {
@@ -969,7 +975,7 @@ def search_attendance_sheet(request):
         # Get the required course attendance using the course and converted date
         course_attendance = get_object_or_404(CourseAttendance, id=int(course_att_id))
         # Get the registered students for the course
-        registered_students = get_object_or_404(RegisteredStudent, course=course_attendance.course)
+        registered_students = get_object_or_404(RegisteredStudent, course=course_attendance.course, session=session)
 
         # Check mode
         if mode == 'matric_no':
@@ -1106,7 +1112,7 @@ def get_student_attendance(request):
         student = get_object_or_404(Student, person=person)
         try:
             # Get all the registered courses by the student
-            reg_students = RegisteredStudent.objects.all()
+            reg_students = RegisteredStudent.objects.filter(session=session)
             # Get all the courses taken by the student
             courses = [
                 x.course for x in reg_students if student in x.students.all()
@@ -1185,6 +1191,12 @@ class UploadView(View):
                 except Exception:
                     messages.error(request, "Error uploading file")
                     return HttpResponseRedirect(reverse("Attendance:upload"))
+            elif file_type == "allocate":
+                try:
+                    allocate_courses(file)
+                except Exception:
+                    messages.error(request, "Error uploading file")
+                    return HttpResponseRedirect(reverse("Attendance:upload"))
             elif file_type == "programme":
                 try:
                     upload_programme(file)
@@ -1243,7 +1255,7 @@ class SettingsView(View):
             # Get the current logged in staff
             user = get_object_or_404(Staff, person=person)
             #  Filter all the courses in staff department
-            course_allocation = CourseAllocation.objects.filter(lecturer=user)
+            course_allocation = CourseAllocation.objects.filter(lecturer=user, session=session)
             courses = [
                 course_all.course for course_all in course_allocation
             ]
@@ -1383,7 +1395,7 @@ def register_student(request):
             # return data back to page
             return HttpResponseRedirect(reverse("Attendance:settings"))
 
-        reg_students = get_object_or_404(RegisteredStudent, course=course, semester=semester)
+        reg_students = get_object_or_404(RegisteredStudent, course=course, semester=semester, session=session)
         if student not in reg_students.students.all():
             reg_students.students.add(student)
         else:
@@ -1423,7 +1435,7 @@ class PrintAttendanceSheetView(View):
             # Get the current logged in staff
             current_staff = get_object_or_404(Staff, person=person)
             #  Filter all the courses in staff department
-            course_allocation = CourseAllocation.objects.filter(lecturer=current_staff)
+            course_allocation = CourseAllocation.objects.filter(lecturer=current_staff, session=session)
             courses = [
                 course_all.course for course_all in course_allocation
             ]
@@ -1477,9 +1489,9 @@ class PrintAttendanceSheetView(View):
             # Use a try block
             try:
                 # Get course attendance for the course for specified date
-                course_attendance = CourseAttendance.objects.filter(course=course).order_by("date")
+                course_attendance = CourseAttendance.objects.filter(course=course, session=session).order_by("date")
                 # Get list of students offering course
-                reg_students = RegisteredStudent.objects.get(course=course)
+                reg_students = RegisteredStudent.objects.get(course=course, session=session)
                 reg_students = reg_students.students.all().order_by('matric_no')
 
                 if len(course_attendance) == 0:
@@ -1494,7 +1506,6 @@ class PrintAttendanceSheetView(View):
                 messages.error(request, f"Attendance for {course} does not exist")
                 # Redirect back to the current page
                 return HttpResponseRedirect(reverse('Attendance:print_attendance_sheet'))
-
 
             # Create an in-memory output file for the workbook
             output = io.BytesIO()
@@ -1552,7 +1563,8 @@ class PrintAttendanceSheetView(View):
             for reg_std in reg_students:
                 if student in reg_std.students.all():
                     course_codes.append(reg_std.course.course_code)
-                    course_attendance_percentage.append(get_number_of_course_attendance_percentage(reg_std.course, student))
+                    course_attendance_percentage.append(
+                        get_number_of_course_attendance_percentage(reg_std.course, student))
 
             zipped = zip(course_codes, course_attendance_percentage)
 
@@ -1668,6 +1680,12 @@ def upload_file(request):
             except Exception:
                 messages.error(request, "Error uploading file")
                 return HttpResponseRedirect(reverse("Attendance:update_records"))
+        elif file_type == "allocate":
+            try:
+                allocate_courses(file)
+            except Exception:
+                messages.error(request, "Error uploading file")
+                return HttpResponseRedirect(reverse("Attendance:update_records"))
         elif file_type == "programme":
             try:
                 upload_programme(file)
@@ -1768,4 +1786,3 @@ def error_404(request, exception):
 
 def error_500(request):
     return render(request, 'error_400.html')
-

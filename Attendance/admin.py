@@ -32,7 +32,7 @@ class CourseAdmin(admin.ModelAdmin):
 
 
 class CourseAllocationAdmin(admin.ModelAdmin):
-    list_display = ('course', 'lecturer')
+    list_display = ('course', 'lecturer', 'session')
 
 
 class RegisteredStudentsAdmin(admin.ModelAdmin):
@@ -44,7 +44,7 @@ class StudentAttendanceAdmin(admin.ModelAdmin):
 
 
 class CourseAttendanceAdmin(admin.ModelAdmin):
-    list_display = ('course', 'date', 'session')
+    list_display = ('course', 'date', 'time', 'session')
 
 
 class PasswordAdmin(admin.ModelAdmin):
