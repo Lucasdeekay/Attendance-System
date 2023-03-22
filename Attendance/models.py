@@ -129,7 +129,7 @@ class Password(models.Model):
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
     recovery_password = models.CharField(max_length=12, null=False)
     time = models.DateTimeField(null=False)
-    is_active = models.BooleanField(null=False, default=True)
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return f"{self.person} -> {self.recovery_password}"

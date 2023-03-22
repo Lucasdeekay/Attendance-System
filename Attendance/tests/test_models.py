@@ -1,10 +1,12 @@
+import datetime
+
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from django.test import TestCase
 from django.utils import timezone
 
 from Attendance.models import Faculty, Department, Programme, Staff, Student, Course, RegisteredStudent, \
-    StudentAttendance, CourseAttendance, Person
+    StudentAttendance, CourseAttendance, Person, Password, CourseAllocation
 
 
 class PersonModelTest(TestCase):
@@ -41,7 +43,7 @@ class PersonModelTest(TestCase):
     def test_email_label(self):
         person = get_object_or_404(Person, full_name="John")
         field_label = person._meta.get_field("email").verbose_name
-        self.assertEqual(field_label, "gender")
+        self.assertEqual(field_label, "email")
 
     def test_is_staff_label(self):
         person = get_object_or_404(Person, full_name="John")
@@ -126,7 +128,7 @@ class StaffModelTest(TestCase):
         department = Department.objects.create(faculty=faculty, department_name="Computer Science")
         user = User.objects.create_user(username="username", password="password")
         person = Person.objects.create(user=user, full_name="John", gender="Male", is_staff=True)
-        Staff.objects.create(person=person, staff_id="ID01", post="Lecturer I", department=department)
+        Staff.objects.create(person=person, staff_id="ID01", designation="Lecturer", post="HOD", department=department)
 
     def test_person_label(self):
         staff = get_object_or_404(Staff, staff_id="ID01")
@@ -141,6 +143,16 @@ class StaffModelTest(TestCase):
     def test_staff_id_max_length(self):
         staff = get_object_or_404(Staff, staff_id="ID01")
         max_length = staff._meta.get_field("staff_id").max_length
+        self.assertEqual(max_length, 25)
+
+    def test_designation_label(self):
+        staff = get_object_or_404(Staff, staff_id="ID01")
+        field_label = staff._meta.get_field("designation").verbose_name
+        self.assertEqual(field_label, "designation")
+
+    def test_designation_max_length(self):
+        staff = get_object_or_404(Staff, staff_id="ID01")
+        max_length = staff._meta.get_field("designation").max_length
         self.assertEqual(max_length, 25)
 
     def test_post_label(self):
@@ -207,15 +219,14 @@ class CourseModelTest(TestCase):
     def setUpTestData(cls):
         faculty = Faculty.objects.create(faculty_name="Computing And Applied Sciences")
         department = Department.objects.create(faculty=faculty, department_name="Computer Science")
-        programme = Programme.objects.create(department=department, programme_name="Computer Science")
-        Course.objects.create(course_title="course", course_code="CDG657", course_unit=2, programme=programme)
+        Course.objects.create(course_title="course", course_code="CDG657", course_unit=2, department=department)
 
-    def test_course_name_label(self):
+    def test_course_title_label(self):
         course = get_object_or_404(Course, course_title="course")
         field_label = course._meta.get_field("course_title").verbose_name
         self.assertEqual(field_label, "course title")
 
-    def test_course_name_max_length(self):
+    def test_course_title_max_length(self):
         course = get_object_or_404(Course, course_title="course")
         max_length = course._meta.get_field("course_title").max_length
         self.assertEqual(max_length, 100)
@@ -228,7 +239,7 @@ class CourseModelTest(TestCase):
     def test_course_code_max_length(self):
         course = get_object_or_404(Course, course_title="course")
         max_length = course._meta.get_field("course_code").max_length
-        self.assertEqual(max_length, 7)
+        self.assertEqual(max_length, 10)
 
     def test_course_unit_label(self):
         course = get_object_or_404(Course, course_title="course")
@@ -240,10 +251,52 @@ class CourseModelTest(TestCase):
         field_label = course._meta.get_field("department").verbose_name
         self.assertEqual(field_label, "department")
 
+
+class CourseAllocationModelTest(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        faculty = Faculty.objects.create(faculty_name="Computing And Applied Sciences")
+        department = Department.objects.create(faculty=faculty, department_name="Computer Science")
+        course = Course.objects.create(course_title="course", course_code="CDG657", course_unit=2, department=department)
+        user = User.objects.create_user(username="username", password="password")
+        person = Person.objects.create(user=user, full_name="John", gender="Male", is_staff=True)
+        staff = Staff.objects.create(person=person, staff_id="ID01", designation="Lecturer", post="HOD", department=department)
+        user2 = User.objects.create_user(username="username1", password="password1")
+        person2 = Person.objects.create(user=user2, full_name="John1", gender="Male", is_staff=True)
+        staff2 = Staff.objects.create(person=person2, staff_id="ID02", designation="Lecturer", post="", department=department)
+        course_allocation = CourseAllocation.objects.create(course=course, lecturer=staff, session="2022/2023")
+        course_allocation.others.add(staff2)
+
+    def test_course_label(self):
+        course = get_object_or_404(Course, course_title="course")
+        course_allocation = CourseAllocation.objects.get(course=course)
+        field_label = course_allocation._meta.get_field("course").verbose_name
+        self.assertEqual(field_label, "course")
+
     def test_lecturer_label(self):
         course = get_object_or_404(Course, course_title="course")
-        field_label = course._meta.get_field("lecturer").verbose_name
+        course_allocation = CourseAllocation.objects.get(course=course)
+        field_label = course_allocation._meta.get_field("lecturer").verbose_name
         self.assertEqual(field_label, "lecturer")
+
+    def test_others_label(self):
+        course = get_object_or_404(Course, course_title="course")
+        course_allocation = CourseAllocation.objects.get(course=course)
+        field_label = course_allocation._meta.get_field("others").verbose_name
+        self.assertEqual(field_label, "others")
+
+    def test_session_label(self):
+        course = get_object_or_404(Course, course_title="course")
+        course_allocation = CourseAllocation.objects.get(course=course)
+        field_label = course_allocation._meta.get_field("session").verbose_name
+        self.assertEqual(field_label, "session")
+
+    def test_session_max_length(self):
+        course = get_object_or_404(Course, course_title="course")
+        course_allocation = CourseAllocation.objects.get(course=course)
+        max_length = course_allocation._meta.get_field("session").max_length
+        self.assertEqual(max_length, 10)
 
 
 class RegisteredStudentModelTest(TestCase):
@@ -253,14 +306,14 @@ class RegisteredStudentModelTest(TestCase):
         faculty = Faculty.objects.create(faculty_name="Computing And Applied Sciences")
         department = Department.objects.create(faculty=faculty, department_name="Computer Science")
         programme = Programme.objects.create(department=department, programme_name="Computer Science")
-        course = Course.objects.create(course_title="course", course_code="CDG657", course_unit=2, programme=programme)
+        course = Course.objects.create(course_title="course", course_code="CDG657", course_unit=2, department=department)
         user2 = User.objects.create_user(username="usernam", password="passwor")
         person2 = Person.objects.create(user=user2, full_name="John", gender="Male", is_staff=False)
         student1 = Student.objects.create(person=person2, matric_no="MAC54653", programme=programme, year_of_entry="2022/2023")
         user3 = User.objects.create_user(username="userna", password="passwo")
         person3 = Person.objects.create(user=user3, full_name="Joh", gender="Female", is_staff=False)
         student2 = Student.objects.create(person=person3, matric_no="MAC54343", programme=programme, year_of_entry="2022/2023")
-        registered_students = RegisteredStudent.objects.create(course=course)
+        registered_students = RegisteredStudent.objects.create(course=course, semester="1st", session="2022/2023")
         registered_students.students.add(student1)
         registered_students.students.add(student2)
 
@@ -275,6 +328,18 @@ class RegisteredStudentModelTest(TestCase):
         registered_student = get_object_or_404(RegisteredStudent, course=course)
         field_label = registered_student._meta.get_field("students").verbose_name
         self.assertEqual(field_label, "students")
+
+    def test_semester_label(self):
+        course = get_object_or_404(Course, course_title="course")
+        registered_student = get_object_or_404(RegisteredStudent, course=course)
+        field_label = registered_student._meta.get_field("semester").verbose_name
+        self.assertEqual(field_label, "semester")
+
+    def test_semester_max_length(self):
+        course = get_object_or_404(Course, course_title="course")
+        registered_student = get_object_or_404(RegisteredStudent, course=course)
+        max_length = registered_student._meta.get_field("semester").max_length
+        self.assertEqual(max_length, 3)
 
     def test_session_label(self):
         course = get_object_or_404(Course, course_title="course")
@@ -296,16 +361,23 @@ class StudentAttendanceModelTest(TestCase):
         faculty = Faculty.objects.create(faculty_name="Computing And Applied Sciences")
         department = Department.objects.create(faculty=faculty, department_name="Computer Science")
         programme = Programme.objects.create(department=department, programme_name="Computer Science")
+        course = Course.objects.create(course_title="course", course_code="CDG657", course_unit=2, department=department)
         user = User.objects.create_user(username="username", password="password")
         person = Person.objects.create(user=user, full_name="John", gender="Doe", is_staff=False)
         student = Student.objects.create(person=person, matric_no="MAC54653", programme=programme, year_of_entry="2022/2023")
-        StudentAttendance.objects.create(student=student, date=timezone.now())
+        StudentAttendance.objects.create(student=student, course=course, is_present=True, date=timezone.now(), session="2022/2023")
 
     def test_student_label(self):
         student = get_object_or_404(Student, matric_no="MAC54653")
         student_attendance = get_object_or_404(StudentAttendance, student=student)
         field_label = student_attendance._meta.get_field("student").verbose_name
         self.assertEqual(field_label, "student")
+
+    def test_course_label(self):
+        student = get_object_or_404(Student, matric_no="MAC54653")
+        student_attendance = get_object_or_404(StudentAttendance, student=student)
+        field_label = student_attendance._meta.get_field("course").verbose_name
+        self.assertEqual(field_label, "course")
 
     def test_is_present_label(self):
         student = get_object_or_404(Student, matric_no="MAC54653")
@@ -339,12 +411,12 @@ class CourseAttendanceModelTest(TestCase):
         faculty = Faculty.objects.create(faculty_name="Computing And Applied Sciences")
         department = Department.objects.create(faculty=faculty, department_name="Computer Science")
         programme = Programme.objects.create(department=department, programme_name="Computer Science")
-        course = Course.objects.create(course_title="course", course_code="CDG657", course_unit=2, programme=programme)
+        course = Course.objects.create(course_title="course", course_code="CDG657", course_unit=2, department=department)
         user = User.objects.create_user(username="username", password="password")
         person2 = Person.objects.create(user=user, full_name="John", gender="Male", is_staff=False)
         student = Student.objects.create(person=person2, matric_no="MAC54653", programme=programme, year_of_entry="2022/2023")
-        student_attendance1 = StudentAttendance.objects.create(student=student, date=timezone.now())
-        course_att = CourseAttendance.objects.create(course=course, date=timezone.now())
+        student_attendance1 = StudentAttendance.objects.create(student=student, course=course, is_present=True, date=timezone.now(), session="2022/2023")
+        course_att = CourseAttendance.objects.create(course=course, date=timezone.now(), time=datetime.datetime.now().strftime("%H:%M:%S"), session="2022/2023")
         course_att.student_attendance.add(student_attendance1)
 
     def test_course_label(self):
@@ -365,6 +437,12 @@ class CourseAttendanceModelTest(TestCase):
         field_label = course_attendance._meta.get_field("date").verbose_name
         self.assertEqual(field_label, "date")
 
+    def test_time_label(self):
+        course = get_object_or_404(Course, course_title="course")
+        course_attendance = get_object_or_404(CourseAttendance, course=course)
+        field_label = course_attendance._meta.get_field("time").verbose_name
+        self.assertEqual(field_label, "time")
+
     def test_session_label(self):
         course = get_object_or_404(Course, course_title="course")
         course_attendance = get_object_or_404(CourseAttendance, course=course)
@@ -376,3 +454,37 @@ class CourseAttendanceModelTest(TestCase):
         course_attendance = get_object_or_404(CourseAttendance, course=course)
         max_length = course_attendance._meta.get_field("session").max_length
         self.assertEqual(max_length, 10)
+
+
+class PasswordModelTest(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        user = User.objects.create_user(username="username", password="password")
+        person = Person.objects.create(user=user, full_name="John", gender="Male", is_staff=True)
+        Password.objects.create(person=person, recovery_password="3Erec56AgGAG", time=timezone.now(), is_active=True)
+
+    def test_person_label(self):
+        password = get_object_or_404(Password, recovery_password="3Erec56AgGAG")
+        field_label = password._meta.get_field("person").verbose_name
+        self.assertEqual(field_label, "person")
+
+    def test_recovery_password_label(self):
+        password = get_object_or_404(Password, recovery_password="3Erec56AgGAG")
+        field_label = password._meta.get_field("recovery_password").verbose_name
+        self.assertEqual(field_label, "recovery password")
+
+    def test_recovery_password_max_length(self):
+        password = get_object_or_404(Password, recovery_password="3Erec56AgGAG")
+        max_length = password._meta.get_field("recovery_password").max_length
+        self.assertEqual(max_length, 12)
+
+    def test_time_label(self):
+        password = get_object_or_404(Password, recovery_password="3Erec56AgGAG")
+        field_label = password._meta.get_field("time").verbose_name
+        self.assertEqual(field_label, "time")
+
+    def test_is_active_label(self):
+        password = get_object_or_404(Password, recovery_password="3Erec56AgGAG")
+        field_label = password._meta.get_field("is_active").verbose_name
+        self.assertEqual(field_label, "is active")

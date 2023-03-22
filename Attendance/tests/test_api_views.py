@@ -51,6 +51,13 @@ class CourseAPITest(APITestCase):
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
 
+class CourseAllocationAPITest(APITestCase):
+
+    def test_api_url_exist(self):
+        response = self.client.get('/api/course_allocation/')
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+
 class RegisteredStudentAPITest(APITestCase):
 
     def test_api_url_exist(self):
@@ -69,4 +76,11 @@ class CourseAttendanceAPITest(APITestCase):
 
     def test_api_url_exist(self):
         response = self.client.get('/api/course_attendance/')
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+
+class PasswordAPITest(APITestCase):
+
+    def test_api_url_exist(self):
+        response = self.client.get('/api/password/')
         self.assertEqual(response.status_code, HTTPStatus.OK)

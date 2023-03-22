@@ -1,6 +1,7 @@
 import datetime
 import io
 import string
+import time
 
 import xlsxwriter
 
@@ -36,6 +37,7 @@ import random
 random = random.Random()
 
 session = '2022/2023'
+
 
 # Create a login view
 class LoginView(View):
@@ -323,39 +325,20 @@ class DashboardView(View):
             staff = get_object_or_404(Staff, person=person)
             #  Filter all the courses in staff department
             course_allocation = CourseAllocation.objects.filter(lecturer=staff, session=session)
-            courses = [
-                course_all.course for course_all in course_allocation
-            ]
+            courses = list(map(lambda x: x.course, course_allocation))
 
             # Get all the course codes
-            course_codes = [
-                course.course_code for course in courses
-            ]
+            course_codes = list(map(lambda x: x.course_code, courses))
             # Get the total number of students for each course
-            course_total_students = [
-                get_total_number_of_students(course) for course in courses
-            ]
-            eligible_status = [
-                get_number_of_eligible_students(course) for course in courses
-            ]
-            ineligible_status = [
-                get_number_of_ineligible_students(course) for course in courses
-            ]
-            course_total_programs = [
-                get_number_of_unique_programs(course) for course in courses
-            ]
-            course_total_programs_list = [
-                get_list_of_unique_programs(course) for course in courses
-            ]
+            course_total_students = list(map(lambda x: get_total_number_of_students(x), courses))
+            course_total_programs = list(map(lambda x: get_number_of_unique_programs(x), courses))
+            course_total_programs_list = list(map(lambda x: get_list_of_unique_programs(x), courses))
 
-            zipped = zip(course_codes, course_total_students, course_total_programs, course_total_programs_list,
-                         eligible_status, ineligible_status)
+            zipped = zip(course_codes, course_total_students, course_total_programs, course_total_programs_list)
             # Create a dictionary of data to be accessed on the page
             context = {
                 'user': staff,
                 'zipped': zipped,
-                'eligible': sum(eligible_status),
-                'ineligible': sum(ineligible_status),
                 'courses': courses,
                 'date': date,
                 'superuser': superuser,
