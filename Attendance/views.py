@@ -1,7 +1,6 @@
 import datetime
 import io
 import string
-import time
 
 import xlsxwriter
 
@@ -20,12 +19,12 @@ from django.views import View
 
 from Attendance.forms import LoginForm, UpdatePasswordForm, StaffRegisterForm, StudentRegisterForm, ForgotPasswordForm, \
     PasswordRetrievalForm, UploadImageForm, ChangePasswordForm, UpdateEmailForm, UploadFileForm
-from Attendance.functions import get_number_of_course_attendance_absent, get_number_of_ineligible_students, \
-    get_number_of_eligible_students, get_number_of_course_attendance_present, \
+from Attendance.functions import get_number_of_course_attendance_absent, get_number_of_course_attendance_present, \
     get_number_of_course_attendance_percentage, upload_student, upload_staff, upload_course, \
     upload_department, upload_programme, upload_faculty, upload_course_attendance, \
-    upload_student_course_registration, get_spreadsheed_data_as_list, get_all_selected_status, \
-    get_number_of_unique_programs, get_list_of_unique_programs, get_total_number_of_students, allocate_courses
+    upload_student_course_registration, get_spreadsheed_data_as_list, \
+    get_number_of_unique_programs, get_list_of_unique_programs, get_total_number_of_students, allocate_courses, \
+    get_all_selected_status
 from Attendance.models import Staff, Course, RegisteredStudent, CourseAttendance, Student, \
     StudentAttendance, Person, Programme, Password, Department, CourseAllocation
 from Attendance.utils import render_to_pdf

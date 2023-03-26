@@ -229,7 +229,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SESSION_SAVE_EVERY_REQUEST = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-SESSION_COOKIE_AGE = 3 * 60
+SESSION_COOKIE_AGE = 10 * 60
 
 # Configure your Q cluster
 # More details https://django-q.readthedocs.io/en/latest/configure.html

@@ -1,8 +1,5 @@
 import datetime
-import io
-
 import pandas as pd
-import xlsxwriter
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 
@@ -20,10 +17,12 @@ def get_all_selected_status(student_attendance_status):
     if len(all_selected_status) > 1:
         all_selected_status = "no"
     else:
-        if all_selected_status[0] == True:
+        if all_selected_status[0]:
             all_selected_status = "yes"
         else:
             all_selected_status = "no"
+
+    return all_selected_status
 
 
 # function gets short code for programmes
@@ -63,22 +62,27 @@ def take_attendance(date, course, session, student, attendance, index):
 
         filter_val = {'course': course, 'date': user_date}
 
-        if CourseAttendance.objects.filter(**filter_val).count() == 1:
-            course_atendance = CourseAttendance.objects.get(course=course, date=user_date,
-                                                            session=session)
-        else:
+        if CourseAttendance.objects.filter(**filter_val).count() == 0:
             time = datetime.datetime.now().strftime("%H:%M:%S")
             course_atendance = CourseAttendance.objects.create(course=course, date=user_date, time=time,
                                                                session=session)
+        else:
+            course_atendance = CourseAttendance.objects.get(course=course, date=user_date,
+                                                               session=session)
 
-        std_att = StudentAttendance.objects.create(student=student, course=course, date=user_date,
-                                                   session=session)
-        if attendance[index] == "Y":
-            std_att.is_present = True
+        filter_value = {'student':student, 'course': course, 'date': user_date}
 
-        std_att.save()
-        course_atendance.student_attendance.add(std_att)
-        course_atendance.save()
+        if StudentAttendance.objects.filter(**filter_value).count() == 0:
+            std_att = StudentAttendance.objects.create(student=student, course=course, date=user_date,
+                                                       session=session)
+            if attendance[index] == "Y":
+                std_att.is_present = True
+
+            std_att.save()
+            course_atendance.student_attendance.add(std_att)
+            course_atendance.save()
+        else:
+            pass
     else:
         date = date[:date.find("(")]
         # split the date input and convert to datetime object
@@ -132,9 +136,11 @@ def get_spreadsheed_data_as_list(course, reg_students, course_attendance):
 
     for std in reg_students:
         std_list = [std.person.full_name, std.matric_no]
+        student = Student.objects.get(matric_no=std.matric_no)
+
         for att in course_attendance:
             try:
-                course_att = att.student_attendance.get(student=std)
+                course_att = att.student_attendance.get(student=student)
                 std_list.append(course_att.is_present)
             except Exception:
                 std_list.append(False)
@@ -245,7 +251,7 @@ def get_number_of_course_attendance_percentage(course, student):
                 absent += 1
         except Exception:
             pass
-    if absent == 0:
+    if (present + absent) == 0:
         return 0
     else:
         return round((present / (present + absent)) * 100, 2)
@@ -332,7 +338,8 @@ def upload_staff(file):
                                                email=email, is_staff=True)
 
             department = get_object_or_404(Department, department_name=dep.upper())
-            staff = Staff.objects.create(person=person, staff_id=staff_id.upper(), designation=desig.upper(), post=post.upper(), department=department)
+            staff = Staff.objects.create(person=person, staff_id=staff_id.upper(), designation=desig.upper(),
+                                         post=post.upper(), department=department)
             staff.save()
 
 
@@ -424,7 +431,8 @@ def upload_course(file):
 
             department = get_object_or_404(Department, department_name=str(department).upper())
 
-            if str(course_code).strip() != "nan" and Course.objects.filter(course_code=course_code.strip().upper()).count() < 1:
+            if str(course_code).strip() != "nan" and Course.objects.filter(
+                    course_code=course_code.strip().upper()).count() < 1:
                 course = Course.objects.create(course_title=course_title.strip().upper(),
                                                course_code=course_code.strip().upper(),
                                                course_unit=course_unit, department=department)
