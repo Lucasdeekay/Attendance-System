@@ -146,7 +146,7 @@ def get_spreadsheed_data_as_list(course, reg_students, course_attendance):
                 std_list.append(False)
 
         present = get_number_of_course_attendance_percentage(course, std)
-        std_list.append(present)
+        std_list.append(f'{present}%')
         if present < 75:
             std_list.append("No")
         else:
