@@ -62,7 +62,7 @@ def take_attendance(date, course, session, student, attendance, index):
 
         filter_val = {'course': course, 'date': user_date}
 
-        if CourseAttendance.objects.filter(**filter_val).count() == 0:
+        if not CourseAttendance.objects.filter(**filter_val).exists():
             time = datetime.datetime.now().strftime("%H:%M:%S")
             course_atendance = CourseAttendance.objects.create(course=course, date=user_date, time=time,
                                                                session=session)
@@ -72,7 +72,7 @@ def take_attendance(date, course, session, student, attendance, index):
 
         filter_value = {'student':student, 'course': course, 'date': user_date}
 
-        if StudentAttendance.objects.filter(**filter_value).count() == 0:
+        if not StudentAttendance.objects.filter(**filter_value).exists():
             std_att = StudentAttendance.objects.create(student=student, course=course, date=user_date,
                                                        session=session)
             if attendance[index] == "Y":
@@ -170,7 +170,7 @@ def get_spreadsheed_data_as_list_weekly_attendance(days):
         for day in days:
             course_atts = CourseAttendance.objects.filter(date=day)
             for att in course_atts:
-                if att.student_attendance.filter(student=std).count() > 0:
+                if att.student_attendance.filter(student=std).exists():
                     course_attendance.append(att)
 
         percentage = get_weekly_course_attendance_percentage(course_attendance, std)
@@ -198,7 +198,7 @@ def get_spreadsheed_data_as_list_weekly_attendance_per_department(days, departme
                 for course in courses:
                     course_atts = CourseAttendance.objects.filter(course=course, date=day)
                     for att in course_atts:
-                        if att.student_attendance.filter(student=std).count() > 0:
+                        if att.student_attendance.filter(student=std).exists():
                             course_attendance.append(att)
 
             percentage = get_weekly_course_attendance_percentage(course_attendance, std)
@@ -258,7 +258,7 @@ def get_number_of_course_attendance_percentage(course, student):
 
 
 def get_total_number_of_students(course):
-    if RegisteredStudent.objects.filter(course=course, session=session).count() > 0:
+    if RegisteredStudent.objects.filter(course=course, session=session).exists():
         all_students = RegisteredStudent.objects.get(course=course, session=session).students.all()
         return len(all_students)
     else:
@@ -267,7 +267,7 @@ def get_total_number_of_students(course):
 
 # Function returns the total number of eligible students
 def get_number_of_eligible_students(course):
-    if RegisteredStudent.objects.filter(course=course, session=session).count() > 0:
+    if RegisteredStudent.objects.filter(course=course, session=session).exists():
         all_students = RegisteredStudent.objects.get(course=course, session=session).students.all()
         eligible = 0
         for std in all_students:
@@ -281,7 +281,7 @@ def get_number_of_eligible_students(course):
 
 # Function returns the total number of ineligible students
 def get_number_of_ineligible_students(course):
-    if RegisteredStudent.objects.filter(course=course, session=session).count() > 0:
+    if RegisteredStudent.objects.filter(course=course, session=session).exists():
         all_students = RegisteredStudent.objects.get(course=course, session=session).students.all()
         ineligible = 0
         for std in all_students:
@@ -294,7 +294,7 @@ def get_number_of_ineligible_students(course):
 
 
 def get_number_of_unique_programs(course):
-    if RegisteredStudent.objects.filter(course=course, session=session).count() > 0:
+    if RegisteredStudent.objects.filter(course=course, session=session).exists():
         all_students = RegisteredStudent.objects.get(course=course, session=session).students.all()
         program_list = []
         for student in all_students:
@@ -305,7 +305,7 @@ def get_number_of_unique_programs(course):
 
 
 def get_list_of_unique_programs(course):
-    if RegisteredStudent.objects.filter(course=course, session=session).count() > 0:
+    if RegisteredStudent.objects.filter(course=course, session=session).exists():
         all_students = RegisteredStudent.objects.get(course=course, session=session).students.all()
         program_list = []
         for student in all_students:
@@ -323,21 +323,22 @@ def upload_staff(file):
         for j in i[0]:
             data2.append(j)
 
-        full_name, gender, dep, email, desig, post = data2
+        full_name, stf_id, dep, email, desig, post = data2
 
-        staff_id = full_name.split()[-1]
+        staff_id = stf_id.strip()
+        full_name = full_name.strip()
 
-        if Department.objects.filter(department_name=dep.upper()).count() < 1:
+        if Department.objects.filter(department_name=dep.upper()).exists():
             department = get_object_or_404(Department, department_name=dep.upper())
-            if User.objects.filter(username=staff_id.upper().strip()).count() < 1:
-                user = User.objects.create_user(username=staff_id.upper(), password="password", email=email)
+            if not User.objects.filter(username=staff_id.upper().strip()).exists():
+                user = User.objects.create_user(username=staff_id.upper(), password="password")
 
                 if str(email) == 'nan':
-                    person = Person.objects.create(user=user, full_name=full_name.upper(), gender=gender.upper().strip(),
-                                                   is_staff=True)
+                    person = Person.objects.create(user=user, full_name=full_name.upper(), is_staff=True)
                 else:
-                    person = Person.objects.create(user=user, full_name=full_name.upper(), gender=gender.upper().strip(),
-                                                   email=email, is_staff=True)
+                    user.email = email.strip()
+                    user.save()
+                    person = Person.objects.create(user=user, full_name=full_name.upper(), email=email.strip(), is_staff=True)
 
                 staff = Staff.objects.create(person=person, staff_id=staff_id.upper(), designation=desig.upper(),
                                              post=post.upper(), department=department)
@@ -358,9 +359,9 @@ def upload_student(file):
         elif prog == 'CYBERSECURITY':
             prog = "CYBER SECURITY"
 
-        if Programme.objects.filter(programme_name=prog.upper().strip()).count() < 1:
+        if Programme.objects.filter(programme_name=prog.upper().strip()).exists():
             programme = get_object_or_404(Programme, programme_name=prog.upper().strip())
-            if User.objects.filter(username=matric_no.upper().strip()).count() < 1:
+            if not User.objects.filter(username=matric_no.upper().strip()).exists():
                 user = User.objects.create_user(username=matric_no.upper().strip(), password="password", email=email)
 
                 if str(email) == 'nan':
@@ -384,7 +385,7 @@ def upload_faculty(file):
             data2.append(j)
 
         fac = data2[0]
-        if Faculty.objects.filter(faculty_name=fac.upper()).count() < 1:
+        if not Faculty.objects.filter(faculty_name=fac.upper()).exists():
             faculty = Faculty.objects.create(faculty_name=fac.upper())
 
             faculty.save()
@@ -399,9 +400,9 @@ def upload_department(file):
             data2.append(j)
 
         fac, dep_name = data2
-        if Faculty.objects.filter(faculty_name=fac.upper()).count() < 1:
+        if Faculty.objects.filter(faculty_name=fac.upper()).exists():
             faculty = get_object_or_404(Faculty, faculty_name=fac.upper())
-            if Department.objects.filter(department_name=dep_name.upper()).count() < 1:
+            if not Department.objects.filter(department_name=dep_name.upper()).exists():
                 department = Department.objects.create(faculty=faculty, department_name=dep_name.upper())
                 department.save()
 
@@ -416,9 +417,9 @@ def upload_programme(file):
 
         dep, prog_name = data2
 
-        if Department.objects.filter(department_name=dep.upper()).count() < 1:
+        if Department.objects.filter(department_name=dep.upper()).exists():
             department = get_object_or_404(Department, department_name=dep.upper())
-            if Programme.objects.filter(programme_name=prog_name.upper()).count() < 1:
+            if not Programme.objects.filter(programme_name=prog_name.upper()).exists():
                 programme = Programme.objects.create(department=department, programme_name=prog_name.upper())
                 programme.save()
 
@@ -435,11 +436,11 @@ def upload_course(file):
 
             course_code, course_title, course_unit, status = data2
 
-            if Department.objects.filter(department_name=str(department).upper()).count() < 1:
+            if Department.objects.filter(department_name=str(department).upper()).exists():
                 department = get_object_or_404(Department, department_name=str(department).upper())
 
-                if str(course_code).strip() != "nan" and Course.objects.filter(
-                        course_code=course_code.strip().upper()).count() < 1:
+                if str(course_code).strip() != "nan" and not Course.objects.filter(
+                        course_code=course_code.strip().upper()).exists():
                     course = Course.objects.create(course_title=course_title.strip().upper(),
                                                    course_code=course_code.strip().upper(),
                                                    course_unit=course_unit, department=department)
@@ -457,37 +458,20 @@ def allocate_courses(file):
         code, lecturer, others = data2
 
         course = Course.objects.get(course_code=code)
-        if Staff.objects.filter(staff_id=lecturer).count() == 1:
-            lecturer = get_object_or_404(Staff, staff_id=lecturer)
-        elif lecturer == "HOD":
-            lecturer = get_object_or_404(Staff, department=course.programme.department, post="HOD")
-        else:
-            lecturer = get_object_or_404(Staff, department=course.programme.department, post="HOD")
+        if Person.objects.filter(full_name=lecturer).exists():
+            person = get_object_or_404(Person, full_name=lecturer)
+            staff = get_object_or_404(Staff, person=person)
 
-        if CourseAllocation.objects.filter(course=course).count() < 1:
-            course_allocation = CourseAllocation.objects.create(course=course, lecturer=lecturer, session=session)
+            if not CourseAllocation.objects.filter(course=course).exists():
+                course_allocation = CourseAllocation.objects.create(course=course, lecturer=staff, session=session)
 
-            if str(others).strip() != "nan":
-                if others.strip().split(" ")[0].upper() == "ALL":
-                    all_lecturers = Staff.objects.filter(department=course.programme.department)
-                    for lecturer in all_lecturers:
-                        if lecturer.post != "HOD":
-                            course_allocation.others.add(lecturer)
-                else:
-                    others = others.strip().split("/")
-                    for x in others:
-                        lecturer = x.upper().split()[-1]
-                        if Staff.objects.filter(staff_id=lecturer).count() == 1:
-                            lecturer = get_object_or_404(Staff, staff_id=lecturer)
-                            course_allocation.others.add(lecturer)
+            else:
+                course_allocation = get_object_or_404(CourseAllocation, course=course, session=session)
+                course_allocation.lecturer = staff
 
-        else:
-            course_allocation = get_object_or_404(CourseAllocation, course=course, session=session)
-            course_allocation.lecturer = lecturer
-
-            if len(course_allocation.others.all()) > 0:
-                for lecturer in course_allocation.others.all():
-                    course_allocation.others.remove(lecturer)
+                if len(course_allocation.others.all()) > 0:
+                    for lecturer in course_allocation.others.all():
+                        course_allocation.others.remove(lecturer)
 
             if str(others).strip() != "nan":
                 if others.strip().split(" ")[0].upper() == "ALL":
@@ -498,12 +482,13 @@ def allocate_courses(file):
                 else:
                     others = others.strip().split("/")
                     for x in others:
-                        lecturer = x.upper().split()[-1]
-                        if Staff.objects.filter(staff_id=lecturer).count() == 1:
-                            lecturer = get_object_or_404(Staff, staff_id=lecturer)
-                            course_allocation.others.add(lecturer)
+                        full_name = x.upper()
+                        if Person.objects.filter(full_name=full_name).exists():
+                            person = get_object_or_404(Person, full_name=full_name.upper())
+                            staff = get_object_or_404(Staff, person=person)
+                            course_allocation.others.add(staff)
 
-        course_allocation.save()
+            course_allocation.save()
 
 
 def upload_student_course_registration(file):
@@ -518,11 +503,11 @@ def upload_student_course_registration(file):
 
             matric_no, sch_session, semester = data2
 
-            if Student.objects.filter(matric_no=matric_no).count() == 1:
+            if Student.objects.filter(matric_no=matric_no).exists():
                 student = Student.objects.get(matric_no=matric_no.strip().upper())
-                if Course.objects.filter(course_code=course_code.strip().upper()).count() == 1:
+                if Course.objects.filter(course_code=course_code.strip().upper()).exists():
                     course = Course.objects.get(course_code=course_code.strip().upper())
-                    if RegisteredStudent.objects.filter(course=course, session=sch_session).count() == 1:
+                    if RegisteredStudent.objects.filter(course=course, session=sch_session).exists():
                         reg_students = get_object_or_404(RegisteredStudent, course=course, session=sch_session.strip())
                     else:
                         reg_students = RegisteredStudent.objects.create(course=course, semester=semester.lower(),
@@ -548,7 +533,7 @@ def upload_course_attendance(file, sch_session):
             full_name, matric_no, *attendance = data2
 
             course = Course.objects.get(course_code=course_code)
-            if Student.objects.filter(matric_no=matric_no).count() == 1:
+            if Student.objects.filter(matric_no=matric_no).exists():
                 student = Student.objects.get(matric_no=matric_no)
 
                 for index, date in enumerate(dates):

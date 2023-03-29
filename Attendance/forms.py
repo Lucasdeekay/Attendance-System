@@ -41,6 +41,16 @@ class StaffRegisterForm(forms.Form):
             }
         )
     )
+    staff_id = forms.CharField(
+        max_length=30,
+        widget=forms.TextInput(
+            attrs={
+                'placeholder': 'Staff ID',
+                'required': '',
+                'class': 'form-control',
+            }
+        )
+    )
     email = forms.EmailField(
         max_length=30,
         widget=forms.EmailInput(
@@ -88,10 +98,11 @@ class StaffRegisterForm(forms.Form):
     def clean(self):
         cleaned_data = super(StaffRegisterForm, self).clean()
         full_name = cleaned_data.get('full_name')
+        staff_id = cleaned_data.get('staff_id')
         email = cleaned_data.get('email')
         gender = cleaned_data.get('gender')
         department = cleaned_data.get('department')
-        if not full_name or not email or not gender or not department:
+        if not full_name or not staff_id or not email or not gender or not department:
             raise forms.ValidationError("Field cannot be empty")
 
 

@@ -1414,10 +1414,8 @@ class PrintAttendanceSheetView(View):
         if person.is_staff:
             # Get the current logged in staff
             user = get_object_or_404(Staff, person=person)
-            # Get the current logged in staff
-            current_staff = get_object_or_404(Staff, person=person)
             #  Filter all the courses in staff department
-            course_allocation = CourseAllocation.objects.filter(lecturer=current_staff, session=session)
+            course_allocation = CourseAllocation.objects.filter(lecturer=user, session=session)
             courses = [
                 course_all.course for course_all in course_allocation
             ]
@@ -1734,11 +1732,11 @@ def add_staff(request):
         if form.is_valid():
             # Get user input
             full_name = form.cleaned_data['full_name'].upper().strip()
+            staff_id = form.cleaned_data['staff_id'].upper().strip()
             email = form.cleaned_data['email'].upper().strip()
             gender = form.cleaned_data['gender'].upper().strip()
             department = form.cleaned_data['department'].upper().strip()
 
-            staff_id = full_name.split()[-1]
             user = User.objects.create_user(username=staff_id, password="password")
             person = Person.objects.create(user=user, full_name=full_name, email=email, gender=gender, is_staff=True)
             department = get_object_or_404(Department, department_name=department)
