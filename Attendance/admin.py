@@ -40,7 +40,7 @@ class RegisteredStudentsAdmin(admin.ModelAdmin):
 
 
 class StudentAttendanceAdmin(admin.ModelAdmin):
-    list_display = ('student', 'is_present', 'date', 'session')
+    list_display = ('student', 'course', 'is_present', 'date', 'session')
 
 
 class CourseAttendanceAdmin(admin.ModelAdmin):
