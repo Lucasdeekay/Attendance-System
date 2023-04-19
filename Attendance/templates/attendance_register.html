@@ -186,15 +186,15 @@ $('#courseForm').submit(function(e) {
                     }
                 }
                 if (data.all_selected == "no") {
-                    var btnDiv = `<button type="button" id="selectAllBtn" value="true" onclick="selectAllAttendance(this)"
-                                          class="btn btn-dark rounded">
-                                            Deselect All
-                                    <i class="bi bi-check-circle-fill text-danger"></i></button>`;
-                } else {
                     var btnDiv = `<button type="button" id="selectAllBtn" value="false" onclick="selectAllAttendance(this)"
                                       class="btn btn-dark rounded">
                                         Select All
                                 <i class="bi bi-check-circle-fill text-success"></i></button>`;
+                } else {
+                    var btnDiv = `<button type="button" id="selectAllBtn" value="true" onclick="selectAllAttendance(this)"
+                                          class="btn btn-dark rounded">
+                                            Deselect All
+                                    <i class="bi bi-check-circle-fill text-danger"></i></button>`;
                 }
                 $("#selectAllBtnDiv").append(btnDiv);
                 $("#tbody").addClass("animation");
